@@ -1,0 +1,37 @@
+name: .NET CI
+
+on:
+  push:
+    paths:
+      - ".github/workflows/dotnet-ci.yml"
+      - ".github/workflows/live-foundry-tests.yml"
+      - "dotnet/**"
+  pull_request:
+    paths:
+      - ".github/workflows/dotnet-ci.yml"
+      - ".github/workflows/live-foundry-tests.yml"
+      - "dotnet/**"
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore dotnet/AgenticDesignPatterns.slnx
+
+      - name: Build
+        run: dotnet build dotnet/AgenticDesignPatterns.slnx --configuration Release --no-restore
+
+      - name: Run non-live tests
+        run: dotnet test dotnet/AgenticDesignPatterns.slnx --configuration Release --no-build --filter "Category!=LiveFoundry"

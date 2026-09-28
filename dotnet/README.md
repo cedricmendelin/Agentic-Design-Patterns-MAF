@@ -34,6 +34,38 @@ dotnet run --project dotnet/src/Chapter01.PromptChaining -- specs --deployment f
 dotnet run --project dotnet/src/Chapter01.PromptChaining -- all --deployment quality
 ```
 
+## GitHub Actions live smoke tests
+
+Use two separate validation layers:
+
+- **Default CI** (`.github/workflows/dotnet-ci.yml`) builds the solution and runs deterministic tests that do not require Foundry credentials.
+- **Live Foundry smoke tests** (`.github/workflows/live-foundry-tests.yml`) are manual-only and use a protected GitHub Environment instead of local user-secrets.
+
+Create a GitHub Environment named `foundry-integration` and add these secrets:
+
+- `FOUNDRY_PROJECT_ENDPOINT`
+- `FOUNDRY_API_KEY`
+- `FOUNDRY_MODEL_DEPLOYMENT`
+- Optional aliases such as `FOUNDRY_MODEL_DEPLOYMENT_FAST` and `FOUNDRY_MODEL_DEPLOYMENT_QUALITY`
+
+The live workflow maps those secrets onto the existing runtime environment variables:
+
+- `Foundry__ProjectEndpoint`
+- `Foundry__ApiKey`
+- `Foundry__ModelDeployment`
+- `Foundry__ModelDeployments__fast`
+- `Foundry__ModelDeployments__quality`
+
+That means the cloud agent and GitHub Actions jobs can invoke the chapter demos without `dotnet user-secrets`, as long as the workflow job runs inside the protected environment.
+
+To run the live smoke tests manually:
+
+1. Open **Actions** → **Live Foundry smoke tests**.
+2. Start the workflow with an optional deployment alias if you want to target a named deployment.
+3. The workflow builds the solution, runs deterministic tests, then runs smoke tests for Chapters 01 and 02.
+
+Any new test project that you add to `dotnet/AgenticDesignPatterns.slnx` is picked up by the non-live `dotnet test` step automatically. Live Foundry validation is intentionally narrower: the workflow checks out the default branch before loading protected secrets, so new demos only run there after you add coverage in `dotnet/tests/Foundry.SmokeTests` and merge that change to the default branch.
+
 ## Build
 
 ```powershell
@@ -45,3 +77,4 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 | Chapter | Pattern | Project | README |
 |---|---|---|---|
 | 01 | Prompt Chaining | `src/Chapter01.PromptChaining` | [Chapter 01 guide](src/Chapter01.PromptChaining/README.md) |
+| 02 | Routing | `src/Chapter02.Routing` | [Chapter 02 guide](src/Chapter02.Routing/README.md) |

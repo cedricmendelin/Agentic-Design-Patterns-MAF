@@ -51,7 +51,7 @@ Foundry-native variants only (add to the chapter project, not Shared core):
 | `Microsoft.Agents.AI.Foundry` (prerelease) | Foundry agent → `AIAgent` |
 | `Azure.Identity` | Agent Service APIs require Entra ID (`az login`) |
 
-## secrets.json keys
+## Local secrets.json keys
 ```json
 {
   "Foundry:ProjectEndpoint": "https://<resource>.services.ai.azure.com/api/projects/<project>",
@@ -67,6 +67,27 @@ dotnet user-secrets set "Foundry:ApiKey" "<key>" --project dotnet/src/Shared
 dotnet user-secrets set "Foundry:ModelDeployment" "<deployment>" --project dotnet/src/Shared
 ```
 Env var override: `Foundry__ProjectEndpoint`, `Foundry__ApiKey`, `Foundry__ModelDeployment`.
+
+## Cloud-agent / GitHub Actions setup
+
+For cloud-agent validation, do not rely on local user-secrets. Instead:
+
+1. Create a protected GitHub Environment named `foundry-integration`.
+2. Add environment secrets:
+   - `FOUNDRY_PROJECT_ENDPOINT`
+   - `FOUNDRY_API_KEY`
+   - `FOUNDRY_MODEL_DEPLOYMENT`
+   - optional `FOUNDRY_MODEL_DEPLOYMENT_FAST`
+   - optional `FOUNDRY_MODEL_DEPLOYMENT_QUALITY`
+3. Use `.github/workflows/live-foundry-tests.yml` as the manual smoke-test entry point.
+4. In that workflow, map the environment secrets to:
+   - `Foundry__ProjectEndpoint`
+   - `Foundry__ApiKey`
+   - `Foundry__ModelDeployment`
+   - optional `Foundry__ModelDeployments__fast`
+   - optional `Foundry__ModelDeployments__quality`
+
+This keeps credentials out of the repository while allowing the cloud agent and GitHub-hosted runners to validate new implementations against a live Foundry deployment.
 
 ## Shared code sketch
 The model is called through the resource's OpenAI-compatible v1 endpoint, derived from the project endpoint host: `https://<resource>.services.ai.azure.com/openai/v1/`.
@@ -92,7 +113,7 @@ public static class FoundryChatClientFactory
 
         return config.GetSection("Foundry").Get<FoundrySettings>()
             ?? throw new InvalidOperationException(
-                "Foundry settings missing. See dotnet/README.md to configure user-secrets.");
+                "Foundry settings missing. See dotnet/README.md to configure user-secrets or Foundry__* environment variables.");
     }
 
     public static IChatClient CreateChatClient(FoundrySettings s, string? deployment = null) =>
@@ -101,7 +122,7 @@ public static class FoundryChatClientFactory
             .AsIChatClient();
 }
 ```
-`AddUserSecrets(assembly)` reads the `UserSecretsId` attribute — since it is set in `Directory.Build.props`, every project resolves the same `secrets.json`.
+`AddUserSecrets(assembly)` reads the `UserSecretsId` attribute — since it is set in `Directory.Build.props`, every project resolves the same `secrets.json`. `AddEnvironmentVariables()` lets GitHub Actions override the same settings during cloud-agent runs.
 
 ## Agent creation pattern
 ```csharp

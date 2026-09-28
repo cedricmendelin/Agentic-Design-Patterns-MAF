@@ -23,7 +23,7 @@ public sealed record FoundrySettings
             throw new InvalidOperationException(
                 $"Foundry model deployment '{deploymentName}' is not configured. " +
                 (available.Length == 0
-                    ? "Add it under Foundry:ModelDeployments in user-secrets."
+                    ? "Add it under Foundry:ModelDeployments in user-secrets or provide Foundry__ModelDeployments__<name>."
                     : $"Available deployment names: {available}."));
         }
 

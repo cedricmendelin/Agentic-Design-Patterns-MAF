@@ -21,18 +21,22 @@ jobs:
     permissions:
       contents: read
     env:
-      Foundry__ProjectEndpoint: ${{ secrets.FOUNDRY_PROJECT_ENDPOINT }}
-      Foundry__ApiKey: ${{ secrets.FOUNDRY_API_KEY }}
-      Foundry__ModelDeployment: ${{ secrets.FOUNDRY_MODEL_DEPLOYMENT }}
-      Foundry__ModelDeployments__fast: ${{ secrets.FOUNDRY_MODEL_DEPLOYMENT_FAST }}
-      Foundry__ModelDeployments__quality: ${{ secrets.FOUNDRY_MODEL_DEPLOYMENT_QUALITY }}
       FOUNDRY_TEST_DEPLOYMENT_ALIAS: ${{ inputs.deployment_alias }}
 
     steps:
+      - name: Enforce trusted workflow ref
+        if: github.ref_name != github.event.repository.default_branch
+        shell: bash
+        run: |
+          echo "::error::Run this workflow from the default branch (${GITHUB_DEFAULT_BRANCH}) so protected Foundry secrets are only used with trusted workflow code."
+          exit 1
+        env:
+          GITHUB_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+
       - name: Checkout default branch only
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.repository.default_branch }}
+          ref: refs/heads/${{ github.event.repository.default_branch }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -41,6 +45,10 @@ jobs:
 
       - name: Validate Foundry secrets
         shell: bash
+        env:
+          Foundry__ProjectEndpoint: ${{ secrets.FOUNDRY_PROJECT_ENDPOINT }}
+          Foundry__ApiKey: ${{ secrets.FOUNDRY_API_KEY }}
+          Foundry__ModelDeployment: ${{ secrets.FOUNDRY_MODEL_DEPLOYMENT }}
         run: |
           test -n "$Foundry__ProjectEndpoint" || { echo "::error::Missing secret FOUNDRY_PROJECT_ENDPOINT in environment foundry-integration."; exit 1; }
           test -n "$Foundry__ApiKey" || { echo "::error::Missing secret FOUNDRY_API_KEY in environment foundry-integration."; exit 1; }
@@ -58,10 +66,15 @@ jobs:
       - name: Run live Foundry smoke tests
         shell: bash
         env:
+          Foundry__ProjectEndpoint: ${{ secrets.FOUNDRY_PROJECT_ENDPOINT }}
+          Foundry__ApiKey: ${{ secrets.FOUNDRY_API_KEY }}
+          Foundry__ModelDeployment: ${{ secrets.FOUNDRY_MODEL_DEPLOYMENT }}
+          Foundry__ModelDeployments__fast: ${{ secrets.FOUNDRY_MODEL_DEPLOYMENT_FAST }}
+          Foundry__ModelDeployments__quality: ${{ secrets.FOUNDRY_MODEL_DEPLOYMENT_QUALITY }}
           SMOKE_FILTER: ${{ inputs.smoke_filter }}
         run: |
           filter="Category=LiveFoundry"
           if [ -n "$SMOKE_FILTER" ]; then
-            filter="${filter}&$SMOKE_FILTER"
+            filter="${filter}&${SMOKE_FILTER}"
           fi
           dotnet test dotnet/tests/Foundry.SmokeTests/Foundry.SmokeTests.csproj --configuration Release --no-build --filter "${filter}"

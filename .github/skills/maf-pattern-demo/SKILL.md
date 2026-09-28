@@ -31,7 +31,10 @@ If `dotnet/AgenticDesignPatterns.slnx` (or `.sln`) is missing, create it per [Fo
 - `dotnet/src/Shared/` — `FoundrySettings` + `FoundryChatClientFactory` reading `secrets.json` via `Microsoft.Extensions.Configuration.UserSecrets`.
 - `dotnet/README.md` — one-time secrets setup.
 
-Auth: Foundry project endpoint + API key stored in `secrets.json` (user-secrets). Never commit secrets, never put keys in `appsettings.json`, never echo keys to console or chat.
+Auth:
+- **Local execution**: Foundry project endpoint + API key stored in local `secrets.json` through .NET user-secrets.
+- **Cloud-agent / GitHub Actions execution**: the same values come from GitHub Actions environment secrets mapped to `Foundry__*` environment variables.
+Never commit secrets, never put keys in `appsettings.json`, never echo keys to console or chat.
 
 ### 3. Create the chapter project
 Path: `dotnet/src/Chapter<NN>.<PatternName>/` (e.g. `Chapter01.PromptChaining`). Reference `Shared`, add to solution.
@@ -62,7 +65,7 @@ Rules:
 - Deterministic code decides correctness (validation, routing rules, termination); the model decides judgment.
 - **Prefer non-streaming APIs** for readability: `agent.RunAsync(...)` / `RunAsync<T>(...)` and `InProcessExecution.RunAsync(workflow, input)` then read `run.NewEvents` / `WorkflowOutputEvent`. Use streaming (`RunStreamingAsync`, `WatchStreamAsync`) only when the pattern requires it (e.g. HITL `RequestInfoEvent` loops, or no non-streaming API exists) and say why in a one-line comment.
 - Print each step's intermediate output with a header so the pattern is visible when run.
-- The MAF variant must run with only `secrets.json` (endpoint, key, deployment). The Foundry-native variant may require extra setup (e.g. Entra ID / `az login`, deployed hosted agent); document it in the README and fail with a clear message if not configured.
+- The MAF variant must run either with local `secrets.json` (endpoint, key, deployment) or with `Foundry__*` environment variables provided by GitHub Actions. The Foundry-native variant may require extra setup (e.g. Entra ID / `az login`, deployed hosted agent); document it in the README and fail with a clear message if not configured.
 - For hosted agents, load the `microsoft-foundry` skill for scaffolding/deploy steps rather than improvising.
 - No framework-irrelevant extras: no DI hosts, logging frameworks, or tests unless the pattern needs them.
 
@@ -71,13 +74,14 @@ Copy [README template](./assets/chapter-readme-template.md) and fill **every** s
 
 ### 6. Validate
 1. `dotnet build dotnet/AgenticDesignPatterns.slnx` — must be warning-free for new code.
-2. If secrets are configured (`dotnet user-secrets list --project dotnet/src/Shared`), run `dotnet run --project dotnet/src/Chapter<NN>.<PatternName>` and confirm each variant produces sensible output.
-3. If no secrets: stop and ask the user to set endpoint, deployment and API key via `dotnet user-secrets` themselves (never request the key in chat).
-4. Update the root chapter table in `dotnet/README.md`.
+2. **Local validation path**: if secrets are configured (`dotnet user-secrets list --project dotnet/src/Shared`), run `dotnet run --project dotnet/src/Chapter<NN>.<PatternName>` and confirm each variant produces sensible output.
+3. **Cloud-agent validation path**: if local secrets are not available, rely on the repository workflow `.github/workflows/live-foundry-tests.yml`. The workflow must run inside the protected `foundry-integration` environment and provide `Foundry__ProjectEndpoint`, `Foundry__ApiKey`, `Foundry__ModelDeployment`, and any optional `Foundry__ModelDeployments__<name>` aliases from GitHub environment secrets.
+4. When a cloud agent cannot run the live workflow directly because the workflow file is not yet active on the default branch, say so explicitly and tell the user to merge the workflow first or run it from the GitHub Actions UI after merge.
+5. Update the root chapter table in `dotnet/README.md`.
 
 ## Completion Checklist
 - [ ] All chapter notebooks reviewed; each distinct idea has a MAF demo
 - [ ] Foundry-native variant built, or README explains why it is not applicable
-- [ ] Builds cleanly; ran against Foundry (or user told why not)
+- [ ] Builds cleanly; validated locally with user-secrets or via the live GitHub workflow
 - [ ] README has when-to-use / when-not / real-world scenarios
-- [ ] No secrets in repo; `secrets.json` only via user-secrets
+- [ ] No secrets in repo; credentials come only from local user-secrets or GitHub environment secrets
