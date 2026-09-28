@@ -28,10 +28,10 @@ jobs:
           dotnet-version: "10.0.x"
 
       - name: Restore
-        run: dotnet restore /home/runner/work/Agentic-Design-Patterns-MAF/Agentic-Design-Patterns-MAF/dotnet/AgenticDesignPatterns.slnx
+        run: dotnet restore dotnet/AgenticDesignPatterns.slnx
 
       - name: Build
-        run: dotnet build /home/runner/work/Agentic-Design-Patterns-MAF/Agentic-Design-Patterns-MAF/dotnet/AgenticDesignPatterns.slnx --configuration Release --no-restore
+        run: dotnet build dotnet/AgenticDesignPatterns.slnx --configuration Release --no-restore
 
       - name: Run deterministic tests
-        run: dotnet test /home/runner/work/Agentic-Design-Patterns-MAF/Agentic-Design-Patterns-MAF/dotnet/tests/Shared.Tests/Shared.Tests.csproj --configuration Release --no-build
+        run: dotnet test dotnet/tests/Shared.Tests/Shared.Tests.csproj --configuration Release --no-build

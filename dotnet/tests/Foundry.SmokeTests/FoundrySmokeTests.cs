@@ -1,3 +1,5 @@
+using Xunit;
+
 namespace AgenticDesignPatterns.Foundry.SmokeTests;
 
 public sealed class FoundrySmokeTests

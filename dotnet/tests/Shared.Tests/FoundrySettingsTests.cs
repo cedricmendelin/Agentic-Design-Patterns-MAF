@@ -1,4 +1,5 @@
 using AgenticDesignPatterns.Shared;
+using Xunit;
 
 namespace AgenticDesignPatterns.Shared.Tests;
 
