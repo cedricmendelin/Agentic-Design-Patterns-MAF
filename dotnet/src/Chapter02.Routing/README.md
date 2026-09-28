@@ -26,6 +26,8 @@ flowchart LR
 
 ## Screenshots
 
+Representative console output for the booking and information branches:
+
 ### Booking route
 
 ![Booking route console output](assets/routing-booking.png)

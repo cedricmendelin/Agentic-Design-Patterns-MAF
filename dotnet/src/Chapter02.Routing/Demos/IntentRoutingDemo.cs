@@ -62,9 +62,9 @@ internal static class IntentRoutingDemo
         var clarificationExecutor = new ClarificationExecutor();
 
         var workflow = new WorkflowBuilder(routerExecutor)
-            .AddEdge(routerExecutor, bookingExecutor, route => route is RoutedRequest { Decision: RoutingDecision.Booker })
-            .AddEdge(routerExecutor, infoExecutor, route => route is RoutedRequest { Decision: RoutingDecision.Info })
-            .AddEdge(routerExecutor, clarificationExecutor, route => route is RoutedRequest { Decision: RoutingDecision.Unclear })
+            .AddEdge<RoutedRequest>(routerExecutor, bookingExecutor, route => route is { Decision: RoutingDecision.Booker })
+            .AddEdge<RoutedRequest>(routerExecutor, infoExecutor, route => route is { Decision: RoutingDecision.Info })
+            .AddEdge<RoutedRequest>(routerExecutor, clarificationExecutor, route => route is { Decision: RoutingDecision.Unclear })
             .WithOutputFrom(bookingExecutor, infoExecutor, clarificationExecutor)
             .Build();
 
@@ -163,26 +163,39 @@ internal static class IntentRoutingDemo
         }
     }
 
-    private sealed class SpecialistExecutor(
-        string executorId,
-        RoutingDecision expectedDecision,
-        ChatClientAgent agent,
-        string header) : Executor<RoutedRequest, string>(executorId)
+    private sealed class SpecialistExecutor : Executor<RoutedRequest, string>
     {
+        private readonly RoutingDecision _expectedDecision;
+        private readonly ChatClientAgent _agent;
+        private readonly string _header;
+        private readonly string _executorId;
+
+        public SpecialistExecutor(
+            string executorId,
+            RoutingDecision expectedDecision,
+            ChatClientAgent agent,
+            string header) : base(executorId)
+        {
+            _expectedDecision = expectedDecision;
+            _agent = agent;
+            _header = header;
+            _executorId = executorId;
+        }
+
         public override async ValueTask<string> HandleAsync(
             RoutedRequest message,
             IWorkflowContext context,
             CancellationToken cancellationToken = default)
         {
-            if (message.Decision != expectedDecision)
+            if (message.Decision != _expectedDecision)
             {
                 throw new InvalidOperationException(
-                    $"{executorId} cannot handle decision '{message.Decision}'.");
+                    $"{_executorId} cannot handle decision '{message.Decision}'.");
             }
 
-            var response = await agent.RunAsync(message.OriginalRequest, cancellationToken: cancellationToken);
+            var response = await _agent.RunAsync(message.OriginalRequest, cancellationToken: cancellationToken);
 
-            Console.WriteLine($"\n--- {header} ---");
+            Console.WriteLine($"\n--- {_header} ---");
             Console.WriteLine(response.Text);
 
             return response.Text;
