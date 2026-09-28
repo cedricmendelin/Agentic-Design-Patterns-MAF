@@ -33,7 +33,7 @@ jobs:
         env:
           GITHUB_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
 
-      - name: Checkout
+      - name: Checkout default branch only
         uses: actions/checkout@v4
         with:
           ref: refs/heads/${{ github.event.repository.default_branch }}
@@ -77,4 +77,4 @@ jobs:
           if [ -n "$SMOKE_FILTER" ]; then
             filter="${filter}&${SMOKE_FILTER}"
           fi
-          dotnet test dotnet/tests/Foundry.SmokeTests/Foundry.SmokeTests.csproj --configuration Release --no-build --filter "$filter"
+          dotnet test dotnet/tests/Foundry.SmokeTests/Foundry.SmokeTests.csproj --configuration Release --no-build --filter "${filter}"
