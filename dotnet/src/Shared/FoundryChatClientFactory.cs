@@ -22,7 +22,7 @@ public static class FoundryChatClientFactory
         {
             throw new InvalidOperationException(
                 "Foundry settings are missing. Configure ProjectEndpoint, ApiKey, and ModelDeployment " +
-                "as user-secrets for dotnet/src/Shared; see dotnet/README.md.");
+                "as user-secrets for dotnet/src/Shared or as Foundry__* environment variables; see dotnet/README.md.");
         }
 
         return settings;

@@ -4,4 +4,8 @@
     <Project Path="src/Chapter02.Routing/Chapter02.Routing.csproj" />
     <Project Path="src/Shared/Shared.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Foundry.SmokeTests/Foundry.SmokeTests.csproj" />
+    <Project Path="tests/Shared.Tests/Shared.Tests.csproj" />
+  </Folder>
 </Solution>

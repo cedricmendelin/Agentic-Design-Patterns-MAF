@@ -1,0 +1,63 @@
+name: Live Foundry smoke tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_alias:
+        description: Optional alias for Foundry__ModelDeployments__<name>
+        required: false
+        default: ""
+        type: string
+      smoke_filter:
+        description: Optional dotnet test filter for the smoke-test project
+        required: false
+        default: ""
+        type: string
+
+jobs:
+  smoke-tests:
+    runs-on: ubuntu-latest
+    environment: foundry-integration
+    permissions:
+      contents: read
+    env:
+      Foundry__ProjectEndpoint: ${{ secrets.FOUNDRY_PROJECT_ENDPOINT }}
+      Foundry__ApiKey: ${{ secrets.FOUNDRY_API_KEY }}
+      Foundry__ModelDeployment: ${{ secrets.FOUNDRY_MODEL_DEPLOYMENT }}
+      Foundry__ModelDeployments__fast: ${{ secrets.FOUNDRY_MODEL_DEPLOYMENT_FAST }}
+      Foundry__ModelDeployments__quality: ${{ secrets.FOUNDRY_MODEL_DEPLOYMENT_QUALITY }}
+      FOUNDRY_TEST_DEPLOYMENT_ALIAS: ${{ inputs.deployment_alias }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Validate Foundry secrets
+        shell: bash
+        run: |
+          test -n "$Foundry__ProjectEndpoint" || { echo "::error::Missing secret FOUNDRY_PROJECT_ENDPOINT in environment foundry-integration."; exit 1; }
+          test -n "$Foundry__ApiKey" || { echo "::error::Missing secret FOUNDRY_API_KEY in environment foundry-integration."; exit 1; }
+          test -n "$Foundry__ModelDeployment" || { echo "::error::Missing secret FOUNDRY_MODEL_DEPLOYMENT in environment foundry-integration."; exit 1; }
+
+      - name: Restore
+        run: dotnet restore /home/runner/work/Agentic-Design-Patterns-MAF/Agentic-Design-Patterns-MAF/dotnet/AgenticDesignPatterns.slnx
+
+      - name: Build
+        run: dotnet build /home/runner/work/Agentic-Design-Patterns-MAF/Agentic-Design-Patterns-MAF/dotnet/AgenticDesignPatterns.slnx --configuration Release --no-restore
+
+      - name: Run deterministic tests
+        run: dotnet test /home/runner/work/Agentic-Design-Patterns-MAF/Agentic-Design-Patterns-MAF/dotnet/tests/Shared.Tests/Shared.Tests.csproj --configuration Release --no-build
+
+      - name: Run live Foundry smoke tests
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.smoke_filter }}" ]; then
+            dotnet test /home/runner/work/Agentic-Design-Patterns-MAF/Agentic-Design-Patterns-MAF/dotnet/tests/Foundry.SmokeTests/Foundry.SmokeTests.csproj --configuration Release --no-build --filter "${{ inputs.smoke_filter }}"
+          else
+            dotnet test /home/runner/work/Agentic-Design-Patterns-MAF/Agentic-Design-Patterns-MAF/dotnet/tests/Foundry.SmokeTests/Foundry.SmokeTests.csproj --configuration Release --no-build
+          fi
