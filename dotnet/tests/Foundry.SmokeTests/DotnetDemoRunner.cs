@@ -32,6 +32,7 @@ internal static class DotnetDemoRunner
         startInfo.ArgumentList.Add("--configuration");
         startInfo.ArgumentList.Add("Release");
         startInfo.ArgumentList.Add("--no-build");
+        startInfo.ArgumentList.Add("--");
 
         foreach (var argument in demoArguments)
         {

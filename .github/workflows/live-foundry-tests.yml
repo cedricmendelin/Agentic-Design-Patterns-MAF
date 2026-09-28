@@ -50,14 +50,14 @@ jobs:
       - name: Build
         run: dotnet build dotnet/AgenticDesignPatterns.slnx --configuration Release --no-restore
 
-      - name: Run deterministic tests
-        run: dotnet test dotnet/tests/Shared.Tests/Shared.Tests.csproj --configuration Release --no-build
+      - name: Run non-live tests
+        run: dotnet test dotnet/AgenticDesignPatterns.slnx --configuration Release --no-build --filter "Category!=LiveFoundry"
 
       - name: Run live Foundry smoke tests
         shell: bash
         run: |
+          filter="Category=LiveFoundry"
           if [ -n "${{ inputs.smoke_filter }}" ]; then
-            dotnet test dotnet/tests/Foundry.SmokeTests/Foundry.SmokeTests.csproj --configuration Release --no-build --filter "${{ inputs.smoke_filter }}"
-          else
-            dotnet test dotnet/tests/Foundry.SmokeTests/Foundry.SmokeTests.csproj --configuration Release --no-build
+            filter="${filter}&${{ inputs.smoke_filter }}"
           fi
+          dotnet test dotnet/tests/Foundry.SmokeTests/Foundry.SmokeTests.csproj --configuration Release --no-build --filter "${filter}"

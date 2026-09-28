@@ -2,6 +2,7 @@ using Xunit;
 
 namespace AgenticDesignPatterns.Foundry.SmokeTests;
 
+[Trait("Category", "LiveFoundry")]
 public sealed class FoundrySmokeTests
 {
     [Fact(Timeout = 240000)]
