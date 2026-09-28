@@ -24,8 +24,19 @@ jobs:
       FOUNDRY_TEST_DEPLOYMENT_ALIAS: ${{ inputs.deployment_alias }}
 
     steps:
+      - name: Enforce trusted workflow ref
+        if: github.ref_name != github.event.repository.default_branch
+        shell: bash
+        run: |
+          echo "::error::Run this workflow from the default branch (${GITHUB_DEFAULT_BRANCH}) so protected Foundry secrets are only used with trusted workflow code."
+          exit 1
+        env:
+          GITHUB_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: refs/heads/${{ github.event.repository.default_branch }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4

@@ -64,6 +64,8 @@ To run the live smoke tests manually:
 2. Start the workflow with an optional deployment alias if you want to target a named deployment.
 3. The workflow builds the solution, runs deterministic tests, then runs smoke tests for Chapters 01 and 02.
 
+Any new test project that you add to `dotnet/AgenticDesignPatterns.slnx` is picked up by the non-live `dotnet test` step automatically. Live Foundry validation is intentionally narrower: the workflow checks out the default branch before loading protected secrets, so new demos only run there after you add coverage in `dotnet/tests/Foundry.SmokeTests` and merge that change to the default branch.
+
 ## Build
 
 ```powershell
