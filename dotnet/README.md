@@ -45,3 +45,4 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 | Chapter | Pattern | Project | README |
 |---|---|---|---|
 | 01 | Prompt Chaining | `src/Chapter01.PromptChaining` | [Chapter 01 guide](src/Chapter01.PromptChaining/README.md) |
+| 02 | Routing | `src/Chapter02.Routing` | [Chapter 02 guide](src/Chapter02.Routing/README.md) |
