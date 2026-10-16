@@ -62,7 +62,7 @@ To run the live smoke tests manually:
 
 1. Open **Actions** → **Live Foundry smoke tests**.
 2. Start the workflow with an optional deployment alias if you want to target a named deployment.
-3. The workflow builds the solution, runs deterministic tests, then runs smoke tests for Chapters 01–04.
+3. The workflow builds the solution, runs deterministic tests, then runs smoke tests for Chapters 01–05.
 
 Any new test project that you add to `dotnet/AgenticDesignPatterns.slnx` is picked up by the non-live `dotnet test` step automatically. Live Foundry validation is intentionally narrower: the workflow checks out the default branch before loading protected secrets, so new demos only run there after you add coverage in `dotnet/tests/Foundry.SmokeTests` and merge that change to the default branch.
 
@@ -80,6 +80,7 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 | 02 | Routing | `src/Chapter02.Routing` | [Chapter 02 guide](src/Chapter02.Routing/README.md) |
 | 03 | Parallelization | `src/Chapter03.Parallelization` | [Chapter 03 guide](src/Chapter03.Parallelization/README.md) |
 | 04 | Reflection | `src/Chapter04.Reflection` | [Chapter 04 guide](src/Chapter04.Reflection/README.md) |
+| 05 | Tool Use | `src/Chapter05.ToolUse` | [Chapter 05 guide](src/Chapter05.ToolUse/README.md) |
 
 ## Hosted-agent companions
 
@@ -90,3 +91,5 @@ The console demos keep their existing API-key configuration. Hosted startup read
 The [Parallelization hosted companion](src/Chapter03.Parallelization.Hosted/README.md) exposes the Chapter 03 MAF workflow through the same Responses protocol and bundled .NET 10 deployment. Hosted version 1 was deployed to the existing `mvp-playground-foundry-proj` project and remotely verified on 2026-10-16.
 
 The [Reflection hosted companion](src/Chapter04.Reflection.Hosted/README.md) exposes the Chapter 04 MAF workflow through the Responses protocol and bundled .NET 10 deployment. Local code now uses one shared generator/verifier workflow graph for all three modes, with early acceptance and a three-round ceiling. Hosted version 3, which runs this graph with the stricter product verifier, was deployed to the existing `mvp-playground-foundry-proj` project with `gpt-5-mini` and remotely verified using managed identity on 2026-10-16. Its evaluation setup contains 15 generated cases and a seven-dimension rubric, preserved unchanged for review against the changed contract; no evaluation run has been started.
+
+The [Tool Use hosted companion](src/Chapter05.ToolUse.Hosted/README.md) exposes the Chapter 05 MAF function tools through the Responses protocol and bundled .NET 10 deployment. The MAF console also includes opt-in Foundry-native web search, code interpreter, and file-search examples. Hosted deployment artifacts are implemented but have not been deployed or remotely invoked.
