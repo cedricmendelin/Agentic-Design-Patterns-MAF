@@ -4,6 +4,7 @@
     <Project Path="src/Chapter02.Routing/Chapter02.Routing.csproj" />
     <Project Path="src/Chapter03.Parallelization/Chapter03.Parallelization.csproj" />
     <Project Path="src/Chapter04.Reflection/Chapter04.Reflection.csproj" />
+    <Project Path="src/Chapter06.Planning/Chapter06.Planning.csproj" />
     <Project Path="src/Shared/Shared.csproj" />
   </Folder>
   <Folder Name="/src/Hosting/">
