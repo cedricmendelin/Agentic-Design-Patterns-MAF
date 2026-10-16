@@ -101,6 +101,7 @@ flowchart LR
 
 - Parallelization reduces latency only when work is independent and the model endpoint can serve concurrent requests; throttling can erase the benefit.
 - A failed worker currently fails the whole workflow rather than returning a partial synthesis.
+- Worker and synthesis calls use buffered model completions so response-body transport failures remain inside the SDK's normal retry boundary. MAF still runs the workers concurrently; retries do not restart successful branches. Exhausted retries and non-retryable failures propagate without a partial answer.
 - Three-way analysis plus synthesis uses four model calls per request, increasing total token usage and cost compared with one prompt.
 - The Google ADK notebook relies on Google Search. The MAF demonstration intentionally does not simulate web access, so its sustainable-technology output is not a source-verified or current research report.
 - Every branch sees the caller's topic; prompt quality and synthesis can still omit or distort branch findings.

@@ -130,7 +130,9 @@ The publish directory and `.azure` environment state are ignored by Git. The ZIP
 
 The approved target for this change is `mvp-playground-foundry-proj` in the Visual Studio Enterprise Subscription - MVP subscription, using the existing `gpt-5-mini` deployment. The model is selected in `azure.yaml`, not hardcoded in host code.
 
-Deployment succeeded in the local azd environment `routing-dev`. Foundry reports `chapter02-routing` version `2` as **active**, with the Responses protocol, bundled .NET 10 runtime, and `gpt-5-mini`. This version includes the sensitive-content telemetry instrumentation described above. A version-pinned remote booking request succeeded; telemetry ingestion and visibility in the Foundry trace viewer have not been independently verified.
+Version `3` was redeployed on 2026-10-16 from the current source to the same project and model. Foundry reports it as **active**; the runtime identity is unchanged (principal `a19063d7-ece2-468e-887c-97f809809530`), so the existing account-scope **Cognitive Services OpenAI User** assignment still applies, and a remote `Book me a flight to London.` request returned a simulated booking confirmation.
+
+Earlier, deployment succeeded in the local azd environment `routing-dev`. Foundry reported `chapter02-routing` version `2` as **active**, with the Responses protocol, bundled .NET 10 runtime, and `gpt-5-mini`. This version includes the sensitive-content telemetry instrumentation described above. A version-pinned remote booking request succeeded; telemetry ingestion and visibility in the Foundry trace viewer have not been independently verified.
 
 The first remote request failed in `RouterExecutor` with HTTP 401 `PermissionDenied`: the agent's managed identity, principal `a19063d7-ece2-468e-887c-97f809809530`, lacked model-inference access. Assigning **Cognitive Services OpenAI User** on the `mvp-playground-foundry` account resolved it after Azure RBAC propagation. A fresh hosted session successfully answered `Book me a hotel in Paris.` with a simulated booking confirmation and explicitly stated that no real reservation was made. The deployed workflow is operationally verified.
 

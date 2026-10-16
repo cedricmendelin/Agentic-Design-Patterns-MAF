@@ -4,6 +4,8 @@ This companion exposes the Chapter 03 MAF concurrent workflow through Foundry Ag
 
 Each call runs three independent model tasks and a synthesis call. Requests beginning with `research:` select the sustainable-technology researchers; requests beginning with `topic:` (or unprefixed requests) select summary, question-generation, and key-term workers. The input after the prefix is passed to every parallel worker. Each request builds a fresh workflow; no session history is persisted. The caller receives the completed synthesis, not intermediate console output or streamed branch tokens.
 
+Internal model calls use non-streaming completions, adapted to the updates consumed by MAF. This keeps response-body reads inside the model SDK's normal retry boundary rather than leaving an already-started token stream vulnerable to an unrecoverable connection reset. The three workers still run concurrently. SDK retries are bounded; an exhausted or non-retryable failure still fails the request without a partial synthesis.
+
 The sustainable-technology branch is not grounded by Google Search. Its prompts explicitly prohibit claims of live search or verified current findings. Add a supported retrieval/search integration before using this mode for current research.
 
 ## Prerequisites and authentication
@@ -83,7 +85,11 @@ The companion is covered by deterministic tests that exercise the Responses endp
 
 On 2026-10-16, `chapter03-parallelization` version 1 was deployed to the existing `mvp-playground-foundry-proj` project using the `routing-dev` azd environment and `gpt-5-mini`. The version reported `active`, and a remote request (`topic: Explain two practical ways cities can reduce emissions.`) returned a completed synthesis. The initial invocation failed with `401 PermissionDenied`; assigning **Cognitive Services OpenAI User** to the agent runtime identity at the Foundry account scope and allowing RBAC propagation resolved it. No project provisioning or Chapter 02 redeployment was performed.
 
+Later on 2026-10-16, version 2 was deployed in the same environment with buffered internal model completions to avoid mid-stream transport resets outside the SDK retry boundary. Version 2 reported `active`, and the same remote topic request returned a completed synthesis in a fresh session. Other chapter services and shared infrastructure were not redeployed.
+
 The generated `smoke-core` evaluation completed against version 1 on 2026-10-16: **15 cases, 9 passed, 6 failed, 0 errored**. Per-item results are saved under `.foundry/results/routing-dev/`, with run references and failure clusters in `.foundry/agent-metadata.yaml`. Two failed cases recorded no response text or output items; the evaluation export contains no sample error explaining why. The other four failures were driven partly by generated rubric requirements for provenance maps, internal concurrency timestamps, and timeout-policy artifacts that this host does not expose; additional findings included malformed CSV and unsupported numerical claims. This is an exploratory baseline, not a production-quality acceptance result.
+
+The unchanged 15-case dataset and evaluator were rerun against version 2 as `smoke-core-v2`: **11 passed, 4 failed, 0 errored**. One case still recorded no response text or output items, with no exported sample error; its cause remains unresolved and cannot be attributed to a transport reset from the evaluation export. Two other failures concern specialist provenance/factuality, and one concerns concurrency/provenance artifacts outside the fixed three-worker contract. Detailed output items are saved under `.foundry/results/routing-dev/eval_700a3c5542b74beebd4e8b848858c5d5/`, and metadata now points to this version 2 run.
 
 The generated `eval.yaml`, dataset, and rubric are available for review. From `dotnet`, a future run can be started with `azd ai agent eval run --agent chapter03-parallelization --environment routing-dev --no-prompt`. Review and align the rubric with the documented request/response contract before relying on its pass rate. Evaluation incurs additional model usage.
 
@@ -92,4 +98,5 @@ The generated `eval.yaml`, dataset, and rubric are available for review. From `d
 - Calls are isolated and stateless; conversation context is not persisted across requests.
 - The protocol receives one final synthesis response. Intermediate results are available in traces, not streamed to callers.
 - A failed parallel worker fails the request; no partial-results policy is applied.
+- Version 1 predates the buffered-completion fix; use version 2 or later in Playground and evaluations.
 - The sustainable-technology mode lacks live search/grounding and must not be treated as current research.

@@ -2,7 +2,7 @@ name: smoke-core
 agent:
     name: chapter03-parallelization
     kind: hosted
-    version: "1"
+    version: "2"
     config: .agent_configs\baseline\metadata.yaml
 dataset:
     name: smoke-core

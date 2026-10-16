@@ -66,6 +66,84 @@ public sealed class ParallelizationAgentTests
         }
 
         Assert.Equal(4, client.Requests.Count);
+        Assert.Equal(0, client.StreamingCalls);
+    }
+
+    [Fact]
+    public async Task Buffered_workers_still_run_concurrently()
+    {
+        var started = 0;
+        var allWorkersStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        using var client = new ScriptedChatClient
+        {
+            BeforeResponse = async cancellationToken =>
+            {
+                if (Interlocked.Increment(ref started) == 3)
+                {
+                    allWorkersStarted.SetResult();
+                }
+
+                await allWorkersStarted.Task.WaitAsync(cancellationToken);
+            }
+        };
+
+        var result = await ParallelizationWorkflow.RunAsync(
+            client, ParallelizationScenario.TopicAnalysis, "City planning.",
+            cancellationToken: timeout.Token);
+
+        Assert.Equal("Synthesized response.", result);
+        Assert.Equal(4, started);
+        Assert.Equal(0, client.StreamingCalls);
+    }
+
+    [Fact]
+    public async Task Streaming_host_returns_synthesis_without_opening_model_streams()
+    {
+        using var client = new ScriptedChatClient();
+        var agent = new ParallelizationAgent(client);
+        var updates = new List<string>();
+
+        await foreach (var update in agent.RunStreamingAsync("topic: City planning."))
+        {
+            updates.Add(update.Text);
+        }
+
+        Assert.Equal("Synthesized response.", string.Concat(updates));
+        Assert.Equal(4, client.Requests.Count);
+        Assert.Equal(0, client.StreamingCalls);
+    }
+
+    [Fact]
+    public async Task Model_failure_is_reported_without_partial_synthesis()
+    {
+        using var client = new ScriptedChatClient
+        {
+            CompletionFailure = new HttpRequestException("Connection reset by peer.")
+        };
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            ParallelizationWorkflow.RunAsync(client, ParallelizationScenario.TopicAnalysis, "City planning."));
+
+        Assert.Contains("Connection reset by peer.", exception.ToString());
+        Assert.DoesNotContain(client.Requests, request =>
+            request.Instructions.Contains("Synthesize", StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(0, client.StreamingCalls);
+    }
+
+    [Fact]
+    public async Task Cancelled_request_does_not_call_the_model()
+    {
+        using var client = new ScriptedChatClient();
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            ParallelizationWorkflow.RunAsync(
+                client, ParallelizationScenario.TopicAnalysis, "City planning.",
+                cancellationToken: cancellation.Token));
+
+        Assert.Empty(client.Requests);
     }
 
     [Fact]
@@ -128,9 +206,13 @@ public sealed class ParallelizationAgentTests
     private sealed class ScriptedChatClient : IChatClient
     {
         private readonly ConcurrentQueue<(string Instructions, string Input)> _requests = new();
+        private int _streamingCalls;
         public IReadOnlyList<(string Instructions, string Input)> Requests => _requests.ToArray();
+        public int StreamingCalls => _streamingCalls;
+        public Exception? CompletionFailure { get; init; }
+        public Func<CancellationToken, Task>? BeforeResponse { get; init; }
 
-        public Task<ChatResponse> GetResponseAsync(
+        public async Task<ChatResponse> GetResponseAsync(
             IEnumerable<ChatMessage> messages,
             ChatOptions? options = null,
             CancellationToken cancellationToken = default)
@@ -141,6 +223,15 @@ public sealed class ParallelizationAgentTests
             var instructions = options?.Instructions
                 ?? string.Join('\n', messageList.Where(message => message.Role == ChatRole.System).Select(message => message.Text));
             _requests.Enqueue((instructions, input));
+            if (CompletionFailure is not null)
+            {
+                throw CompletionFailure;
+            }
+
+            if (BeforeResponse is not null)
+            {
+                await BeforeResponse(cancellationToken);
+            }
 
             var response = instructions.Contains("synthes", StringComparison.OrdinalIgnoreCase) ||
                 instructions.Contains("Overall Conclusion", StringComparison.OrdinalIgnoreCase)
@@ -158,7 +249,7 @@ public sealed class ParallelizationAgentTests
                                     : instructions.Contains("5-10 key terms", StringComparison.OrdinalIgnoreCase)
                                         ? "Key terms result."
                                         : throw new InvalidOperationException("No scripted response matches the agent instructions.");
-            return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, response)));
+            return new ChatResponse(new ChatMessage(ChatRole.Assistant, response));
         }
 
         public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
@@ -166,11 +257,10 @@ public sealed class ParallelizationAgentTests
             ChatOptions? options = null,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            var response = await GetResponseAsync(messages, options, cancellationToken);
-            foreach (var message in response.Messages)
-            {
-                yield return new ChatResponseUpdate(message.Role, message.Text);
-            }
+            Interlocked.Increment(ref _streamingCalls);
+            yield return new ChatResponseUpdate(ChatRole.Assistant, "Incomplete streamed response.");
+            await Task.Yield();
+            throw new IOException("Unable to read data from the transport connection: Connection reset by peer.");
         }
 
         public object? GetService(Type serviceType, object? serviceKey = null) => null;

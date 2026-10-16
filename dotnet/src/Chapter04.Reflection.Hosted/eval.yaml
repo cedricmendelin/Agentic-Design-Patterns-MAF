@@ -1,0 +1,16 @@
+name: chapter04-reflection-smoke
+agent:
+    name: chapter04-reflection
+    kind: hosted
+    config: .agent_configs\baseline\metadata.yaml
+dataset:
+    name: chapter04-reflection-smoke
+    version: "1.0"
+    local_uri: datasets\chapter04-reflection-smoke
+evaluators:
+    - name: chapter04-reflection-smoke
+      version: "1"
+      local_uri: evaluators\chapter04-reflection-smoke\rubric_dimensions.json
+options:
+    eval_model: gpt-5-mini
+max_samples: 15

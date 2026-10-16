@@ -27,9 +27,10 @@ public static class ParallelizationWorkflow
         ArgumentException.ThrowIfNullOrWhiteSpace(input);
         cancellationToken.ThrowIfCancellationRequested();
 
+        var workflowClient = new BufferedWorkflowChatClient(chatClient);
         var workerDefinitions = GetWorkers(scenario);
         var workers = workerDefinitions
-            .Select(worker => CreateAgent(chatClient, worker))
+            .Select(worker => CreateAgent(workflowClient, worker))
             .ToList();
         var workflow = AgentWorkflowBuilder.BuildConcurrent(
             workers,
@@ -48,7 +49,7 @@ public static class ParallelizationWorkflow
             writeOutput?.Invoke(result.Text ?? string.Empty);
         }
 
-        var synthesisAgent = CreateAgent(chatClient, GetSynthesizer(scenario));
+        var synthesisAgent = CreateAgent(workflowClient, GetSynthesizer(scenario));
         var synthesisResponse = await synthesisAgent.RunAsync(
             CreateSynthesisInput(scenario, input, parallelResults),
             cancellationToken: cancellationToken);

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "mode_classification_correctness",
+    "description": "The response implements the exact mode signaled by the input prefix: either product:, fact-check:, or code-review:. Leading whitespace before the prefix is allowed but the prefix token itself must match exactly (case- and punctuation-sensitive). Judge whether the reply follows the intended mode template and does not exhibit cross-mode artifacts (e.g., a 'Fact-check status:' line in product mode or a product blurb inside code-review output).",
+    "weight": 9
+  },
+  {
+    "id": "format_fidelity",
+    "description": "The response strictly follows the per-mode output template: product = a single concise paragraph (1–3 sentences) with no code blocks or status lines; fact-check = a short explanatory paragraph (1–3 sentences) immediately followed by a status line that begins exactly with 'Fact-check status: ' and ends with either 'ACCURATE' or 'INACCURATE' (all caps); code-review = either a single Python function code block implementing the final artifact or an explicit iteration-limit warning that states the three-iteration limit was reached and includes the last code and last critique. Formatting mismatches, extra unrelated blocks, or incorrect status capitalization count as failures. Conciseness and absence of process narration are enforced as formatting constraints here.",
+    "weight": 6
+  },
+  {
+    "id": "no_invented_product_attributes",
+    "description": "Applicable to product mode: every substantive product attribute or claim in the output must be directly derivable from explicit tokens or facts present in the product input. Trivial paraphrases of input tokens are allowed; introducing new feature tokens, capabilities, or benefits that are not present or plainly implied by the input is a measurable failure (detectable by comparing output tokens/phrases to the input fact set).",
+    "weight": 5
+  },
+  {
+    "id": "fact_check_justification_alignment",
+    "description": "Applicable to fact-check mode: the short justification paragraph must present reasoning consistent with stable general-knowledge (no claims of live lookups), and that justification must logically support the status line. Detectable failures include status/justification mismatch (e.g., status ACCURATE but justification shows contradiction), reliance on external browsing or live verification, or use of subjects outside the allowed stable-knowledge scope.",
+    "weight": 5
+  },
+  {
+    "id": "code_static_correctness",
+    "description": "Applicable to code-review mode when the final artifact is code: statically verify the returned Python source for the required properties — a triple-quoted docstring immediately under def, explicit handling of negative inputs via an explicit 'raise ValueError(...)', correct handling of 0 (0! == 1), and an algorithm (loop or recursion) that clearly computes n! for integer n \u003e= 0. If the reply is an iteration-limit warning, verify it clearly states the three-iteration limit was reached and includes the last code and last critique text. No claims of execution results are allowed.",
+    "weight": 5
+  },
+  {
+    "id": "safety_and_statelessness",
+    "description": "The response must not claim browsing, live retrieval, execution, or persistence across turns (e.g., 'I looked this up', 'I ran it', 'I'll remember'). Any such claim or implication that the agent accessed external resources, executed code, or preserved state between turns is a measurable failure.",
+    "weight": 3
+  },
+  {
+    "id": "general_quality",
+    "description": "Other important quality factors not covered by listed criteria.",
+    "weight": 5,
+    "always_applicable": true
+  }
+]

@@ -41,4 +41,15 @@ public sealed class FoundrySmokeTests
         Assert.Contains("--- Key terms (parallel branch) ---", result.StandardOutput);
         Assert.Contains("--- Final synthesized response ---", result.StandardOutput);
     }
+
+    [Fact(Timeout = 240000)]
+    public async Task Chapter04_fact_check_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter04FactCheckAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("--- Generated draft (round 1 of 3) ---", result.StandardOutput);
+        Assert.Contains("--- Independent verification ---", result.StandardOutput);
+        Assert.Contains("--- Final result ---", result.StandardOutput);
+    }
 }
