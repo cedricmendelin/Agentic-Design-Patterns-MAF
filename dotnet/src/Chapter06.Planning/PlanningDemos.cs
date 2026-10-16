@@ -18,7 +18,12 @@ public static class PlanningDemos
             Create an ordered, concise plan for a summary of the requested topic.
             Return 3 to 7 distinct, actionable points in the structured plan format.
             """,
-            name: "ArticlePlanner");
+            name: "ArticlePlanner")
+            .AsBuilder()
+            .UseOpenTelemetry(
+                PlanningWorkflow.TelemetrySourceName,
+                configure: options => options.EnableSensitiveData = true)
+            .Build();
         var writer = new ChatClientAgent(
             chatClient,
             """
@@ -26,7 +31,12 @@ public static class PlanningDemos
             Write a concise, engaging, well-structured summary of about 200 words.
             Follow the supplied validated plan and do not add unrelated sections.
             """,
-            name: "ArticleWriter");
+            name: "ArticleWriter")
+            .AsBuilder()
+            .UseOpenTelemetry(
+                PlanningWorkflow.TelemetrySourceName,
+                configure: options => options.EnableSensitiveData = true)
+            .Build();
         return (planner, writer);
     }
 

@@ -78,6 +78,30 @@ services:
         protocols:
             - protocol: responses
               version: 2.0.0
+    chapter06-planning:
+        project: ./src/Chapter06.Planning.Hosted
+        host: azure.ai.agent
+        language: csharp
+        startupCommand: dotnet run --project Chapter06.Planning.Hosted.csproj
+        displayName: Chapter 06 - Planning
+        description: Validates a structured plan before writing a summary for the caller's topic.
+        uses:
+            - mvp-playground-foundry-proj
+        env:
+            AZURE_AI_MODEL_DEPLOYMENT_NAME: gpt-5-mini
+        codeConfiguration:
+            dependencyResolution: bundled
+            entryPoint: Chapter06.Planning.Hosted.dll
+            runtime: dotnet_10
+        container:
+            resources:
+                cpu: "0.5"
+                memory: 1Gi
+        kind: hosted
+        name: chapter06-planning
+        protocols:
+            - protocol: responses
+              version: 2.0.0
     mvp-playground-foundry-proj:
         host: azure.ai.project
         endpoint: https://mvp-playground-foundry.services.ai.azure.com/api/projects/mvp-playground-foundry-proj

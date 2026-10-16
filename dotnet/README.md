@@ -80,6 +80,7 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 | 02 | Routing | `src/Chapter02.Routing` | [Chapter 02 guide](src/Chapter02.Routing/README.md) |
 | 03 | Parallelization | `src/Chapter03.Parallelization` | [Chapter 03 guide](src/Chapter03.Parallelization/README.md) |
 | 04 | Reflection | `src/Chapter04.Reflection` | [Chapter 04 guide](src/Chapter04.Reflection/README.md) |
+| 06 | Planning | `src/Chapter06.Planning` | [Chapter 06 guide](src/Chapter06.Planning/README.md) |
 
 ## Hosted-agent companions
 
@@ -90,3 +91,5 @@ The console demos keep their existing API-key configuration. Hosted startup read
 The [Parallelization hosted companion](src/Chapter03.Parallelization.Hosted/README.md) exposes the Chapter 03 MAF workflow through the same Responses protocol and bundled .NET 10 deployment. Hosted version 1 was deployed to the existing `mvp-playground-foundry-proj` project and remotely verified on 2026-10-16.
 
 The [Reflection hosted companion](src/Chapter04.Reflection.Hosted/README.md) exposes the Chapter 04 MAF workflow through the Responses protocol and bundled .NET 10 deployment. Local code now uses one shared generator/verifier workflow graph for all three modes, with early acceptance and a three-round ceiling. Hosted version 3, which runs this graph with the stricter product verifier, was deployed to the existing `mvp-playground-foundry-proj` project with `gpt-5-mini` and remotely verified using managed identity on 2026-10-16. Its evaluation setup contains 15 generated cases and a seven-dimension rubric, preserved unchanged for review against the changed contract; no evaluation run has been started.
+
+The [Planning hosted companion](src/Chapter06.Planning.Hosted/README.md) exposes the Chapter 06 plan-and-write workflow through the Responses protocol and bundled .NET 10 deployment. The workflow validates a typed plan before writing. The issue reports a version 1 deployment to `mvp-playground-foundry-proj` and a successful remote smoke test with `gpt-5-mini`; reverify runtime inference access and a representative response after deploying code changes. Evaluation-suite setup was deferred and no evaluation was run.

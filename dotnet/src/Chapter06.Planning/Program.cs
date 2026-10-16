@@ -57,6 +57,7 @@ try
         var researchDeployment =
             Environment.GetEnvironmentVariable("Foundry__DeepResearchModelDeployment")
             ?? Environment.GetEnvironmentVariable("FOUNDRY_DEEP_RESEARCH_MODEL_DEPLOYMENT")
+            ?? (deploymentAlias is not null ? deployment : null)
             ?? "o3-deep-research-2025-06-26";
         Console.WriteLine($"Using Deep Research deployment: {researchDeployment}");
         await FoundryDeepResearchDemo.RunAsync(
