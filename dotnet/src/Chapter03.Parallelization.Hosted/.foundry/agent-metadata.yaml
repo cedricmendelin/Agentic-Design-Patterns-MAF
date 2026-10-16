@@ -1,0 +1,41 @@
+defaultEnvironment: routing-dev
+environments:
+  routing-dev:
+    azd:
+      environmentName: routing-dev
+      service: chapter03-parallelization
+    evaluationSuites:
+      - id: smoke-core
+        generationSource: synthetic
+        generationJobId: evaluatorgen-smoke-core-v1-73662a59
+        tags:
+          tier: smoke
+          purpose: baseline
+          stage: generated
+        dataset: smoke-core
+        datasetVersion: "1.0"
+        datasetContentPath: datasets\smoke-core\smoke-core_dg.jsonl
+        evaluators:
+          - name: smoke-core
+            version: "1"
+            definitionFile: evaluators\smoke-core\rubric_dimensions.json
+    lastEval:
+      evalId: eval_344369f23bf543f3a4bdb031abf7b0d3
+      evalRunId: evalrun_791e4977997a46b1847e18eea5f2ad8f
+      runName: smoke-core
+      agentVersion: "1"
+      startedAt: "2026-10-16T14:06:34Z"
+      status: completed
+      resultFile: .foundry\results\routing-dev\eval_344369f23bf543f3a4bdb031abf7b0d3\evalrun_791e4977997a46b1847e18eea5f2ad8f.json
+      counts:
+        total: 15
+        passed: 9
+        failed: 6
+        errored: 0
+      failureClusters:
+        - category: empty-response
+          items: ["2", "3"]
+          description: No response text or output items were recorded; the exported evaluation reports no sample error, so the cause is unresolved.
+        - category: rubric-mismatch-and-output-quality
+          items: ["4", "8", "9", "15"]
+          description: Scores penalize provenance maps, internal concurrency evidence, and timeout-policy artifacts not exposed by this host. Additional findings include malformed CSV and unsupported numerical claims.

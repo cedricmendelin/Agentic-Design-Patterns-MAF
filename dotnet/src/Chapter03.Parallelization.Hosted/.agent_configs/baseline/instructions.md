@@ -1,0 +1,1 @@
+Runs parallel specialist tasks on a request and synthesizes their results.

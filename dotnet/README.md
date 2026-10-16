@@ -62,7 +62,7 @@ To run the live smoke tests manually:
 
 1. Open **Actions** → **Live Foundry smoke tests**.
 2. Start the workflow with an optional deployment alias if you want to target a named deployment.
-3. The workflow builds the solution, runs deterministic tests, then runs smoke tests for Chapters 01 and 02.
+3. The workflow builds the solution, runs deterministic tests, then runs smoke tests for Chapters 01, 02, and 03.
 
 Any new test project that you add to `dotnet/AgenticDesignPatterns.slnx` is picked up by the non-live `dotnet test` step automatically. Live Foundry validation is intentionally narrower: the workflow checks out the default branch before loading protected secrets, so new demos only run there after you add coverage in `dotnet/tests/Foundry.SmokeTests` and merge that change to the default branch.
 
@@ -78,9 +78,12 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 |---|---|---|---|
 | 01 | Prompt Chaining | `src/Chapter01.PromptChaining` | [Chapter 01 guide](src/Chapter01.PromptChaining/README.md) |
 | 02 | Routing | `src/Chapter02.Routing` | [Chapter 02 guide](src/Chapter02.Routing/README.md) |
+| 03 | Parallelization | `src/Chapter03.Parallelization` | [Chapter 03 guide](src/Chapter03.Parallelization/README.md) |
 
 ## Hosted-agent companions
 
 The [Routing hosted companion](src/Chapter02.Routing.Hosted/README.md) exposes the same Chapter 02 workflow through Foundry Agent Service's Responses protocol. `azure.yaml` configures .NET 10 bundled code deployment; the azd agent extension publishes referenced projects locally before uploading, without Docker or ACR.
 
 The console demos keep their existing API-key configuration. Hosted startup reads the same `Foundry` user-secrets and `Foundry__*` environment overrides, supports `--deployment <alias>`, and uses Entra ID / managed identity when `ApiKey` is blank. Foundry runtime variables remain supported as fallbacks, and azd deployment authentication is separate. Follow the hosted guide for prerequisites, deployment status, local invocation, deployment, and cleanup. No Prompt Chaining hosted companion is included.
+
+The [Parallelization hosted companion](src/Chapter03.Parallelization.Hosted/README.md) exposes the Chapter 03 MAF workflow through the same Responses protocol and bundled .NET 10 deployment. Hosted version 1 was deployed to the existing `mvp-playground-foundry-proj` project and remotely verified on 2026-10-16.

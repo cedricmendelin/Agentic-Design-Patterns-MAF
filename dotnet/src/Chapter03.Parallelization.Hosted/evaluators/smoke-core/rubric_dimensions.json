@@ -1,0 +1,43 @@
+[
+  {
+    "id": "final_answer_factuality",
+    "description": "The final synthesized answer only asserts facts that are supported by one or more specialist outputs; it does not introduce facts absent from all specialist evidence (no hallucinations). This is assessed by checking that each factual assertion in final_answer_text has at least one matching evidence excerpt or specialist output in the run logs.",
+    "weight": 9
+  },
+  {
+    "id": "provenance_mapping",
+    "description": "Every non-trivial factual claim in the final_answer_text is mapped to one or more specialist_id(s) in the provenance_map, and the mapping includes supporting evidence excerpts when available or a documented reason when evidence is absent. This is assessed from the provenance_map artifact and final_answer_text.",
+    "weight": 6
+  },
+  {
+    "id": "synthesis_conflict_resolution",
+    "description": "The synthesizer is invoked with the collected specialist results and applies a documented conflict-resolution strategy (e.g., majority, confidence-weighted, meta-critic). Contradictions among specialists are reconciled, summarized, or explicitly annotated rather than left as unresolved concatenation. Evidence: synthesize_results call parameters, applied_strategy, and final_answer_text showing reconciliation or explicit conflict annotations.",
+    "weight": 5
+  },
+  {
+    "id": "parallelism_and_concurrency",
+    "description": "Specialist invocations show overlapping start_time and end_time intervals or simultaneous active handles indicating parallel execution rather than strictly serialized calls. Assessable via invocation records, max concurrency, and timestamp overlaps in the logs.",
+    "weight": 4
+  },
+  {
+    "id": "error_and_timeout_transparency",
+    "description": "Any specialist with status TIMEOUT, ERROR, or MALFORMED is recorded in the final artifacts (e.g., excluded_specialists or provenance_map) with a clear reason; failures are not silently ignored. Assessable via run_specialist return payloads and the final excluded_specialists/provenance artifacts.",
+    "weight": 5
+  },
+  {
+    "id": "latency_and_timeout_policy_adherence",
+    "description": "The agent honors the declared timeout_policy (e.g., wait_for_all, wait_until_T, incorporate_late_if_better), meets scenario time-to-first-answer and time-to-final-answer thresholds when required, and documents any trade-offs between latency and completeness. Assessable via timestamps, synthesis_time_ms, and declared timeout_policy in aggregator parameters.",
+    "weight": 3
+  },
+  {
+    "id": "robustness_to_malformed_and_late_responses",
+    "description": "When specialists return malformed outputs or late-but-higher-quality results, the synthesizer detects and either repairs/normalizes malformed outputs with justification or incorporates/excludes late responses according to the declared policy and documents the decision. Evidence: raw_output shapes, timestamps, synthesis_time_ms, excluded_specialists, and final_answer_text rationale.",
+    "weight": 4
+  },
+  {
+    "id": "general_quality",
+    "description": "Other important quality factors not covered by listed criteria.",
+    "weight": 5,
+    "always_applicable": true
+  }
+]

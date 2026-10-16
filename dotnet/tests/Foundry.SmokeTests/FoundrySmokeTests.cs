@@ -29,4 +29,16 @@ public sealed class FoundrySmokeTests
         Assert.Contains("--- Clarification fallback ---", result.StandardOutput);
         Assert.Contains("--- Final routed response ---", result.StandardOutput);
     }
+
+    [Fact(Timeout = 240000)]
+    public async Task Chapter03_topic_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter03TopicAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("--- Topic summary (parallel branch) ---", result.StandardOutput);
+        Assert.Contains("--- Related questions (parallel branch) ---", result.StandardOutput);
+        Assert.Contains("--- Key terms (parallel branch) ---", result.StandardOutput);
+        Assert.Contains("--- Final synthesized response ---", result.StandardOutput);
+    }
 }

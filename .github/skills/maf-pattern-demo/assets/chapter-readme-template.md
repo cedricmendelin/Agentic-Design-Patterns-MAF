@@ -54,7 +54,7 @@ flowchart LR
 ## Hosted Deployment Companion
 - Suitability: <supported protocol, dependencies, state/interaction model, or concrete reason for skipping>.
 - Project and deployment guide: <link to separate hosted project; preserve the console demo>.
-- Authentication: <local developer credentials and Azure managed identity; required model/deployment permissions>.
+- Authentication: <local developer credentials and Azure managed identity; deployment permissions are separate from runtime inference access. Before remote invocation, verify/assign Cognitive Services OpenAI User to the deployed instance_identity.principal_id at the model-hosting Foundry account scope with RBAC-write approval; allow propagation and recheck after redeployment>.
 - Packaging: <verified remote-build context including references, or bundled published dependencies; exclude secrets>.
 - Validation/status: <local protocol invocation and, only when authorized, verified active version/remote response; report blockers honestly>.
 - Limitations/cleanup: <conversation behavior, streaming, required setup, costs, and agent-scoped cleanup>.

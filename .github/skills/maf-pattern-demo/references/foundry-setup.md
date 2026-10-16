@@ -134,6 +134,30 @@ Verify the packaging boundary: a host source folder alone does not include sibli
 
 Keep azd state and published artifacts ignored, configure the project/model explicitly, use managed identity in Azure, and document required inference/deployment permissions. Adding deployment artifacts does not authorize provisioning or deployment. After an authorized deployment, verify the active version and a remote protocol invocation; console smoke tests alone are insufficient.
 
+### Runtime inference RBAC (required for hosted deployment)
+
+A hosted version can report `active` but fail its first model call with `401 PermissionDenied: Principal does not have access to API/Operation.` Deployment permissions and runtime model-inference permissions are separate. Make the following part of every authorized hosted deployment, before the remote smoke test:
+
+1. Include assignment of **Cognitive Services OpenAI User** in the deployment approval. If approval did not cover RBAC writes, ask before creating the assignment. This skill update is not itself permission to change Azure resources.
+2. From the selected azd project/environment, run `azd ai agent show <service> --output json` and read `instance_identity.principal_id`. Resolve the actual model-hosting Foundry account ARM ID through read-only Azure discovery; do not guess it from the agent name or assume the project hosts every model. Use the selected subscription and tenant explicitly. Do not use the deploying user, project managed identity, or `blueprint.principal_id` instead of the runtime identity.
+3. Check role assignments at that account scope, including inherited assignments. Use `--fill-principal-name false` to avoid unnecessary Microsoft Graph lookups. Reuse existing Cognitive Services OpenAI User or verified equivalent inference access instead of creating duplicate or redundant grants.
+4. When missing and approved, assign the role to the runtime principal at the model-hosting **account** scope. Use its object ID and `ServicePrincipal` type so no directory lookup is required. Do not grant Contributor/Owner or use resource-group/subscription scope as a workaround.
+
+   ```powershell
+   # Set these from successful discovery for the selected deployment, not sample IDs.
+   $subscriptionId = '<model-hosting-subscription-id>'
+   $accountId = '<discovered-model-hosting-account-arm-id>'
+   $runtimePrincipalId = '<instance_identity.principal_id>'
+
+   az role assignment list --subscription $subscriptionId --scope $accountId --include-inherited --fill-principal-name false --query "[?principalId=='$runtimePrincipalId'].{role:roleDefinitionName,roleDefinitionId:roleDefinitionId,scope:scope}" --output json
+
+   # Run only when the check above shows missing inference access and RBAC writes are approved.
+   az role assignment create --subscription $subscriptionId --assignee-object-id $runtimePrincipalId --assignee-principal-type ServicePrincipal --role '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd' --scope $accountId
+   ```
+
+5. Verify the assignment and allow for RBAC propagation before invoking. If the first call still returns `401 PermissionDenied`, confirm the principal and model endpoint, wait and retry with a fresh hosted session using the installed CLI's supported flags. Keep retries bounded; if access remains denied, report the blocker rather than repeatedly deploying new versions or switching to API keys. Missing role-assignment privileges require an administrator, not broader grants.
+6. Re-resolve the runtime principal after each redeployment and repeat the check, since a new version may use a different identity. Record the role/scope and remote invocation outcome in the hosted README; do not claim readiness based only on deployment or role-assignment success.
+
 ## Agent creation pattern
 ```csharp
 var settings = FoundryChatClientFactory.LoadSettings();

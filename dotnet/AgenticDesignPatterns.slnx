@@ -3,10 +3,13 @@
     <Project Path="src/Chapter01.PromptChaining/Chapter01.PromptChaining.csproj" />
     <Project Path="src/Chapter02.Routing.Hosted/Chapter02.Routing.Hosted.csproj" />
     <Project Path="src/Chapter02.Routing/Chapter02.Routing.csproj" />
+    <Project Path="src/Chapter03.Parallelization.Hosted/Chapter03.Parallelization.Hosted.csproj" />
+    <Project Path="src/Chapter03.Parallelization/Chapter03.Parallelization.csproj" />
     <Project Path="src/Shared/Shared.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Foundry.SmokeTests/Foundry.SmokeTests.csproj" />
+    <Project Path="tests/Parallelization.Tests/Parallelization.Tests.csproj" />
     <Project Path="tests/Routing.Tests/Routing.Tests.csproj" />
     <Project Path="tests/Shared.Tests/Shared.Tests.csproj" />
   </Folder>

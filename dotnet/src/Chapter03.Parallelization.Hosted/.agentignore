@@ -1,0 +1,24 @@
+# Uses .gitignore syntax; only this root .agentignore is read by code deployment.
+
+agent.yaml
+agent.manifest.yaml
+azure.yaml
+connection.yaml
+connection.yml
+toolbox.yaml
+toolbox.yml
+.agentignore
+appPackage.zip
+.appPackage.zip.azd-generated
+TEAMS_APP_SETUP.md
+
+.env
+.env.*
+.azure/
+.git/
+bin/
+obj/
+*.user
+*.suo
+.vs/
+publish/
