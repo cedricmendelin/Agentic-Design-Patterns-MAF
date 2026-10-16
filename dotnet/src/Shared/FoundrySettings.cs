@@ -30,39 +30,38 @@ public sealed record FoundrySettings
         return configuredDeployment.Value;
     }
 
-    public Uri OpenAIEndpoint
+    public Uri OpenAIEndpoint => ResolveOpenAIEndpoint(ProjectEndpoint);
+
+    public static Uri ResolveOpenAIEndpoint(string endpoint)
     {
-        get
+        if (!Uri.TryCreate(endpoint, UriKind.Absolute, out var projectEndpoint))
         {
-            if (!Uri.TryCreate(ProjectEndpoint, UriKind.Absolute, out var projectEndpoint))
-            {
-                throw new InvalidOperationException(
-                    "Foundry:ProjectEndpoint must be a valid absolute URL.");
-            }
-
-            const string projectHostSuffix = ".services.ai.azure.com";
-            const string inferenceHostSuffix = ".openai.azure.com";
-            var inferenceHost = projectEndpoint.Host.EndsWith(
-                projectHostSuffix,
-                StringComparison.OrdinalIgnoreCase)
-                ? projectEndpoint.Host[..^projectHostSuffix.Length] + inferenceHostSuffix
-                : projectEndpoint.Host;
-
-            if (!inferenceHost.EndsWith(inferenceHostSuffix, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException(
-                    "Foundry:ProjectEndpoint must use a .services.ai.azure.com or .openai.azure.com host.");
-            }
-
-            return new UriBuilder(projectEndpoint)
-            {
-                Scheme = Uri.UriSchemeHttps,
-                Host = inferenceHost,
-                Port = -1,
-                Path = "/openai/v1/",
-                Query = string.Empty,
-                Fragment = string.Empty
-            }.Uri;
+            throw new InvalidOperationException(
+                "Foundry:ProjectEndpoint must be a valid absolute URL.");
         }
+
+        const string projectHostSuffix = ".services.ai.azure.com";
+        const string inferenceHostSuffix = ".openai.azure.com";
+        var inferenceHost = projectEndpoint.Host.EndsWith(
+            projectHostSuffix,
+            StringComparison.OrdinalIgnoreCase)
+            ? projectEndpoint.Host[..^projectHostSuffix.Length] + inferenceHostSuffix
+            : projectEndpoint.Host;
+
+        if (!inferenceHost.EndsWith(inferenceHostSuffix, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "Foundry:ProjectEndpoint must use a .services.ai.azure.com or .openai.azure.com host.");
+        }
+
+        return new UriBuilder(projectEndpoint)
+        {
+            Scheme = Uri.UriSchemeHttps,
+            Host = inferenceHost,
+            Port = -1,
+            Path = "/openai/v1/",
+            Query = string.Empty,
+            Fragment = string.Empty
+        }.Uri;
     }
 }

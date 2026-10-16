@@ -78,3 +78,9 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 |---|---|---|---|
 | 01 | Prompt Chaining | `src/Chapter01.PromptChaining` | [Chapter 01 guide](src/Chapter01.PromptChaining/README.md) |
 | 02 | Routing | `src/Chapter02.Routing` | [Chapter 02 guide](src/Chapter02.Routing/README.md) |
+
+## Hosted-agent companions
+
+The [Routing hosted companion](src/Chapter02.Routing.Hosted/README.md) exposes the same Chapter 02 workflow through Foundry Agent Service's Responses protocol. `azure.yaml` configures .NET 10 bundled code deployment; the azd agent extension publishes referenced projects locally before uploading, without Docker or ACR.
+
+The console demos keep their existing API-key configuration. Hosted startup reads the same `Foundry` user-secrets and `Foundry__*` environment overrides, supports `--deployment <alias>`, and uses Entra ID / managed identity when `ApiKey` is blank. Foundry runtime variables remain supported as fallbacks, and azd deployment authentication is separate. Follow the hosted guide for prerequisites, deployment status, local invocation, deployment, and cleanup. No Prompt Chaining hosted companion is included.

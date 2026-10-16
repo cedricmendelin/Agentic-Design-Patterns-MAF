@@ -1,17 +1,18 @@
 ---
 name: maf-pattern-demo
-description: 'Port an Agentic Design Pattern chapter (Antonio Gulli book) from the Python notebooks in chapter_notebooks/ to a runnable C# .NET demo using Microsoft Agent Framework (MAF) and Microsoft Foundry. Use when: implement chapter, port notebook to C#, create MAF demo, prompt chaining / routing / parallelization / reflection / tool use / planning / multi-agent / memory / MCP / HITL / RAG / A2A / guardrails / evaluation pattern in .NET, add chapter README.'
+description: 'Port an Agentic Design Pattern chapter (Antonio Gulli book) from the Python notebooks in chapter_notebooks/ to a runnable C# .NET demo using Microsoft Agent Framework (MAF) and Microsoft Foundry, with a hosted-agent deployment companion when suitable. Use when: implement chapter, port notebook to C#, create MAF demo, add hosted deployment companion, prompt chaining / routing / parallelization / reflection / tool use / planning / multi-agent / memory / MCP / HITL / RAG / A2A / guardrails / evaluation pattern in .NET, add chapter README.'
 argument-hint: 'Chapter number or pattern name, e.g. "01" or "Routing"'
 ---
 
 # MAF Agentic Design Pattern Demo
 
-Turns one book chapter into a self-contained C# console project inside the shared `dotnet/` solution, backed by a Microsoft Foundry model deployment, plus a chapter README.
+Turns one book chapter into a self-contained C# console project inside the shared `dotnet/` solution, backed by a Microsoft Foundry model deployment, plus a chapter README and, when suitable, a separate hosted-agent deployment companion.
 
 ## When to Use
 - "Implement Chapter NN with MAF / .NET"
 - "Port the <pattern> notebook to C#"
 - "Add a Foundry-backed demo for <pattern>"
+- "Add a hosted-agent deployment companion for an implemented pattern"
 
 ## Inputs
 - Chapter number (01–21) or pattern name. Resolve via [pattern mapping](./references/pattern-mapping.md).
@@ -54,7 +55,7 @@ Chapter<NN>.<PatternName>/
 | Variant | Required | Purpose |
 |---|---|---|
 | **MAF + model deployment** | Always | Port of the notebook scenario (same inputs, prompts, expected output) using MAF and the Foundry model deployment via API key. One demo per distinct notebook idea; merge duplicates. |
-| **Foundry-native** | Only if Foundry already offers the pattern (e.g. Agent Service tools, hosted agents, Foundry workflows, evaluations, File Search/RAG) | Same scenario implemented with the Foundry capability — typically a **hosted agent** (or Agent Service agent) invoked from MAF — to show both worlds side by side. Skip and state why in the README if Foundry adds nothing. |
+| **Foundry-native** | Only if Foundry offers a distinct native capability for the pattern (e.g. tools, workflows, evaluations, File Search/RAG) | Same scenario implemented with that capability. Skip and explain why if Foundry adds no separate primitive. Hosting the existing MAF workflow is a deployment companion, not a native reimplementation. |
 
 Use `ai-research` to shape prompts, naming and README content — not to add extra hardening variants.
 
@@ -67,7 +68,7 @@ Rules:
 - Print each step's intermediate output with a header so the pattern is visible when run.
 - The MAF variant must run either with local `secrets.json` (endpoint, key, deployment) or with `Foundry__*` environment variables provided by GitHub Actions. The Foundry-native variant may require extra setup (e.g. Entra ID / `az login`, deployed hosted agent); document it in the README and fail with a clear message if not configured.
 - For hosted agents, load the `microsoft-foundry` skill for scaffolding/deploy steps rather than improvising.
-- No framework-irrelevant extras: no DI hosts, logging frameworks, or tests unless the pattern needs them.
+- No framework-irrelevant extras in console demos: no DI hosts, logging frameworks, or tests unless the pattern needs them. A separate hosted companion may add the web/protocol host and focused regression coverage required for hosting.
 
 ### 5. Write the chapter README
 Copy [README template](./assets/chapter-readme-template.md) and fill **every** section: pattern summary + diagram (mermaid), notebook → C# mapping, setup/run, **when to use / when not**, 3–5 real-world scenarios, Foundry extensions, limitations.
@@ -79,9 +80,26 @@ Copy [README template](./assets/chapter-readme-template.md) and fill **every** s
 4. When a cloud agent cannot run the live workflow directly because the workflow file is not yet active on the default branch, say so explicitly and tell the user to merge the workflow first or run it from the GitHub Actions UI after merge.
 5. Update the root chapter table in `dotnet/README.md`.
 
+### 7. Add a hosted-agent deployment companion when suitable
+
+Perform this assessment at the end of every chapter implementation, independently of the Foundry-native variant decision.
+
+1. **Assess suitability.** Can the existing MAF behavior run behind a supported hosted request protocol with deployable dependencies and an explicit state/interaction model? Ordinary request/response workflows are suitable. Interactive console input, human approvals, local-only dependencies, long-running work, and durable memory require a supported protocol/persistence design first; do not silently remove these behaviors. If unsuitable, document the concrete limitation and what adaptation is needed.
+2. **Load `microsoft-foundry`.** Follow its current environment, official sample selection, re-hosting, authentication, packaging, deployment, and invocation guidance. Verify current API/package signatures instead of copying stale examples. Preserve existing framework/model choices.
+3. **Create `dotnet/src/Chapter<NN>.<PatternName>.Hosted/`.** Add a separate C# hosted project to the solution. Extract reusable workflow/agent logic from the chapter instead of duplicating prompts or capturing console output. Process the caller's input rather than replaying sample batches. Keep console commands, intermediate output, and sample behavior intact.
+4. **Wire the host.** Use the official Foundry hosting/protocol integration, propagate cancellation and errors, and return the actual final result. Define request isolation and conversation/persistence behavior explicitly. Support streaming only where the host/protocol requires it; buffering a completed workflow result is acceptable when documented. Hosted Azure execution uses Entra ID / managed identity, not committed API keys; keep the console user-secrets path unchanged.
+5. **Add deployment artifacts.** Use azd .NET code deployment by default. Reuse an existing multi-service manifest without overwriting unrelated services. Ensure the upload includes project references and central build/package files: either verify a complete remote-build context or publish all dependencies and use bundled deployment. Exclude `.azure`, environment files, user-secrets, and unnecessary build artifacts. Document required permissions, model/project settings, local invocation, deploy/invoke commands, costs, and safe agent-scoped cleanup.
+6. **Validate the companion separately.** Build warning-free, verify console compatibility and routing/output behavior with focused deterministic checks where needed, verify publish/package contents, then invoke the local protocol endpoint. Existing model-only smoke tests do not prove hosted readiness.
+7. **Deploy only with authorization.** Creating artifacts does not authorize Azure writes. Reuse the user's chosen project/model; otherwise obtain project selection and deployment consent before provisioning/deploying. Do not infer consent from Canvas's saved selection. When deployment is requested, verify an active version and a representative remote response. If authentication, RBAC, network, region, or runtime support blocks deployment, report it explicitly and do not claim completion.
+8. **Document the outcome.** Link the companion from the chapter and `dotnet/README.md`, distinguish implemented artifacts from verified deployment, and record why any companion was skipped. Follow the Foundry deployment skill's post-deployment evaluation-suite decision without automatically running evaluations.
+
 ## Completion Checklist
 - [ ] All chapter notebooks reviewed; each distinct idea has a MAF demo
 - [ ] Foundry-native variant built, or README explains why it is not applicable
 - [ ] Builds cleanly; validated locally with user-secrets or via the live GitHub workflow
 - [ ] README has when-to-use / when-not / real-world scenarios
-- [ ] No secrets in repo; credentials come only from local user-secrets or GitHub environment secrets
+- [ ] No secrets in repo; console credentials come from user-secrets or GitHub environment secrets, hosted credentials from developer identity or managed identity
+- [ ] Hosted companion added and locally verified when suitable, or concrete reason for skipping documented
+- [ ] hosted version activated sensitive telemetry for debugging and tracing
+- [ ] Hosted runtime uses managed identity; packaging contains referenced dependencies and excludes secrets
+- [ ] If live deployment was requested, active version and remote response verified, or blocker explicitly reported

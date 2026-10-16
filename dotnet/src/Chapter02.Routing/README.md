@@ -22,6 +22,7 @@ flowchart LR
 | Variant | Source notebook | MAF / Foundry building blocks | What to observe |
 |---|---|---|---|
 | Travel concierge (`travel`) | `Chapter_02_Routing_(Google_ADK).ipynb`, `Chapter_02_Routing_(LangGraph).ipynb` | `WorkflowBuilder` conditional edges, `Executor<,>`, `ChatClientAgent`, `InProcessExecution.RunAsync` | The coordinator emits a discrete route, then the workflow forwards the original request to the booking, information, or fallback path. |
+| Hosted companion | Same routing scenario | Shared `RoutingWorkflow`, `RoutingAgent`, Foundry Responses hosting | A caller's request is routed by the same MAF code deployed as a hosted agent. See [hosted setup and deployment](../Chapter02.Routing.Hosted/README.md). |
 | Foundry-native | `Chapter_02_Routing_(Openrouter).ipynb` | Not applicable | The OpenRouter notebook is only a provider request example, not a separate routing primitive. Foundry hosts the model deployment, while MAF provides the routing workflow. |
 
 ## Representative Output
@@ -119,10 +120,12 @@ Mount Everest is the highest mountain in the world above sea level, at 8,848.86 
 - Use Foundry tracing to record route decisions, latency, and specialist outputs for later review.
 - Configure named deployments under `Foundry:ModelDeployments` to experiment with cost-aware or quality-aware model routing behind the same workflow.
 - Add Foundry evaluations to measure routing accuracy against a labeled request set before changing prompts or model deployments.
+- Deploy the [hosted companion](../Chapter02.Routing.Hosted/README.md) to expose this workflow through Agent Service. This hosts MAF's routing code; it does not change the Foundry-native applicability assessment above.
 
 ## Risks & Limitations
 
 - The first routing step adds latency and can misclassify borderline requests.
+- The shared workflow enables sensitive OpenTelemetry content capture for its inner agents. Prompts and responses may be exported when a listener is configured; use non-sensitive demo inputs. The console does not configure an exporter itself. See the [hosted telemetry setup](../Chapter02.Routing.Hosted/README.md#telemetry-and-sensitive-data) for collection and privacy details.
 - The notebook scenario is intentionally simple; real systems usually need stronger validation, better fallback handling, and route observability.
 - This teaching demo routes with one coordinator prompt and does not include an independent route verifier.
 - The OpenRouter notebook for this chapter is only an API usage snippet, so it does not become its own MAF demo variant.

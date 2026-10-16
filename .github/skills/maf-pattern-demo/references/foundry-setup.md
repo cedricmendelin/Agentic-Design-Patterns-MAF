@@ -70,6 +70,8 @@ Env var override: `Foundry__ProjectEndpoint`, `Foundry__ApiKey`, `Foundry__Model
 
 ## Cloud-agent / GitHub Actions setup
 
+These API-key settings apply to console demos. Separate hosted companions use local developer credentials and Azure managed identity; do not upload local user-secrets or require an API key inside the hosted runtime.
+
 For cloud-agent validation, do not rely on local user-secrets. Instead:
 
 1. Create a protected GitHub Environment named `foundry-integration`.
@@ -123,6 +125,14 @@ public static class FoundryChatClientFactory
 }
 ```
 `AddUserSecrets(assembly)` reads the `UserSecretsId` attribute — since it is set in `Directory.Build.props`, every project resolves the same `secrets.json`. `AddEnvironmentVariables()` lets GitHub Actions override the same settings during cloud-agent runs.
+
+## Hosted deployment companions
+
+At the end of a chapter implementation, follow SKILL.md's hosted-companion suitability step and load `microsoft-foundry` for current scaffolding/deployment guidance. Use a separate `Chapter<NN>.<PatternName>.Hosted` project referencing shared chapter logic. Hosting a MAF workflow is distinct from a Foundry-native pattern implementation.
+
+Verify the packaging boundary: a host source folder alone does not include sibling project references or `Directory.Build.props` / `Directory.Packages.props`. Use a complete remote-build context or bundled dependencies. For .NET bundled deployment, the current azd agent extension runs `dotnet publish` locally and ZIPs its output; keep the service's `project` pointing to the source project, not an already-published DLL folder. Chapter 02 provides a bundled reference through `dotnet/azure.yaml`. Verify this behavior against the installed extension rather than duplicating its packaging logic.
+
+Keep azd state and published artifacts ignored, configure the project/model explicitly, use managed identity in Azure, and document required inference/deployment permissions. Adding deployment artifacts does not authorize provisioning or deployment. After an authorized deployment, verify the active version and a remote protocol invocation; console smoke tests alone are insufficient.
 
 ## Agent creation pattern
 ```csharp

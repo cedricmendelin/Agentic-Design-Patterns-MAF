@@ -14,7 +14,8 @@ flowchart LR
 | Variant | Source notebook | MAF / Foundry building blocks | What to observe |
 |---|---|---|---|
 | <name> (MAF) | `Chapter_<NN>_...ipynb` | `...` | ... |
-| <name> (Foundry-native, optional) | same | hosted agent / Agent Service `...` | ... — or "not applicable because ..." |
+| <name> (Foundry-native, optional) | same | Distinct Foundry tool / workflow / evaluation capability | ... — or "not applicable because ..."; do not count merely hosting the existing MAF code. |
+| Hosted companion (when suitable) | same | Existing MAF workflow + Foundry protocol host | Link `../Chapter<NN>.<PatternName>.Hosted/README.md`, or state the concrete hosting limitation. Hosting does not imply a separate Foundry-native pattern. |
 
 ## Setup
 1. Prerequisites: .NET 10 SDK, a Foundry project with a model deployment and its API key.
@@ -49,6 +50,14 @@ flowchart LR
 
 ## Extending with Microsoft Foundry
 - <Tracing / evaluations / Agent Service / Foundry Local / Content Safety — what and why>
+
+## Hosted Deployment Companion
+- Suitability: <supported protocol, dependencies, state/interaction model, or concrete reason for skipping>.
+- Project and deployment guide: <link to separate hosted project; preserve the console demo>.
+- Authentication: <local developer credentials and Azure managed identity; required model/deployment permissions>.
+- Packaging: <verified remote-build context including references, or bundled published dependencies; exclude secrets>.
+- Validation/status: <local protocol invocation and, only when authorized, verified active version/remote response; report blockers honestly>.
+- Limitations/cleanup: <conversation behavior, streaming, required setup, costs, and agent-scoped cleanup>.
 
 ## Risks & Limitations
 - <From ai-research: e.g. latency, error propagation, cost>
