@@ -31,6 +31,11 @@ internal static class DotnetDemoRunner
             Path.Combine(RepositoryRoot, "dotnet", "src", "Chapter05.ToolUse", "Chapter05.ToolUse.csproj"),
             ["search"]);
 
+    public static Task<DemoRunResult> RunChapter06PlanWriteAsync() =>
+        RunAsync(
+            Path.Combine(RepositoryRoot, "dotnet", "src", "Chapter06.Planning", "Chapter06.Planning.csproj"),
+            ["plan-write"]);
+
     private static async Task<DemoRunResult> RunAsync(string projectPath, string[] demoArguments)
     {
         var startInfo = new ProcessStartInfo("dotnet")

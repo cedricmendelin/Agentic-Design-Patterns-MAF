@@ -64,4 +64,16 @@ public sealed class FoundrySmokeTests
             result.CombinedOutput);
         Assert.Contains("--- Final agent response ---", result.StandardOutput);
     }
+
+    [Fact(Timeout = 240000)]
+    public async Task Chapter06_plan_and_write_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter06PlanWriteAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("--- Plan ---", result.StandardOutput);
+        Assert.Contains("--- Summary ---", result.StandardOutput);
+        Assert.Contains("### Plan", result.StandardOutput);
+        Assert.Contains("### Summary", result.StandardOutput);
+    }
 }
