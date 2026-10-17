@@ -61,34 +61,81 @@ public sealed class ToolUseTests
     }
 
     [Theory]
-    [InlineData("search: capital of France", ToolUseScenario.Search, "capital of France")]
-    [InlineData("CALCULATE: 10!", ToolUseScenario.Calculator, "10!")]
-    [InlineData("stock: MSFT", ToolUseScenario.StockPrice, "MSFT")]
-    public void Host_prefixes_select_a_narrow_tool_set(
-        string request, ToolUseScenario expectedScenario, string expectedInput)
+    [InlineData(
+        "search: capital of France",
+        "search_information",
+        "query",
+        "capital of France",
+        "The capital of France is Paris.",
+        "search_information")]
+    [InlineData(
+        "CALCULATE: (5 + 7) * 3",
+        "calculate_expression",
+        "expression",
+        "(5 + 7) * 3",
+        "36",
+        "calculate_expression")]
+    [InlineData(
+        "stock: MSFT",
+        "get_stock_price",
+        "ticker",
+        "MSFT",
+        "425.50",
+        "get_stock_price")]
+    [InlineData(
+        "10!",
+        "calculate_expression",
+        "expression",
+        "10!",
+        "3628800",
+        "calculate_expression,search_information,get_stock_price")]
+    public async Task Host_executes_the_requested_function_with_the_expected_tools(
+        string request,
+        string expectedTool,
+        string argumentName,
+        string argumentValue,
+        string expectedToolResult,
+        string expectedToolSet)
     {
-        var (scenario, input) = ToolUseAgent.ParseRequest(request);
+        using var client = new ScriptedChatClient(expectedTool, argumentName, argumentValue);
 
-        Assert.Equal(expectedScenario, scenario);
-        Assert.Equal(expectedInput, input);
+        var response = await ToolUseAgent.RunAsync(client, request);
+
+        Assert.Contains($"Tool result: {expectedToolResult}", response);
+        var expectedTools = expectedToolSet.Split(',').Order(StringComparer.Ordinal);
+        Assert.All(client.ToolSets, toolSet => Assert.Equal(expectedTools, toolSet));
+        var functionResult = Assert.Single(client.FunctionResults);
+        Assert.Equal(
+            expectedToolResult,
+            Convert.ToString(functionResult.Result, System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Equal(2, client.Requests.Count);
+    }
+
+    [Fact]
+    public void Host_prefixes_select_the_expected_scenario_and_input()
+    {
+        var (scenario, input) = ToolUseAgent.ParseRequest("CALCULATE: 10!");
+
+        Assert.Equal(ToolUseScenario.Calculator, scenario);
+        Assert.Equal("10!", input);
     }
 
     [Fact]
     public async Task Hosted_agent_forwards_caller_request_and_returns_actual_response()
     {
-        using var client = new ScriptedChatClient();
+        using var client = new ScriptedChatClient(argumentValue: "caller supplied value");
         var agent = new ToolUseHostedAgent(client);
 
-        var response = await agent.RunAsync("calculate: caller supplied value");
+        var response = await agent.RunAsync("search: caller supplied value");
 
-        Assert.Contains("caller supplied value", response.Text);
-        Assert.Contains("caller supplied value", Assert.Single(client.Requests));
+        Assert.Contains("Simulated search result for 'caller supplied value'", response.Text);
+        Assert.Contains("caller supplied value", client.Requests);
     }
 
     [Fact]
     public async Task Responses_protocol_returns_the_completed_caller_request()
     {
-        using var model = new ScriptedChatClient();
+        using var model = new ScriptedChatClient(argumentValue: "A caller-specific question");
         var builder = AgentHost.CreateBuilder([]);
         builder.WebApplicationBuilder.WebHost.UseTestServer();
         builder.Services.AddFoundryResponses(new ToolUseHostedAgent(model));
@@ -115,8 +162,8 @@ public sealed class ToolUseTests
                     .SelectMany(item => item.GetProperty("content").EnumerateArray())
                     .Where(item => item.GetProperty("type").GetString() == "output_text")
                     .Select(item => item.GetProperty("text").GetString()));
-            Assert.Contains("A caller-specific question", responseText);
-            Assert.Contains("A caller-specific question", Assert.Single(model.Requests));
+            Assert.Contains("Simulated search result for 'A caller-specific question'", responseText);
+            Assert.Contains("A caller-specific question", model.Requests);
         }
         finally
         {
@@ -141,8 +188,25 @@ public sealed class ToolUseTests
     private sealed class ScriptedChatClient : IChatClient
     {
         private readonly ConcurrentQueue<string> _requests = new();
+        private readonly ConcurrentQueue<string[]> _toolSets = new();
+        private readonly ConcurrentQueue<FunctionResultContent> _functionResults = new();
+        private readonly string _expectedTool;
+        private readonly string _argumentName;
+        private readonly string _argumentValue;
+
+        public ScriptedChatClient(
+            string expectedTool = "search_information",
+            string argumentName = "query",
+            string argumentValue = "capital of France")
+        {
+            _expectedTool = expectedTool;
+            _argumentName = argumentName;
+            _argumentValue = argumentValue;
+        }
 
         public IReadOnlyList<string> Requests => _requests.ToArray();
+        public IReadOnlyList<string[]> ToolSets => _toolSets.ToArray();
+        public IReadOnlyList<FunctionResultContent> FunctionResults => _functionResults.ToArray();
 
         public Task<ChatResponse> GetResponseAsync(
             IEnumerable<ChatMessage> messages,
@@ -150,9 +214,33 @@ public sealed class ToolUseTests
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var input = messages.LastOrDefault(message => message.Role == ChatRole.User)?.Text ?? string.Empty;
+            var messageList = messages.ToArray();
+            var input = messageList.LastOrDefault(message => message.Role == ChatRole.User)?.Text ?? string.Empty;
             _requests.Enqueue(input);
-            return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, $"Handled: {input}")));
+            var tools = options?.Tools?.Select(tool => tool.Name).Order(StringComparer.Ordinal).ToArray() ?? [];
+            _toolSets.Enqueue(tools);
+
+            if (_requests.Count == 1)
+            {
+                Assert.Contains(_expectedTool, tools);
+                return Task.FromResult(new ChatResponse(
+                    new ChatMessage(
+                        ChatRole.Assistant,
+                        [
+                            new FunctionCallContent(
+                                "call-1",
+                                _expectedTool,
+                                new Dictionary<string, object?> { [_argumentName] = _argumentValue })
+                        ])));
+            }
+
+            var functionResult = messageList
+                .SelectMany(message => message.Contents)
+                .OfType<FunctionResultContent>()
+                .Single();
+            _functionResults.Enqueue(functionResult);
+            return Task.FromResult(new ChatResponse(
+                new ChatMessage(ChatRole.Assistant, $"Tool result: {functionResult.Result}")));
         }
 
         public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(

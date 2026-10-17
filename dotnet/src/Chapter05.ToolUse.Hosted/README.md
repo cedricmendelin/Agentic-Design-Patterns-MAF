@@ -22,6 +22,7 @@ dotnet run --project .\dotnet\src\Chapter05.ToolUse.Hosted
 The host listens on port 8088 by default. In another terminal, invoke each supported mode with a caller-supplied request:
 
 ```powershell
+Set-Location .\dotnet
 $env:AZURE_DEV_USER_AGENT = 'microsoft_foundry_skill'
 azd ai agent invoke chapter05-tool-use --local --protocol responses 'search: capital of France'
 azd ai agent invoke chapter05-tool-use --local --protocol responses 'calculate: (5 + 7) * 3'
@@ -37,13 +38,20 @@ Each request is independent. Stop the server after local invocation.
 Deployment is an Azure write and is not authorized by adding these files. After selecting the target project/model, confirming that required runtime inference RBAC is included in deployment approval, configuring the azd environment, and successfully invoking the local protocol endpoint, deploy only this service:
 
 ```powershell
+Set-Location .\dotnet
 $env:AZURE_DEV_USER_AGENT = 'microsoft_foundry_skill'
 azd deploy chapter05-tool-use --no-prompt
 azd ai agent show chapter05-tool-use --output json
-azd ai agent invoke chapter05-tool-use --protocol responses 'calculate: 10 factorial'
 ```
 
-After deployment, resolve the runtime principal and actual model-hosting account scope, check or assign **Cognitive Services OpenAI User** as described above, allow for RBAC propagation, and verify a representative remote response. An active version alone does not prove model inference works. Deployment creates an immutable hosted version and model calls incur usage charges. No Azure resources have been deployed by adding these code artifacts.
+After deployment, resolve the runtime principal and actual model-hosting account scope, check or assign **Cognitive Services OpenAI User** as described above, and allow for RBAC propagation before invoking the agent. An active version alone does not prove model inference works. Deployment creates an immutable hosted version and model calls incur usage charges.
+
+Once runtime inference access is verified, run a representative remote invocation from the `dotnet` directory:
+
+```powershell
+$env:AZURE_DEV_USER_AGENT = 'microsoft_foundry_skill'
+azd ai agent invoke chapter05-tool-use --protocol responses 'calculate: 10 factorial'
+```
 
 For safe cleanup, remove only the `chapter05-tool-use` agent/version using the Foundry agent-scoped management workflow. Do not delete the shared Foundry project, model deployment, or unrelated agents.
 
