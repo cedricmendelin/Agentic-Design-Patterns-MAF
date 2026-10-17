@@ -94,15 +94,12 @@ flowchart LR
 - Project and deployment guide: [Chapter 03 hosted companion](../Chapter03.Parallelization.Hosted/README.md).
 - Authentication: console model calls use shared API-key user-secrets or `Foundry__*`; hosted Azure execution uses `DefaultAzureCredential` / managed identity when the API key is blank. The deployment identity needs Foundry agent deployment permissions, and the runtime identity needs model inference permission.
 - Packaging: `azure.yaml` uses .NET 10 bundled deployment, which publishes the host and referenced Chapter 03 and Shared projects locally. The host `.agentignore` excludes `.azure`, environment files, secrets, and build output.
-- Validation/status: the Responses protocol is covered with deterministic TestServer tests and a real local invocation. Hosted version 1 was deployed to `mvp-playground-foundry-proj` and remotely verified with `gpt-5-mini` on 2026-10-16; see the hosted guide for inference permissions and evaluation status.
-- Limitations/cleanup: each request runs three parallel model calls plus one synthesis call and may incur corresponding model charges. It returns one completed response rather than streaming branch updates and does not preserve conversation history. Remove only this chapter's agent/version if deployed; do not remove the shared Foundry project or other agents.
+- Request contract: each request runs three parallel model calls plus one synthesis call, returns a completed response, and does not preserve conversation history.
 
 ## Risks & Limitations
 
 - Parallelization reduces latency only when work is independent and the model endpoint can serve concurrent requests; throttling can erase the benefit.
-- A failed worker currently fails the whole workflow rather than returning a partial synthesis.
-- Worker and synthesis calls use buffered model completions so response-body transport failures remain inside the SDK's normal retry boundary. MAF still runs the workers concurrently; retries do not restart successful branches. Exhausted retries and non-retryable failures propagate without a partial answer.
+- Fan-in needs an explicit policy for failed or incomplete branches; decide whether to fail, retry, or return clearly labeled partial results.
 - Three-way analysis plus synthesis uses four model calls per request, increasing total token usage and cost compared with one prompt.
-- The Google ADK notebook relies on Google Search. The MAF demonstration intentionally does not simulate web access, so its sustainable-technology output is not a source-verified or current research report.
+- Research quality depends on the freshness and reliability of the underlying sources; model knowledge alone is not current evidence.
 - Every branch sees the caller's topic; prompt quality and synthesis can still omit or distort branch findings.
-- Agent Framework package APIs are preview-sensitive; versions are pinned in the shared central package file.

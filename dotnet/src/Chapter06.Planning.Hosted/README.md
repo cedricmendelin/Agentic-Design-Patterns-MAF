@@ -1,64 +1,60 @@
 # Chapter 06 - Hosted Planning Agent
 
-This companion exposes the Chapter 06 plan-and-write MAF workflow through Foundry Agent Service's **Responses protocol**. It hosts the shared planner/writer implementation; it is not a separate implementation of Foundry Deep Research.
+Expose the [Chapter 06 plan-and-write workflow](../Chapter06.Planning/README.md) through Microsoft Foundry Agent Service's **Responses protocol**. MAF orchestrates the planner and writer; Foundry hosts the agent and model.
 
-Each caller request is processed independently. The agent uses the last user message as its topic, creates fresh planner/writer agents, validates a 3-6 step plan, and returns the plan with a summary. Conversation history is not persisted. The response is buffered until both model calls finish; intermediate stages are available in configured traces, not streamed to the caller.
+## Request and response
 
-Foundry Deep Research is intentionally not hosted here: it runs as a long-running background Responses task. Supporting it would require a durable job store, a polling/status contract, and explicit timeout and cancellation behavior rather than holding a normal agent request open.
+The last user message supplies the topic. A planner produces a structured 3-6 step plan, deterministic code checks its shape, and a writer uses it to produce a summary. The response contains both the plan and summary.
 
-## Prerequisites and authentication
+Each request creates fresh agents without persisted conversation history. The final response is buffered until both model calls finish; configured traces expose the intermediate stages.
 
-- .NET 10 SDK, Azure CLI, Azure Developer CLI, and the `azure.ai.agents` extension.
-- A Foundry project and a chat-model deployment.
-- Local invocation uses the developer's Entra identity or shared user-secrets. Azure execution uses the hosted agent's managed identity, not an API key.
-- The deploying identity needs permission to deploy an agent. The runtime identity needs **Cognitive Services OpenAI User** on the model-hosting Foundry account. These are separate permissions.
-- Before remote invocation, resolve `instance_identity.principal_id` with `azd ai agent show chapter06-planning --output json`, discover the actual model-hosting account ARM ID, and check effective/inherited role assignments. Obtain explicit authorization before assigning the runtime inference role; do not grant it to the deploying user, project identity, or agent blueprint.
+This companion hosts the plan-and-write scenario. For citation-backed web research, see the separate Foundry Deep Research scenario in the console chapter.
 
-The host reads `Foundry:ProjectEndpoint`, `Foundry:ModelDeployment`, optional `Foundry:ModelDeployments`, and `Foundry:ApiKey` from the shared user-secrets or matching `Foundry__*` environment variables. Foundry runtime values `FOUNDRY_PROJECT_ENDPOINT` and `AZURE_AI_MODEL_DEPLOYMENT_NAME` are supported fallbacks. Leave the API key blank in Azure so `DefaultAzureCredential` uses managed identity. Never commit or print keys.
+## Prerequisites and configuration
 
-The existing `azure.yaml` adds only the `chapter06-planning` service and uses the existing shared Foundry project service. Its model name is set to `gpt-5-mini`; verify that deployment exists in the selected project before deployment. No infrastructure provisioning is included.
+Follow the [shared hosted-agent setup](../../README.md#configure-and-deploy-hosted-agents) to install tooling, select your Foundry project and model, configure `azure.yaml`, and set up authentication and permissions.
+
+The host reads shared `Foundry` user-secrets and `Foundry__*` environment overrides. A blank or absent API key selects `DefaultAzureCredential`: your developer identity locally and managed identity in Azure. Keep API keys out of hosted configuration.
 
 ## Run locally
 
-Configure shared user-secrets as described in [the .NET setup guide](../../README.md), then start the local protocol endpoint:
+From the repository root:
 
 ```powershell
 dotnet run --project .\dotnet\src\Chapter06.Planning.Hosted
 ```
 
-In a second terminal, from the `dotnet` directory, invoke it locally:
+The local server listens on port 8088 by default; keep it private. In a second terminal, from `dotnet`:
 
 ```powershell
-$env:AZURE_DEV_USER_AGENT = 'microsoft_foundry_skill'
 azd ai agent invoke chapter06-planning --local --protocol responses 'Plan and summarize the role of reinforcement learning in robotics.'
 ```
 
-The host listens on port 8088 by default. Keep the local endpoint private and stop the server after the invocation.
+Stop the server with Ctrl+C when finished.
 
 ## Deploy and invoke
 
-Deployment is an Azure write and is **not authorized** by creating these artifacts. Before deploying, confirm the Foundry project and model, verify the deployment identity's permissions, and obtain explicit deployment approval that includes any required runtime inference-role assignment. If authorized, deploy only the Chapter 06 service:
+After completing the shared setup, run from `dotnet`:
 
 ```powershell
-$env:AZURE_DEV_USER_AGENT = 'microsoft_foundry_skill'
 azd deploy chapter06-planning --no-prompt
 azd ai agent show chapter06-planning --output json
 ```
 
-Resolve the current `instance_identity.principal_id` and actual model-hosting account scope after deployment. Check inherited roles; if the runtime principal lacks equivalent inference access, obtain authorization before assigning **Cognitive Services OpenAI User** at that account scope. Allow propagation and verify a representative remote Responses request. An active version alone is not proof of successful model inference. Recheck after redeployment because the runtime identity can change.
+Use the returned `instance_identity.principal_id` to configure runtime model-inference access as described in the shared guide. Allow time for role propagation, then send a request:
 
-Agent deployment creates a hosted version; model usage incurs charges. For cleanup, remove only the `chapter06-planning` agent/version using the agent-scoped workflow. Do not delete the shared project, model deployment, or unrelated hosted services. Evaluation setup or execution is a separate decision; neither is part of these source artifacts.
+```powershell
+azd ai agent invoke chapter06-planning --protocol responses 'Plan and summarize the role of reinforcement learning in robotics.'
+```
 
-## Packaging, telemetry, and limitations
+The service uses bundled .NET 10 code deployment, publishing the host and referenced Chapter 06 and Shared projects together. No Docker image or container registry is required.
 
-`dependencyResolution: bundled` includes the hosted project, Chapter 06 workflow, Shared project, and runtime dependencies in the .NET 10 package. The host's `.agentignore` excludes `.azure`, environment files, user-secrets, and build output. No container registry or new Azure infrastructure is added.
+## Telemetry and sensitive data
 
-The MAF agents emit tracing under `Chapter06.Planning`, and sensitive-data capture is enabled for debugging and tracing. Prompts, caller topics, plans, and model responses may be present in exported traces. Use non-sensitive inputs, restrict telemetry access and retention, and disable sensitive capture before handling confidential requests.
+Agents emit spans under `Chapter06.Planning`. **Sensitive-data capture is enabled for this demo:** caller topics, plans, and responses may appear in exported traces. Use non-sensitive inputs, restrict telemetry access and retention, and disable sensitive capture before handling confidential data.
 
-The host has no durable state, and its final response is buffered rather than streamed. Deep Research remains available only in the console variant because its asynchronous work needs a durable job and polling protocol.
+## Pattern tradeoffs
 
-## Verification status
+A well-formed plan can still omit constraints, choose unnecessary steps, or rely on incorrect facts. Validate domain requirements separately from plan structure and ground factual output in appropriate evidence.
 
-The hosted agent is active as `chapter06-planning:1` in the existing Foundry project and uses the verified `gpt-5-mini` deployment. Its runtime managed identity was granted **Cognitive Services OpenAI User** at the model-hosting Foundry account scope after confirming no inherited inference role was present. After role propagation, a remote Responses invocation successfully returned a five-step plan and summary for a robotics reinforcement-learning prompt.
-
-This is a point-in-time verification; check the active version and runtime identity again after redeployment. No evaluation suite was generated and no evaluation was run.
+Planning adds latency and model usage before execution. Use deterministic workflows for mandatory business rules, permissions, and state transitions; treat a generated plan as a proposal rather than authorization to act.

@@ -21,7 +21,7 @@ flowchart LR
 | Variant | Source notebook | MAF / Foundry building blocks | What to observe |
 |---|---|---|---|
 | Simulated information search (`search`) | `Chapter_05_Tool_Use_(LangChain).ipynb` | `ChatClientAgent`, `AIFunctionFactory.Create` | The model calls a deterministic lookup for Paris, London weather, and an unknown topic; the returned data is explicitly simulated. |
-| Calculator (`calculator`) | `Chapter_05_Tool_Use_(Executing_Code).ipynb` | `ChatClientAgent`, `AIFunctionFactory.Create`, bounded arithmetic parser | The agent uses a deterministic C# parser for `(5 + 7) * 3` and `10!`; it does not execute model-generated code. |
+| Calculator (`calculator`) | `Chapter_05_Tool_Use_(Executing_Code).ipynb` | `ChatClientAgent`, `AIFunctionFactory.Create`, bounded arithmetic parser | The agent uses a deterministic C# parser for `(5 + 7) * 3` and `10!`, supporting factorials from 0 through 27; it does not execute model-generated code. |
 | Simulated stock lookup (`stocks`) | `Chapter_05_Tool_Use_(CrewAI).ipynb` | `ChatClientAgent`, `AIFunctionFactory.Create` | A structured function lookup returns the sample AAPL price; unknown tickers produce an explicit tool error. |
 | Foundry-native web search (`foundry-web`) | `Chapter_05_Tool_Use_(Google_Search).ipynb` | `AIProjectClient.AsAIAgent`, Foundry hosted web-search tool | Microsoft Foundry retrieves current web information and returns source-grounded content. Requires Entra ID and a supported deployment. |
 | Foundry-native code interpreter (`foundry-code`) | `Chapter_05_Tool_Use_(Executing_Code).ipynb` | Foundry hosted code-interpreter tool | A service-side sandbox runs the requested arithmetic, rather than a local allowlisted parser. |
@@ -101,14 +101,12 @@ flowchart LR
 - Project and deployment guide: [Chapter 05 hosted companion](../Chapter05.ToolUse.Hosted/README.md).
 - Authentication: local console uses API-key user-secrets or `Foundry__*`; hosted execution uses developer identity locally and managed identity in Azure when no API key is configured. Deployment and runtime inference permissions are separate.
 - Packaging: `azure.yaml` uses bundled .NET 10 deployment, publishing the host and referenced Chapter 05 / Shared projects; `.agentignore` excludes `.azure`, environment files, secrets, and build output.
-- Validation/status: deterministic tool and protocol tests are included. The hosted companion has not been deployed or remotely invoked; verify the current `instance_identity.principal_id` has **Cognitive Services OpenAI User** at the model-hosting Foundry account scope before any approved remote invocation.
-- Limitations/cleanup: each request is stateless and returns one buffered response. Tool calls use simulated search/stock data and a bounded parser. Remove only this agent/version if deployed; never remove shared project resources.
+- Request contract: each request is stateless and returns one buffered response. Tool calls use simulated search/stock data and a bounded arithmetic parser.
 
 ## Risks & Limitations
 
-- The MAF search and stock examples use fixed simulated data and do not verify current facts or prices.
+- Tool results are only as reliable and current as their data sources; distinguish sample or cached values from live facts and prices.
 - Model-selected function arguments are untrusted. Validate at the tool boundary; exceptions are surfaced to the agent rather than hidden.
-- The arithmetic parser accepts only a short expression grammar and factorials from 0 through 27. It does not execute arbitrary code.
+- Keep tool execution narrowly scoped. A bounded parser and a code-execution sandbox have different capabilities and security boundaries.
 - Foundry-hosted tools need a compatible model, project configuration, and (for file search) an existing vector store. Code Interpreter and web grounding can add service charges. Grounding with Bing Search sends data outside the Azure compliance and Geo boundary; review its terms before use.
 - Search results and retrieved documents are untrusted input and may contain prompt injection. Do not let them authorize consequential actions.
-- Agent Framework packages are preview-sensitive; tool signatures and package versions are pinned in the shared central package file.

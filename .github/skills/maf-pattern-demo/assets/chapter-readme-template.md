@@ -55,9 +55,11 @@ flowchart LR
 - Suitability: <supported protocol, dependencies, state/interaction model, or concrete reason for skipping>.
 - Project and deployment guide: <link to separate hosted project; preserve the console demo>.
 - Authentication: <local developer credentials and Azure managed identity; deployment permissions are separate from runtime inference access. Before remote invocation, verify/assign Cognitive Services OpenAI User to the deployed instance_identity.principal_id at the model-hosting Foundry account scope with RBAC-write approval; allow propagation and recheck after redeployment>.
-- Packaging: <verified remote-build context including references, or bundled published dependencies; exclude secrets>.
-- Validation/status: <local protocol invocation and, only when authorized, verified active version/remote response; report blockers honestly>.
-- Limitations/cleanup: <conversation behavior, streaming, required setup, costs, and agent-scoped cleanup>.
+- Packaging: <remote-build context including references, or bundled published dependencies; exclude secrets>.
+- Request contract: <accepted inputs, final output, conversation behavior, and streaming behavior>.
+- Deployment: <link to reusable setup/deploy/invoke instructions using the reader's own project and model; document required permissions and costs, not deployment history>.
+
+Keep READMEs evergreen and suitable for public sharing. Never include verification reports, deployment status, deployed versions/dates, environment-specific identifiers, invocation results, or evaluation run history. Describe implementation scope and behavior in the relevant sections, not as limitations. Keep resource-removal guidance separate from pattern tradeoffs and scoped to resources the reader owns.
 
 ## Risks & Limitations
-- <From ai-research: e.g. latency, error propagation, cost>
+- <Design-pattern tradeoffs from ai-research: e.g. latency, error propagation, cost, model uncertainty. Do not list implementation-specific omissions, package maturity, deployment state, or cleanup tasks.>

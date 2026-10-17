@@ -22,6 +22,8 @@ flowchart LR
 | Market trends (`trends`) | `Chapter_01_Prompt_Chaining_(JSON_Example).ipynb` | Two `ChatClientAgent`s in an `AgentWorkflowBuilder.BuildSequential` workflow | Research evidence is extracted into trends, then transformed into the notebook's JSON shape. The notebook contains only a sample JSON output, not executable prompts or input; the demo supplies evidence corresponding to those sample claims. |
 | Foundry-native | Both | Not applicable | Foundry does not provide a separate native prompt-chaining primitive for this scenario; MAF supplies the orchestration while Foundry hosts the model deployment. |
 
+The demos request JSON through prompts and return the final assistant text without schema validation. They await the workflow and print completed agent responses rather than streaming tokens.
+
 ## Setup
 
 1. Prerequisites: .NET 10 SDK and a Microsoft Foundry project with an OpenAI-compatible model deployment and API key.
@@ -80,7 +82,4 @@ flowchart LR
 
 - The calls execute serially, so latency and token use increase with each stage.
 - Later steps receive model-generated intermediate text; extraction errors or omissions can propagate.
-- The output format is requested in the prompt, not validated against a schema in this teaching demo.
-- The market-trends notebook contains only an output example, so its source input and extraction prompt cannot be ported exactly.
-- Agent Framework APIs and package versions may evolve; this project pins the versions used for the current implementation.
-- The workflow is awaited as a whole; it prints completed agent responses afterward rather than streaming tokens.
+- Prompted output formats are not guarantees; validate intermediate and final data against the downstream contract.

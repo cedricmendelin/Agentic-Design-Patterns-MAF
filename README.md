@@ -11,6 +11,12 @@ This repository contains the complete materials for **"Agentic Design Patterns: 
 
 > **Note**: All author royalties are donated to Save the Children 💝
 
+## .NET agents with Microsoft Foundry
+
+For runnable C# examples built with Microsoft Agent Framework, start with the [.NET setup guide](dotnet/README.md). It covers shared configuration, chapter demos, and hosted-agent companions for deploying the patterns to your own Microsoft Foundry project.
+
+The [hosted-agent guides](dotnet/README.md#hosted-agent-companions) describe request contracts, local invocation, managed-identity permissions, and service-scoped deployment. Configure your own project endpoint and model deployment before deploying.
+
 ## 🎯 What You'll Learn
 
 This comprehensive guide covers 21 chapters and 7 appendices on building intelligent AI agent systems, including:

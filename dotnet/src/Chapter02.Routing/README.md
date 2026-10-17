@@ -122,11 +122,13 @@ Mount Everest is the highest mountain in the world above sea level, at 8,848.86 
 - Add Foundry evaluations to measure routing accuracy against a labeled request set before changing prompts or model deployments.
 - Deploy the [hosted companion](../Chapter02.Routing.Hosted/README.md) to expose this workflow through Agent Service. This hosts MAF's routing code; it does not change the Foundry-native applicability assessment above.
 
+## Telemetry and sensitive data
+
+The shared workflow enables sensitive OpenTelemetry content capture for its inner agents. Prompts and responses may be exported when a listener is configured; use non-sensitive demo inputs. The console does not configure an exporter itself. See the [hosted telemetry setup](../Chapter02.Routing.Hosted/README.md#telemetry-and-sensitive-data) for collection and privacy details.
+
 ## Risks & Limitations
 
-- The first routing step adds latency and can misclassify borderline requests.
-- The shared workflow enables sensitive OpenTelemetry content capture for its inner agents. Prompts and responses may be exported when a listener is configured; use non-sensitive demo inputs. The console does not configure an exporter itself. See the [hosted telemetry setup](../Chapter02.Routing.Hosted/README.md#telemetry-and-sensitive-data) for collection and privacy details.
-- The notebook scenario is intentionally simple; real systems usually need stronger validation, better fallback handling, and route observability.
-- This teaching demo routes with one coordinator prompt and does not include an independent route verifier.
-- The OpenRouter notebook for this chapter is only an API usage snippet, so it does not become its own MAF demo variant.
-- Agent Framework APIs and package versions may evolve; this project pins the versions used for the current implementation.
+- The routing step adds latency and can misclassify borderline requests.
+- Ambiguous inputs need an explicit clarification or fallback path rather than a forced specialist selection.
+- Routing is not authorization. Validate permissions and consequential actions independently of the model's route choice.
+- Changes to specialist responsibilities can shift category boundaries; maintain representative routing examples and observe decisions over time.

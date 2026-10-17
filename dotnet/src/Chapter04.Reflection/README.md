@@ -116,14 +116,12 @@ Completion yields exactly one result containing `Accepted` or `MaxRoundsReached`
 - Project and deployment guide: [Chapter 04 hosted companion](../Chapter04.Reflection.Hosted/README.md).
 - Authentication: console calls use shared API-key user-secrets or `Foundry__*`; hosted Azure calls use developer identity locally and managed identity in Azure. Deployment permissions and runtime inference access are separate.
 - Packaging: `azure.yaml` uses bundled .NET 10 deployment. The host references the chapter project, which references Shared; the extension publishes these dependencies into the deployment package. `.agentignore` excludes environment files, `.azure`, secrets, and build artifacts.
-- Validation/status: local workflow and Responses-protocol coverage exercise the shared graph. Hosted version 1 was deployed to `mvp-playground-foundry-proj` with `gpt-5-mini` and successfully invoked remotely on 2026-10-16, **before this graph refactor**. The runtime identity was granted Cognitive Services OpenAI User at the model-hosting account scope, with a 30-second propagation wait before the successful invocation. This refactor is local only; version 1 still runs the earlier implementation. A 15-case evaluation dataset and seven-dimension evaluator remain unchanged for review and no evaluations have run. See the [hosted evaluation setup](../Chapter04.Reflection.Hosted/README.md#evaluation-setup).
-- Limitations/cleanup: every mode makes two calls per round, up to six by default. Responses contain only the final result, not streamed intermediate stages; sessions do not retain conversation state. Remove only this chapter's agent/version if deployed, not the shared Foundry project or unrelated services.
+- Request contract: every mode makes two calls per round, up to six by default. Responses contain the final result and outcome; sessions do not retain conversation state.
+- Evaluation examples: see [adapting evaluation examples](../Chapter04.Reflection.Hosted/README.md#adapting-evaluation-examples) for aligning sample datasets and rubrics with your task.
 
 ## Risks & Limitations
 
 - Reflection can amplify an initial error or produce plausible but incorrect criticism. Separate roles are not the same as independent evidence or a different model.
-- The fact-checker has no browsing or trusted knowledge source; its status is a model judgment, not a guarantee of factual accuracy.
-- The code reviewer does not execute tests. Every scenario caps rounds at three by default, but its calls can still incur latency and model charges.
+- Factual review needs trusted evidence; a model judgment alone does not establish accuracy.
+- Code review needs execution and deterministic tests to establish correctness. Additional review rounds add latency and model charges.
 - Every final draft is reviewed, but `Accepted` remains a model judgment rather than proof. Reaching the budget does not imply acceptance.
-- Generated evaluation examples/rubrics predate the shared loop/outcome contract and arbitrary Python task support. They remain review-required, not an acceptance gate.
-- Agent Framework packages are preview-sensitive; versions are pinned in the shared central package file.

@@ -87,14 +87,92 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 
 ## Hosted-agent companions
 
-The [Routing hosted companion](src/Chapter02.Routing.Hosted/README.md) exposes the same Chapter 02 workflow through Foundry Agent Service's Responses protocol. `azure.yaml` configures .NET 10 bundled code deployment; the azd agent extension publishes referenced projects locally before uploading, without Docker or ACR. Hosted version 3 was deployed to `mvp-playground-foundry-proj` with `gpt-5-mini` and remotely verified on 2026-10-16.
+The hosted projects expose the same MAF chapter logic through Microsoft Foundry Agent Service's **Responses protocol**. Use them as starting points for deploying the patterns to your own Foundry project.
 
-The console demos keep their existing API-key configuration. Hosted startup reads the same `Foundry` user-secrets and `Foundry__*` environment overrides, supports `--deployment <alias>`, and uses Entra ID / managed identity when `ApiKey` is blank. Foundry runtime variables remain supported as fallbacks, and azd deployment authentication is separate. Follow the hosted guide for prerequisites, deployment status, local invocation, deployment, and cleanup. No Prompt Chaining hosted companion is included.
+| Chapter | Hosted guide | Request |
+|---|---|---|
+| 02 | [Routing](src/Chapter02.Routing.Hosted/README.md) | Booking, information, or clarification |
+| 03 | [Parallelization](src/Chapter03.Parallelization.Hosted/README.md) | `topic:` or `research:` |
+| 04 | [Reflection](src/Chapter04.Reflection.Hosted/README.md) | `fact-check:`, `product:`, or `code-review:` |
+| 05 | [Tool Use](src/Chapter05.ToolUse.Hosted/README.md) | `search:`, `calculate:`, or `stock:` |
+| 06 | [Planning](src/Chapter06.Planning.Hosted/README.md) | Topic to plan and summarize |
 
-The [Parallelization hosted companion](src/Chapter03.Parallelization.Hosted/README.md) exposes the Chapter 03 MAF workflow through the same Responses protocol and bundled .NET 10 deployment. Hosted version 1 was deployed to the existing `mvp-playground-foundry-proj` project and remotely verified on 2026-10-16.
+### Configure and deploy hosted agents
 
-The [Reflection hosted companion](src/Chapter04.Reflection.Hosted/README.md) exposes the Chapter 04 MAF workflow through the Responses protocol and bundled .NET 10 deployment. Local code now uses one shared generator/verifier workflow graph for all three modes, with early acceptance and a three-round ceiling. Hosted version 3, which runs this graph with the stricter product verifier, was deployed to the existing `mvp-playground-foundry-proj` project with `gpt-5-mini` and remotely verified using managed identity on 2026-10-16. Its evaluation setup contains 15 generated cases and a seven-dimension rubric, preserved unchanged for review against the changed contract; no evaluation run has been started.
+#### Tooling and Azure prerequisites
 
-The [Tool Use hosted companion](src/Chapter05.ToolUse.Hosted/README.md) exposes the Chapter 05 MAF function tools through the Responses protocol and bundled .NET 10 deployment. The MAF console also includes opt-in Foundry-native web search, code interpreter, and file-search examples. Hosted version 1 is active in `mvp-playground-foundry-proj` with `gpt-5-mini` and was remotely verified using managed identity.
+- .NET 10 SDK, PowerShell 7, Azure CLI, and Azure Developer CLI (azd).
+- azd version 1.35.1 or later and the `azure.ai.agents` extension version 1.0.0-beta.19 or later, as declared in `azure.yaml`.
+- An existing Foundry project in a region that supports hosted agents, with hosting configured and a compatible chat-model deployment.
+- Permission to deploy agents to the project and model-inference access for both your local developer identity and the hosted runtime identity.
 
-The [Planning hosted companion](src/Chapter06.Planning.Hosted/README.md) exposes Chapter 06's bounded MAF planner/writer workflow through the Responses protocol. It uses bundled .NET 10 deployment and creates fresh agents per request. Version 1 was deployed to the existing `mvp-playground-foundry-proj` project with `gpt-5-mini` and remotely verified using managed identity on 2026-10-16. The separate Deep Research path is not included in this host because its long-running background response requires an explicit job/polling lifecycle.
+Install the agent extension if needed:
+
+```powershell
+azd extension install azure.ai.agents
+```
+
+#### Select your project and model
+
+All commands in this section run from `dotnet`. Sign in to your target tenant and create an azd environment, or select an existing one with `azd env select <environment>`:
+
+```powershell
+Set-Location .\dotnet
+az login --tenant '<tenant-id>'
+azd auth login --tenant-id '<tenant-id>'
+azd env new '<environment>' --subscription '<subscription-id>' --location '<project-region>' --no-prompt
+azd env set AZURE_TENANT_ID '<tenant-id>'
+azd env set AZURE_AI_PROJECT_ID '<project-arm-id>'
+azd env set AZURE_AI_PROJECT_ENDPOINT 'https://<account>.services.ai.azure.com/api/projects/<project>'
+azd env set AZURE_AI_MODEL_DEPLOYMENT_NAME '<existing-model-deployment>'
+```
+
+Use the actual ARM ID and endpoint of your project. The committed `azure.yaml` contains a concrete sample project reference: **replace it with your own project before deploying**. Rename the `host: azure.ai.project` service key, set its `endpoint` to your project endpoint, and update the chapter services' `uses` entries to that same key. For example:
+
+```yaml
+services:
+    chapter02-routing:
+        # Keep the other chapter service settings.
+        uses:
+            - my-foundry-project
+        env:
+            AZURE_AI_MODEL_DEPLOYMENT_NAME: <existing-model-deployment>
+    my-foundry-project:
+        host: azure.ai.project
+        endpoint: https://<account>.services.ai.azure.com/api/projects/<project>
+```
+
+This is a configuration excerpt, not a replacement for the complete manifest. Each chapter service explicitly selects `gpt-5-mini` in its `env` block; replace that value with your existing model deployment name for every service you intend to use. Setting an azd environment variable alone does not replace a literal service setting. Keep the project reference and environment values consistent.
+
+The manifest already includes the hosted services, so do not reinitialize or overwrite it for a normal deployment. Keep each service's project path, startup command, protocol, runtime, and bundled packaging settings. Do not use this directory's own `azure.yaml` as an initialization template into the same directory.
+
+These guides target an existing project and model; they do not provision either. If hosting, regional availability, or permissions need setup, resolve those prerequisites with your Azure administrator.
+
+#### Authentication and runtime permissions
+
+Hosted startup reads the shared `Foundry` user-secrets and corresponding `Foundry__*` environment overrides. When canonical settings are absent, `FOUNDRY_PROJECT_ENDPOINT` and `AZURE_AI_MODEL_DEPLOYMENT_NAME` provide runtime fallbacks. Make sure local secrets or overrides do not point at a different project or model.
+
+For local Entra ID authentication, leave `Foundry:ApiKey` blank or unset it, and remove any nonempty `Foundry__ApiKey` override. The console demos require an API key; if you remove a shared key for a hosted run, configure it again before running a console demo. Azure execution should use managed identity, not an API key. Azure CLI and azd sign-in are separate from model-client configuration.
+
+Deploy the selected service using its chapter guide, then inspect it with `azd ai agent show <service> --output json`. Use **`instance_identity.principal_id`**, not the deploying user, project identity, or agent blueprint, when configuring runtime inference access:
+
+1. Identify the actual model-hosting Foundry account ARM ID.
+2. Check effective role assignments, including inherited grants, for the runtime principal.
+3. If equivalent inference access is missing, have an authorized administrator assign **Cognitive Services OpenAI User** at that account scope.
+4. Allow time for RBAC propagation before sending a remote request. Recheck the principal after redeployment because the runtime identity can change.
+
+Example commands for inspecting and assigning access:
+
+```powershell
+az role assignment list --assignee-object-id '<runtime-principal-id>' --scope '<model-hosting-account-arm-id>' --include-inherited --fill-principal-name false --output table
+# Run only if the role is missing and you are authorized to assign it.
+az role assignment create --assignee-object-id '<runtime-principal-id>' --assignee-principal-type ServicePrincipal --role 'Cognitive Services OpenAI User' --scope '<model-hosting-account-arm-id>'
+```
+
+If invocation returns `401 PermissionDenied`, check the runtime principal, account scope, model endpoint, and role propagation before retrying. Do not broaden access to the subscription or switch to API keys to bypass missing runtime permissions.
+
+#### Packaging, costs, and resource ownership
+
+`dependencyResolution: bundled` makes the azd extension publish the .NET 10 host and its referenced chapter/Shared projects locally before uploading. This includes central build/package settings and sibling dependencies without requiring Docker or a container registry. Keep `.azure`, environment files, user-secrets, and connection strings out of published content and source control.
+
+Deploy only the selected chapter with `azd deploy <service> --no-prompt`; a service-scoped command avoids redeploying other chapters. Hosting and model calls incur Azure charges, and each deployment creates an immutable agent version. When removing an experiment, use Foundry's agent-scoped management controls for the resources you own. Do not run `azd down` against a shared project or delete shared models, project infrastructure, or unrelated agents.
