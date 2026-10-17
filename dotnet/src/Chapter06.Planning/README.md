@@ -83,15 +83,15 @@ flowchart LR
 ## Hosted Deployment Companion
 
 - Suitability: the MAF plan-and-write workflow is a bounded request/response operation. Each Responses request creates fresh agents and has no persisted conversation state. Deep Research is excluded from the host because its background operation needs a durable job, polling, and timeout design.
-- Project and deployment guide: [Chapter 06 hosted companion](../Chapter06.Planning.Hosted/README.md). It adds only an independent `chapter06-planning` service to the existing multi-service `azure.yaml`; the service has not been deployed.
+- Project and deployment guide: [Chapter 06 hosted companion](../Chapter06.Planning.Hosted/README.md). It adds only an independent `chapter06-planning` service to the existing multi-service `azure.yaml`; hosted version 1 was deployed and remotely verified on 2026-10-16.
 - Authentication: local runs can use shared user-secrets. Hosted Azure execution uses managed identity. Before any remote invocation, check that the deployed runtime `instance_identity.principal_id` has **Cognitive Services OpenAI User** at the actual model-hosting Foundry account scope; obtain approval before any role assignment and allow propagation.
 - Packaging: azd's bundled .NET 10 deployment publishes the host and referenced chapter/shared projects together. The host `.agentignore` excludes `.azure`, environment files, secrets, and build outputs.
-- Validation/status: the MAF console smoke test is included in the live workflow. Build and local Responses protocol checks are separate from deployment; no Azure deployment, runtime role assignment, or remote invocation has been performed.
+- Validation/status: the MAF console smoke test is included in the live workflow. Hosted version 1 was deployed and remotely verified; its runtime identity has the account-scoped inference role documented in the hosted companion. Evaluation setup and execution remain deferred.
 - Limitations/cleanup: the protocol returns a buffered final result and stores no conversation history. Model requests incur usage charges. If deployed, remove only the Chapter 06 agent/version; preserve the shared Foundry project, model deployments, and other services.
 
 ## Risks & Limitations
 
 - A model-generated plan can omit constraints or contain unnecessary steps; this workflow enforces only a 3–6 nonempty-step shape, not domain correctness.
 - The writer can introduce factual errors. The plan is a structure, not a source of verified facts.
-- Deep Research runs in the background and may take up to 15 minutes in this console demo. It requires a suitable deployment, web-search availability, and API access; the code reports failed, incomplete, and timed-out tasks rather than returning a success-shaped report.
+- Deep Research runs in the background and may take up to 15 minutes in this console demo. It requires a suitable deployment, web-search availability, and API access; the code reports failed and incomplete tasks, and attempts to cancel an unfinished response on timeout or caller cancellation using a separate bounded cleanup timeout.
 - Web research introduces source-quality, prompt-injection, privacy, latency, and cost risks. Review the report and citations before using it for consequential decisions.

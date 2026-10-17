@@ -16,6 +16,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/Foundry.SmokeTests/Foundry.SmokeTests.csproj" />
     <Project Path="tests/Parallelization.Tests/Parallelization.Tests.csproj" />
+    <Project Path="tests/Planning.Tests/Planning.Tests.csproj" />
     <Project Path="tests/Reflection.Tests/Reflection.Tests.csproj" />
     <Project Path="tests/Routing.Tests/Routing.Tests.csproj" />
     <Project Path="tests/Shared.Tests/Shared.Tests.csproj" />

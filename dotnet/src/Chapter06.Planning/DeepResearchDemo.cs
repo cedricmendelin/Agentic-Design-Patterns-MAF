@@ -89,14 +89,53 @@ public static class DeepResearchDemo
                 $"Foundry Deep Research returned unexpected status '{initialStatus ?? "unknown"}'.");
         }
 
-        using var completedDocument = await PollUntilCompleteAsync(
-            client,
-            new Uri(settings.OpenAIEndpoint, $"responses/{Uri.EscapeDataString(responseId)}"),
-            settings.ApiKey,
-            initialStatus,
-            cancellationToken);
+        var responseEndpoint = new Uri(settings.OpenAIEndpoint, $"responses/{Uri.EscapeDataString(responseId)}");
+        JsonDocument completedDocument;
+        try
+        {
+            completedDocument = await PollUntilCompleteAsync(
+                client,
+                responseEndpoint,
+                settings.ApiKey,
+                initialStatus,
+                cancellationToken);
+        }
+        catch (Exception exception) when (exception is TimeoutException or OperationCanceledException)
+        {
+            await CancelResponseAsync(client, responseEndpoint, settings.ApiKey, exception, writeOutput);
+            throw;
+        }
 
-        PrintResponse(completedDocument.RootElement, writeOutput);
+        using (completedDocument)
+        {
+            PrintResponse(completedDocument.RootElement, writeOutput);
+        }
+    }
+
+    private static async Task CancelResponseAsync(
+        HttpClient client,
+        Uri responseEndpoint,
+        string apiKey,
+        Exception originalFailure,
+        Action<string>? writeOutput)
+    {
+        using var cleanupTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        try
+        {
+            using var response = await SendRequestAsync(
+                client,
+                new Uri(responseEndpoint.AbsoluteUri + "/cancel"),
+                HttpMethod.Post,
+                apiKey,
+                payload: null,
+                cleanupTimeout.Token);
+        }
+        catch (Exception cleanupFailure)
+        {
+            originalFailure.Data["DeepResearchCancellationFailure"] = cleanupFailure;
+            writeOutput?.Invoke(
+                $"Failed to cancel the unfinished Deep Research response: {cleanupFailure.Message}");
+        }
     }
 
     private static async Task<HttpResponseMessage> SendRequestAsync(
