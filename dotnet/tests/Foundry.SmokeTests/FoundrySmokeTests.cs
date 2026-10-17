@@ -54,6 +54,18 @@ public sealed class FoundrySmokeTests
     }
 
     [Fact(Timeout = 240000)]
+    public async Task Chapter05_search_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter05SearchAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.True(
+            result.StandardOutput.Split("Tool called: search_information", StringSplitOptions.None).Length >= 4,
+            result.CombinedOutput);
+        Assert.Contains("--- Final agent response ---", result.StandardOutput);
+    }
+
+    [Fact(Timeout = 240000)]
     public async Task Chapter06_plan_and_write_demo_runs_with_live_foundry_configuration()
     {
         var result = await DotnetDemoRunner.RunChapter06PlanWriteAsync();
