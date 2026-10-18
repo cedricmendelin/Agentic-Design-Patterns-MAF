@@ -6,6 +6,7 @@
     <Project Path="src/Chapter04.Reflection/Chapter04.Reflection.csproj" />
     <Project Path="src/Chapter05.ToolUse/Chapter05.ToolUse.csproj" />
     <Project Path="src/Chapter06.Planning/Chapter06.Planning.csproj" />
+    <Project Path="src/Chapter09.LearningAdaptation/Chapter09.LearningAdaptation.csproj" />
     <Project Path="src/Chapter10.MCP/Chapter10.MCP.csproj" />
     <Project Path="src/Chapter10.MCP.Server/Chapter10.MCP.Server.csproj" />
     <Project Path="src/Shared/Shared.csproj" />
@@ -16,6 +17,7 @@
     <Project Path="src/Chapter04.Reflection.Hosted/Chapter04.Reflection.Hosted.csproj" />
     <Project Path="src/Chapter05.ToolUse.Hosted/Chapter05.ToolUse.Hosted.csproj" />
     <Project Path="src/Chapter06.Planning.Hosted/Chapter06.Planning.Hosted.csproj" />
+    <Project Path="src/Chapter09.LearningAdaptation.Hosted/Chapter09.LearningAdaptation.Hosted.csproj" />
     <Project Path="src/Chapter10.MCP.Hosted/Chapter10.MCP.Hosted.csproj" />
   </Folder>
   <Folder Name="/tests/">
@@ -26,6 +28,7 @@
     <Project Path="tests/Routing.Tests/Routing.Tests.csproj" />
     <Project Path="tests/Shared.Tests/Shared.Tests.csproj" />
     <Project Path="tests/ToolUse.Tests/ToolUse.Tests.csproj" />
+    <Project Path="tests/LearningAdaptation.Tests/LearningAdaptation.Tests.csproj" />
     <Project Path="tests/MCP.Tests/MCP.Tests.csproj" />
   </Folder>
 </Solution>
