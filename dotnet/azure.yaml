@@ -126,6 +126,33 @@ services:
         protocols:
             - protocol: responses
               version: 2.0.0
+    chapter08-memory:
+        project: ./src/Chapter08.Memory.Hosted
+        host: azure.ai.agent
+        language: csharp
+        startupCommand: dotnet run --project Chapter08.Memory.Hosted.csproj
+        displayName: Chapter 08 - Memory
+        description: Demonstrates managed memory with synthetic travel facts recalled in a new MAF session and a fresh scope per request.
+        uses:
+            - mvp-playground-foundry-proj
+        env:
+            Foundry__ProjectEndpoint: ${AZURE_AI_PROJECT_ENDPOINT}
+            AZURE_AI_MODEL_DEPLOYMENT_NAME: gpt-5-mini
+            AZURE_AI_EMBEDDING_DEPLOYMENT_NAME: text-embedding-3-large
+            AZURE_AI_MEMORY_STORE_ID: chapter08-hosted-memory
+        codeConfiguration:
+            dependencyResolution: bundled
+            entryPoint: Chapter08.Memory.Hosted.dll
+            runtime: dotnet_10
+        container:
+            resources:
+                cpu: "1"
+                memory: 2Gi
+        kind: hosted
+        name: chapter08-memory
+        protocols:
+            - protocol: responses
+              version: 2.0.0
     chapter09-learning-adaptation:
         project: ./src/Chapter09.LearningAdaptation.Hosted
         host: azure.ai.agent
