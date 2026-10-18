@@ -42,9 +42,9 @@ flowchart LR
    Run both MAF variants with `all`, or choose a named Foundry deployment with `--deployment <name>`.
 5. For the Foundry-native MCP variant, configure an HTTP(S) MCP endpoint reachable by Foundry in shared user-secrets or `CHAPTER10_MCP_SERVER_URL`, then run:
    ```powershell
-   dotnet run --project .\dotnet\src\Chapter10.MCP -- foundry-native
+dotnet run --project .\dotnet\src\Chapter10.MCP -- foundry-native [--deployment <name>]
    ```
-   The native demo uses Entra ID through `DefaultAzureCredential`, so sign in locally and ensure the identity can create/invoke/delete agents in the project. The MCP endpoint must be reachable by Foundry, not just by the local process.
+The optional deployment name resolves through `Foundry:ModelDeployments`, like the MAF demos; an unknown alias is rejected before connecting to Foundry. The native demo uses Entra ID through `DefaultAzureCredential`, so sign in locally and ensure the identity can create/invoke/delete agents in the project. The MCP endpoint must be reachable by Foundry, not just by the local process.
 6. For cloud-agent validation, `.github/workflows/live-foundry-tests.yml` uses the protected `foundry-integration` environment and `Foundry__*` environment secrets. Add Chapter 10 coverage to `dotnet/tests/Foundry.SmokeTests` and the workflow after this change is merged to the default branch.
 
 ## Notebook → C# Mapping

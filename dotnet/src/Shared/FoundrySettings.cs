@@ -7,18 +7,24 @@ public sealed record FoundrySettings
     public required string ModelDeployment { get; init; }
     public Dictionary<string, string> ModelDeployments { get; init; } = [];
 
-    public string ResolveModelDeployment(string? deploymentName = null)
+    public string ResolveModelDeployment(string? deploymentName = null) =>
+        ResolveModelDeployment(deploymentName, ModelDeployment, ModelDeployments);
+
+    public static string ResolveModelDeployment(
+        string? deploymentName,
+        string modelDeployment,
+        IReadOnlyDictionary<string, string> modelDeployments)
     {
         if (string.IsNullOrWhiteSpace(deploymentName))
         {
-            return ModelDeployment;
+            return modelDeployment;
         }
 
-        var configuredDeployment = ModelDeployments.FirstOrDefault(
+        var configuredDeployment = modelDeployments.FirstOrDefault(
             entry => string.Equals(entry.Key, deploymentName, StringComparison.OrdinalIgnoreCase));
         if (string.IsNullOrWhiteSpace(configuredDeployment.Value))
         {
-            var availableNames = ModelDeployments.Keys.Order(StringComparer.OrdinalIgnoreCase);
+            var availableNames = modelDeployments.Keys.Order(StringComparer.OrdinalIgnoreCase);
             var available = string.Join(", ", availableNames);
             throw new InvalidOperationException(
                 $"Foundry model deployment '{deploymentName}' is not configured. " +

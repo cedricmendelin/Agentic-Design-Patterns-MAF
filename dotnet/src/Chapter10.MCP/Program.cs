@@ -42,7 +42,7 @@ public static class Program
         {
             if (string.Equals(selection, "foundry-native", StringComparison.OrdinalIgnoreCase))
             {
-                await FoundryNativeDemo.RunAsync();
+                await FoundryNativeDemo.RunAsync(deploymentSelection);
                 return 0;
             }
 
@@ -104,6 +104,7 @@ public static class Program
 
         Console.WriteLine("\n=== stdio MCP filesystem agent ===");
         Console.WriteLine($"Managed directory: {targetDirectory}");
+        var targetFile = Path.Combine(targetDirectory, "mcp-demo.txt");
         var transport = new StdioClientTransport(new StdioClientTransportOptions
         {
             Name = "Chapter10Filesystem",
@@ -116,7 +117,7 @@ public static class Program
         var response = await McpAgent.RunAsync(
             chatClient,
             mcpClient,
-            "Create or replace mcp-demo.txt with a short greeting, then read the file and report its contents.",
+            $"Create or replace {targetFile} with a short greeting, then read that file and report its contents.",
             ["list_directory", "read_file", "write_file"]);
         Console.WriteLine("\n--- Final agent response ---");
         Console.WriteLine(response);

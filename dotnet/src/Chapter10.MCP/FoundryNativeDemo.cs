@@ -10,13 +10,15 @@ namespace Chapter10.MCP;
 
 public static class FoundryNativeDemo
 {
-    public static async Task RunAsync(CancellationToken cancellationToken = default)
+    public static async Task RunAsync(
+        string? deploymentSelection = null,
+        CancellationToken cancellationToken = default)
     {
         var configuration = new ConfigurationBuilder()
             .AddUserSecrets(typeof(FoundryChatClientFactory).Assembly)
             .AddEnvironmentVariables()
             .Build();
-        var settings = LoadSettings(configuration);
+        var settings = LoadSettings(configuration, deploymentSelection);
 
         var projectClient = new AIProjectClient(
             new Uri(settings.ProjectEndpoint),
@@ -50,6 +52,7 @@ public static class FoundryNativeDemo
         {
             var agent = projectClient.AsAIAgent(agentVersion);
             var request = "Use the greet tool to greet Ada.";
+            Console.WriteLine($"Using model deployment: {settings.ModelDeployment}");
             Console.WriteLine($"MCP server: {settings.McpServerUrl}");
             Console.WriteLine("--- Foundry-native MCP request ---");
             Console.WriteLine(request);
@@ -71,17 +74,19 @@ public static class FoundryNativeDemo
         }
     }
 
-    private static NativeFoundrySettings LoadSettings(IConfiguration configuration)
+    private static NativeFoundrySettings LoadSettings(
+        IConfiguration configuration,
+        string? deploymentSelection)
     {
         var projectEndpoint = configuration["Foundry:ProjectEndpoint"]
             ?? configuration["FOUNDRY_PROJECT_ENDPOINT"];
-        var deployment = configuration["Foundry:ModelDeployment"]
+        var defaultDeployment = configuration["Foundry:ModelDeployment"]
             ?? configuration["AZURE_AI_MODEL_DEPLOYMENT_NAME"];
         var serverUrl = configuration["Foundry:McpServerUrl"]
             ?? configuration["CHAPTER10_MCP_SERVER_URL"];
 
         if (string.IsNullOrWhiteSpace(projectEndpoint) ||
-            string.IsNullOrWhiteSpace(deployment) ||
+            string.IsNullOrWhiteSpace(defaultDeployment) ||
             string.IsNullOrWhiteSpace(serverUrl))
         {
             throw new InvalidOperationException(
@@ -94,6 +99,13 @@ public static class FoundryNativeDemo
         {
             throw new InvalidOperationException("Foundry:McpServerUrl must be an absolute HTTP or HTTPS URL.");
         }
+
+        var deployments = configuration.GetSection("Foundry:ModelDeployments")
+            .Get<Dictionary<string, string>>() ?? [];
+        var deployment = FoundrySettings.ResolveModelDeployment(
+            deploymentSelection,
+            defaultDeployment,
+            deployments);
 
         return new NativeFoundrySettings(projectEndpoint, deployment, serverUri.ToString());
     }
