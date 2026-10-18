@@ -74,7 +74,7 @@ public static class FoundryMemoryDemo
             cancellationToken);
 
         writeOutput?.Invoke("\nWaiting for Foundry memory updates...");
-        await memoryProvider.WhenUpdatesCompletedAsync().WaitAsync(cancellationToken);
+        await memoryProvider.WhenUpdatesCompletedAsync(cancellationToken: cancellationToken);
 
         AgentSession nextSession = await agent.CreateSessionAsync(cancellationToken);
         await RunTurnAsync(
@@ -88,8 +88,8 @@ public static class FoundryMemoryDemo
         if (configuredMemoryScope is null)
         {
             writeOutput?.Invoke("\nCleaning up the temporary demo memory scope.");
-            await memoryProvider.WhenUpdatesCompletedAsync().WaitAsync(cancellationToken);
-            await memoryProvider.EnsureStoredMemoriesDeletedAsync(nextSession);
+            await memoryProvider.WhenUpdatesCompletedAsync(cancellationToken: cancellationToken);
+            await memoryProvider.EnsureStoredMemoriesDeletedAsync(nextSession, cancellationToken);
         }
     }
 
