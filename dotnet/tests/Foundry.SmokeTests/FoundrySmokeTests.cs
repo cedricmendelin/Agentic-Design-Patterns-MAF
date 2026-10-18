@@ -76,4 +76,17 @@ public sealed class FoundrySmokeTests
         Assert.Contains("### Plan", result.StandardOutput);
         Assert.Contains("### Summary", result.StandardOutput);
     }
+
+    [Fact(Timeout = 240000)]
+    public async Task Chapter08_session_memory_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter08SessionMemoryAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("--- Explicit session-state update ---", result.StandardOutput);
+        Assert.Contains("--- Recall from the same session ---", result.StandardOutput);
+        Assert.Contains("travel preference: window seats when I travel", result.StandardOutput, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("--- Serialize and restore the session ---", result.StandardOutput);
+        Assert.Contains("Stored output key: last_response", result.StandardOutput);
+    }
 }

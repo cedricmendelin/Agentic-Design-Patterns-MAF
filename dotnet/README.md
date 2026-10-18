@@ -56,7 +56,7 @@ The live workflow maps those secrets onto the existing runtime environment varia
 - `Foundry__ModelDeployments__fast`
 - `Foundry__ModelDeployments__quality`
 
-Chapter 06's plan-and-write workflow is included in the live Foundry smoke tests. Its optional Deep Research demo is not part of the smoke suite because it requires a separately deployed Deep Research model and runs as a potentially long background task.
+Chapter 06's plan-and-write workflow and Chapter 08's session-memory workflow are included in the live Foundry smoke tests. Chapter 06's optional Deep Research demo is not part of the smoke suite because it requires a separately deployed Deep Research model and runs as a potentially long background task. Chapter 08's Foundry-managed memory variant requires a configured embedding deployment and Entra ID, so it is an opt-in local demo rather than part of the API-key smoke suite.
 
 That means the cloud agent and GitHub Actions jobs can invoke the chapter demos without `dotnet user-secrets`, as long as the workflow job runs inside the protected environment.
 
@@ -64,7 +64,7 @@ To run the live smoke tests manually:
 
 1. Open **Actions** → **Live Foundry smoke tests**.
 2. Start the workflow with an optional deployment alias if you want to target a named deployment.
-3. The workflow builds the solution, runs deterministic tests, then runs smoke tests for Chapters 01–06.
+3. The workflow builds the solution, runs deterministic tests, then runs live model smoke tests for Chapters 01–06 and 08.
 
 Any new test project that you add to `dotnet/AgenticDesignPatterns.slnx` is picked up by the non-live `dotnet test` step automatically. Live Foundry validation is intentionally narrower: the workflow checks out the default branch before loading protected secrets, so new demos only run there after you add coverage in `dotnet/tests/Foundry.SmokeTests` and merge that change to the default branch.
 
@@ -84,6 +84,7 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 | 04 | Reflection | `src/Chapter04.Reflection` | [Chapter 04 guide](src/Chapter04.Reflection/README.md) |
 | 05 | Tool Use | `src/Chapter05.ToolUse` | [Chapter 05 guide](src/Chapter05.ToolUse/README.md) |
 | 06 | Planning | `src/Chapter06.Planning` | [Chapter 06 guide](src/Chapter06.Planning/README.md) |
+| 08 | Memory | `src/Chapter08.Memory` | [Chapter 08 guide](src/Chapter08.Memory/README.md) |
 
 ## Hosted-agent companions
 
@@ -96,6 +97,7 @@ The hosted projects expose the same MAF chapter logic through Microsoft Foundry 
 | 04 | [Reflection](src/Chapter04.Reflection.Hosted/README.md) | `fact-check:`, `product:`, or `code-review:` |
 | 05 | [Tool Use](src/Chapter05.ToolUse.Hosted/README.md) | `search:`, `calculate:`, or `stock:` |
 | 06 | [Planning](src/Chapter06.Planning.Hosted/README.md) | Topic to plan and summarize |
+| 08 | [Memory](src/Chapter08.Memory.Hosted/README.md) | Scripted managed-memory demo; synthetic facts and a fresh scope per request |
 
 ### Configure and deploy hosted agents
 

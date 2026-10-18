@@ -1,0 +1,6 @@
+defaultEnvironment: chapter08-memory
+environments:
+  chapter08-memory:
+    azd:
+      environmentName: chapter08-memory
+      service: chapter08-memory
