@@ -1,5 +1,4 @@
 using System.ClientModel;
-using System.Diagnostics;
 using System.Text.Json;
 using AgenticDesignPatterns.Shared;
 using Azure.AI.Projects;
@@ -31,6 +30,21 @@ public static class FoundryEvaluationDemo
             new Uri(settings.ProjectEndpoint),
             tokenProvider: new DefaultAzureCredential());
         EvaluationClient evaluationClient = projectClient.ProjectOpenAIClient.GetEvaluationClient();
+        await RunAsync(
+            evaluationClient, deployment, baselineInstructions, proposedInstructions,
+            writeOutput, cancellationToken);
+    }
+
+    internal static async Task RunAsync(
+        EvaluationClient evaluationClient,
+        string deployment,
+        string baselineInstructions,
+        string proposedInstructions,
+        Action<string>? writeOutput = null,
+        CancellationToken cancellationToken = default,
+        TimeSpan? pollingTimeout = null,
+        TimeSpan? pollingInterval = null)
+    {
         var evaluationId = await CreateEvaluationAsync(
             evaluationClient,
             deployment,
@@ -44,7 +58,9 @@ public static class FoundryEvaluationDemo
             baselineInstructions,
             "baseline",
             writeOutput,
-            cancellationToken);
+            cancellationToken,
+            pollingTimeout,
+            pollingInterval);
         var proposalRunId = await RunEvaluationAsync(
             evaluationClient,
             evaluationId,
@@ -52,7 +68,9 @@ public static class FoundryEvaluationDemo
             proposedInstructions,
             "proposal",
             writeOutput,
-            cancellationToken);
+            cancellationToken,
+            pollingTimeout,
+            pollingInterval);
         var baselineScore = await GetTaskAdherenceScoreAsync(
             evaluationClient,
             evaluationId,
@@ -115,7 +133,8 @@ public static class FoundryEvaluationDemo
         });
         using var evaluationContent = BinaryContent.Create(evaluationData);
         var evaluation = await evaluationClient.CreateEvaluationAsync(
-            evaluationContent);
+            evaluationContent,
+            options: new() { CancellationToken = cancellationToken });
         cancellationToken.ThrowIfCancellationRequested();
         return GetString(evaluation, "id");
     }
@@ -127,7 +146,9 @@ public static class FoundryEvaluationDemo
         string instructions,
         string label,
         Action<string>? writeOutput,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        TimeSpan? pollingTimeout,
+        TimeSpan? pollingInterval)
     {
         var dataSource = new
         {
@@ -174,33 +195,38 @@ public static class FoundryEvaluationDemo
         using var runContent = BinaryContent.Create(runData);
         var evaluationRun = await evaluationClient.CreateEvaluationRunAsync(
             evaluationId: evaluationId,
-            content: runContent);
+            content: runContent,
+            options: new() { CancellationToken = cancellationToken });
         cancellationToken.ThrowIfCancellationRequested();
         var runId = GetString(evaluationRun, "id");
         writeOutput?.Invoke($"Submitted {label} evaluation run: {runId}");
 
-        var started = Stopwatch.StartNew();
-        var status = GetString(evaluationRun, "status");
-        while (status is not ("completed" or "failed" or "canceled"))
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        deadline.CancelAfter(pollingTimeout ?? TimeSpan.FromMinutes(5));
+        try
         {
-            if (started.Elapsed > TimeSpan.FromMinutes(5))
+            var status = GetString(evaluationRun, "status");
+            while (status is not ("completed" or "failed" or "canceled"))
             {
-                throw new TimeoutException($"Foundry {label} evaluation did not complete within five minutes.");
+                await Task.Delay(pollingInterval ?? TimeSpan.FromSeconds(2), deadline.Token);
+                evaluationRun = await evaluationClient.GetEvaluationRunAsync(
+                    evaluationId: evaluationId,
+                    evaluationRunId: runId,
+                    options: new() { CancellationToken = deadline.Token });
+                deadline.Token.ThrowIfCancellationRequested();
+                status = GetString(evaluationRun, "status");
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
-            evaluationRun = await evaluationClient.GetEvaluationRunAsync(
-                evaluationId: evaluationId,
-                evaluationRunId: runId,
-                options: new());
-            cancellationToken.ThrowIfCancellationRequested();
-            status = GetString(evaluationRun, "status");
+            deadline.Token.ThrowIfCancellationRequested();
+            if (status != "completed")
+            {
+                throw new InvalidOperationException(
+                    $"Foundry {label} evaluation ended with status '{status}': {evaluationRun.GetRawResponse().Content}");
+            }
         }
-
-        if (status != "completed")
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested && deadline.IsCancellationRequested)
         {
-            throw new InvalidOperationException(
-                $"Foundry {label} evaluation ended with status '{status}': {evaluationRun.GetRawResponse().Content}");
+            throw new TimeoutException($"Foundry {label} evaluation did not complete within its polling deadline.");
         }
 
         return runId;
@@ -226,7 +252,7 @@ public static class FoundryEvaluationDemo
                 order: "asc",
                 after: after,
                 outputItemStatus: null,
-                options: new());
+                options: new() { CancellationToken = cancellationToken });
             cancellationToken.ThrowIfCancellationRequested();
             using var document = JsonDocument.Parse(outputPage.GetRawResponse().Content.ToMemory());
             var root = document.RootElement;
@@ -260,7 +286,9 @@ public static class FoundryEvaluationDemo
                         }
                     }
                     else if (result.TryGetProperty("label", out var label) &&
-                             label.ValueKind == JsonValueKind.String)
+                             label.ValueKind == JsonValueKind.String &&
+                             (string.Equals(label.GetString(), "pass", StringComparison.OrdinalIgnoreCase) ||
+                              string.Equals(label.GetString(), "fail", StringComparison.OrdinalIgnoreCase)))
                     {
                         total++;
                         if (string.Equals(label.GetString(), "pass", StringComparison.OrdinalIgnoreCase))
@@ -276,10 +304,11 @@ public static class FoundryEvaluationDemo
         }
         while (hasMore);
 
-        if (total == 0)
+        if (total != EvaluationBenchmark.Cases.Count)
         {
             throw new InvalidOperationException(
-                $"Foundry evaluation run '{runId}' completed without task_adherence result items.");
+                $"Foundry evaluation run '{runId}' returned {total} usable task_adherence results; " +
+                $"expected {EvaluationBenchmark.Cases.Count} benchmark results.");
         }
 
         return new EvaluationScore(passed, total);

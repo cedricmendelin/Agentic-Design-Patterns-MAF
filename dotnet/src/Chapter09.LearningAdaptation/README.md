@@ -88,7 +88,8 @@ The deterministic evaluator passes a case only when every required phrase is pre
 ## Extending with Microsoft Foundry
 
 - The `foundry` mode uses Foundry's cloud Evaluation API with the built-in `task_adherence` evaluator to compare the same baseline and proposal test cases. The MAF variant's keyword contract remains a local, deterministic check; the cloud evaluator supplements it rather than replacing it.
-- Cloud evaluation is asynchronous. The demo waits up to five minutes per run and fails explicitly if a run fails, is cancelled, or does not finish.
+- Cloud evaluation is asynchronous. A five-minute cancellation deadline covers polling delays and status requests for each run; caller cancellation also reaches creation, submission, and result-page requests. Cancelling a request does not undo server-side work already accepted.
+- Scores require the expected number of usable task-adherence results across all result pages. Incomplete results fail explicitly rather than reporting a smaller denominator.
 - Evaluation definitions and run results are retained by the Foundry project for inspection. Use a representative dataset, review region and data-retention requirements, and remove only evaluation records you own.
 - Enable tracing to inspect each curation and candidate call. Sensitive-data capture is enabled for this demo; prompts and model content may appear in exported traces. Use non-sensitive data and restrict telemetry access and retention.
 - For production, version datasets and candidate prompts, keep evaluator criteria independent of prompt changes, and gate promotion behind review, regression testing, staged rollout, and rollback.

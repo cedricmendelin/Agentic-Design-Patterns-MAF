@@ -5,6 +5,7 @@
     <RootNamespace>Chapter09.LearningAdaptation</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="LearningAdaptation.Tests" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
     <PackageReference Include="Azure.AI.Extensions.OpenAI" />
     <PackageReference Include="Azure.AI.Projects" />

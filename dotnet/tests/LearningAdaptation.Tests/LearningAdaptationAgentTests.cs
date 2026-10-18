@@ -18,6 +18,21 @@ public sealed class LearningAdaptationAgentTests
         "Use only supplied policies. State return eligibility and timing, and request an order number and damage photo when needed.";
 
     [Fact]
+    public async Task Passing_baseline_skips_curation_and_reports_no_update()
+    {
+        using var client = new ScriptedChatClient();
+
+        var result = await LearningAdaptationWorkflow.RunAsync(client, ProposedInstructions);
+
+        Assert.Equal(3, result.Baseline.PassedCases);
+        Assert.Empty(result.Proposals);
+        Assert.Equal(3, client.Requests.Count);
+        Assert.Contains(
+            "The starting prompt already passes the benchmark; no update is recommended.",
+            result.Format());
+    }
+
+    [Fact]
     public async Task Adaptation_uses_deterministic_benchmark_and_keeps_proposal_unpromoted()
     {
         using var client = new ScriptedChatClient();
