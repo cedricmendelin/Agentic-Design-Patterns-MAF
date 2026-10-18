@@ -10,6 +10,8 @@ Send a user message containing `<scenario>: <task>` where the scenario is `seque
 
 Each request constructs a fresh run and does not persist conversation history. The final result is buffered until the selected workflow completes. Agent spans use the `Chapter07.MultiAgent` telemetry source, with sensitive-data capture enabled; caller text and intermediate results can appear in exported traces.
 
+Both Chapter 07 hosts use the same `RequestIsolationKeyProvider` to partition MAF session state by the server-generated response ID. Authenticated service-principal and managed-identity callers do not need a platform user header. This policy does not bypass Foundry authorization or impersonate a user. Resuming MAF state across responses is intentionally unsupported; send a fresh request instead of `previous_response_id`.
+
 ## Prerequisites and configuration
 
 Follow the [shared hosted-agent setup](../../README.md#configure-and-deploy-hosted-agents) to install tooling, select your Foundry project and model, configure `azure.yaml`, and set up authentication and permissions.

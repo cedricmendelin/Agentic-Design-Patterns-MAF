@@ -4,7 +4,7 @@ using Microsoft.Agents.AI.Foundry.Hosting;
 
 #pragma warning disable MAAI001 // The hosting SDK's explicit isolation policy is currently experimental.
 
-namespace Chapter07.MultiAgent.Distributed;
+namespace Chapter07.MultiAgent.Hosted;
 
 public sealed class RequestIsolationKeyProvider : HostedSessionIsolationKeyProvider
 {

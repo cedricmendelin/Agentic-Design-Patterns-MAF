@@ -18,7 +18,7 @@ public sealed class DistributedCrewTests
     [Fact]
     public async Task Stateless_host_partitions_by_response_instead_of_missing_user_identity()
     {
-        var provider = new RequestIsolationKeyProvider();
+        var provider = new Chapter07.MultiAgent.Hosted.RequestIsolationKeyProvider();
         var first = await provider.GetKeysAsync(new TestResponseContext("response-1"), new CreateResponse());
         var second = await provider.GetKeysAsync(new TestResponseContext("response-2"), new CreateResponse());
 

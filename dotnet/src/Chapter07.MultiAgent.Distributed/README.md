@@ -94,7 +94,7 @@ azd deploy chapter07-orchestrator --no-prompt
 azd ai agent show chapter07-orchestrator --output json
 ```
 
-No Docker or registry is required. Bundled deployment publishes the host, Chapter 07, Shared, and referenced configuration code together. The `.agentignore` excludes environment files, azd state, secrets, and unnecessary source build artifacts.
+No Docker or registry is required. Bundled deployment publishes the distributed host, Chapter 07, Shared, and the single-host companion assembly containing shared configuration and request-isolation support. Referencing that assembly does not start another host. The `.agentignore` excludes environment files, azd state, secrets, and unnecessary source build artifacts.
 
 ## Runtime permissions
 

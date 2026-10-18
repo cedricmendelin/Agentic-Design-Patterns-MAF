@@ -29,6 +29,9 @@ IChatClient chatClient = string.IsNullOrWhiteSpace(settings.ApiKey)
 
 using IChatClient modelClient = chatClient;
 builder.ConfigureTracing(tracing => tracing.AddSource(MultiAgentWorkflow.TelemetrySourceName));
+#pragma warning disable MAAI001
+builder.Services.AddSingleton<HostedSessionIsolationKeyProvider, RequestIsolationKeyProvider>();
+#pragma warning restore MAAI001
 builder.Services.AddFoundryResponses(new MultiAgentHostedAgent(modelClient));
 builder.RegisterProtocol("responses", endpoints => endpoints.MapFoundryResponses());
 var app = builder.Build();

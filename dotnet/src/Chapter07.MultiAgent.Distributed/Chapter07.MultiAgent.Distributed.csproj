@@ -2,9 +2,9 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Chapter07.MultiAgent\Chapter07.MultiAgent.csproj" />
+    <ProjectReference Include="..\Chapter07.MultiAgent.Hosted\Chapter07.MultiAgent.Hosted.csproj" />
     <PackageReference Include="Azure.AI.OpenAI" />
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Microsoft.Agents.AI.Foundry.Hosting" />
-    <Compile Include="..\Chapter07.MultiAgent.Hosted\HostedFoundryConfiguration.cs" Link="HostedFoundryConfiguration.cs" />
   </ItemGroup>
 </Project>
