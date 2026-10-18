@@ -1,0 +1,13 @@
+.env
+.env.*
+**/.env*
+.azure/
+secrets.json
+**/secrets.json
+appsettings.Development.json
+.git/
+bin/
+obj/
+*.user
+.vs/
+publish/

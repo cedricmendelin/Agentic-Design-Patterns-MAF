@@ -126,6 +126,106 @@ services:
         protocols:
             - protocol: responses
               version: 2.0.0
+    chapter07-multi-agent:
+        project: ./src/Chapter07.MultiAgent.Hosted
+        host: azure.ai.agent
+        language: csharp
+        startupCommand: dotnet run --project Chapter07.MultiAgent.Hosted.csproj
+        displayName: Chapter 07 - Multi-Agent
+        description: Runs one caller-selected multi-agent collaboration scenario per request.
+        uses:
+            - mvp-playground-foundry-proj
+        env:
+            AZURE_AI_MODEL_DEPLOYMENT_NAME: gpt-5-mini
+        codeConfiguration:
+            dependencyResolution: bundled
+            entryPoint: Chapter07.MultiAgent.Hosted.dll
+            runtime: dotnet_10
+        container:
+            resources:
+                cpu: "0.5"
+                memory: 1Gi
+        kind: hosted
+        name: chapter07-multi-agent
+        protocols:
+            - protocol: responses
+              version: 2.0.0
+    chapter07-researcher:
+        project: ./src/Chapter07.MultiAgent.Distributed
+        host: azure.ai.agent
+        language: csharp
+        startupCommand: dotnet run --project Chapter07.MultiAgent.Distributed.csproj
+        displayName: Chapter 07 - Research specialist
+        description: Produces research notes from general model knowledge for the distributed crew.
+        uses:
+            - mvp-playground-foundry-proj
+        env:
+            Distributed__Role: researcher
+            AZURE_AI_MODEL_DEPLOYMENT_NAME: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
+        codeConfiguration:
+            dependencyResolution: bundled
+            entryPoint: Chapter07.MultiAgent.Distributed.dll
+            runtime: dotnet_10
+        container:
+            resources:
+                cpu: "0.5"
+                memory: 1Gi
+        kind: hosted
+        name: chapter07-researcher
+        protocols:
+            - protocol: responses
+              version: 2.0.0
+    chapter07-writer:
+        project: ./src/Chapter07.MultiAgent.Distributed
+        host: azure.ai.agent
+        language: csharp
+        startupCommand: dotnet run --project Chapter07.MultiAgent.Distributed.csproj
+        displayName: Chapter 07 - Writing specialist
+        description: Writes an article grounded in caller-supplied research notes.
+        uses:
+            - mvp-playground-foundry-proj
+        env:
+            Distributed__Role: writer
+            AZURE_AI_MODEL_DEPLOYMENT_NAME: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
+        codeConfiguration:
+            dependencyResolution: bundled
+            entryPoint: Chapter07.MultiAgent.Distributed.dll
+            runtime: dotnet_10
+        container:
+            resources:
+                cpu: "0.5"
+                memory: 1Gi
+        kind: hosted
+        name: chapter07-writer
+        protocols:
+            - protocol: responses
+              version: 2.0.0
+    chapter07-orchestrator:
+        project: ./src/Chapter07.MultiAgent.Distributed
+        host: azure.ai.agent
+        language: csharp
+        startupCommand: dotnet run --project Chapter07.MultiAgent.Distributed.csproj
+        displayName: Chapter 07 - Distributed orchestrator
+        description: Calls the remote research specialist, then passes its notes to the remote writing specialist.
+        uses:
+            - mvp-playground-foundry-proj
+        env:
+            Distributed__Role: orchestrator
+            Distributed__ResearcherEndpoint: ${CHAPTER07_RESEARCHER_ENDPOINT}
+            Distributed__WriterEndpoint: ${CHAPTER07_WRITER_ENDPOINT}
+        codeConfiguration:
+            dependencyResolution: bundled
+            entryPoint: Chapter07.MultiAgent.Distributed.dll
+            runtime: dotnet_10
+        container:
+            resources:
+                cpu: "0.5"
+                memory: 1Gi
+        kind: hosted
+        name: chapter07-orchestrator
+        protocols:
+            - protocol: responses
+              version: 2.0.0
     mvp-playground-foundry-proj:
         host: azure.ai.project
         endpoint: https://mvp-playground-foundry.services.ai.azure.com/api/projects/mvp-playground-foundry-proj
