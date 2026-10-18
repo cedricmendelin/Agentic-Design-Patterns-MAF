@@ -76,4 +76,16 @@ public sealed class FoundrySmokeTests
         Assert.Contains("### Plan", result.StandardOutput);
         Assert.Contains("### Summary", result.StandardOutput);
     }
+
+    [Fact(Timeout = 240000)]
+    public async Task Chapter09_learning_adaptation_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter09LearningAdaptationAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("--- Baseline evaluation ---", result.StandardOutput);
+        Assert.Contains("Candidate score:", result.StandardOutput);
+        Assert.Contains("--- Adaptation result ---", result.StandardOutput);
+        Assert.Contains("Best-scoring prompt:", result.StandardOutput);
+    }
 }
