@@ -86,6 +86,7 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 | 06 | Planning | `src/Chapter06.Planning` | [Chapter 06 guide](src/Chapter06.Planning/README.md) |
 | 08 | Memory | `src/Chapter08.Memory` | [Chapter 08 guide](src/Chapter08.Memory/README.md) |
 | 09 | Learning & Adaptation | `src/Chapter09.LearningAdaptation` | [Chapter 09 guide](src/Chapter09.LearningAdaptation/README.md) |
+| 10 | MCP | `src/Chapter10.MCP` | [Chapter 10 guide](src/Chapter10.MCP/README.md) |
 
 ## Hosted-agent companions
 
@@ -100,6 +101,7 @@ The hosted projects expose the same MAF chapter logic through Microsoft Foundry 
 | 06 | [Planning](src/Chapter06.Planning.Hosted/README.md) | Topic to plan and summarize |
 | 08 | [Memory](src/Chapter08.Memory.Hosted/README.md) | Scripted managed-memory demo; synthetic facts and a fresh scope per request |
 | 09 | [Learning & Adaptation](src/Chapter09.LearningAdaptation.Hosted/README.md) | Starting prompt instructions to evaluate and revise |
+| 10 | [MCP](src/Chapter10.MCP.Hosted/README.md) | Request to the configured remote MCP server |
 
 ### Configure and deploy hosted agents
 
