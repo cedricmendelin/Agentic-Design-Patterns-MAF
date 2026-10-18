@@ -7,6 +7,7 @@
     <Project Path="src/Chapter05.ToolUse/Chapter05.ToolUse.csproj" />
     <Project Path="src/Chapter06.Planning/Chapter06.Planning.csproj" />
     <Project Path="src/Chapter08.Memory/Chapter08.Memory.csproj" />
+    <Project Path="src/Chapter09.LearningAdaptation/Chapter09.LearningAdaptation.csproj" />
     <Project Path="src/Shared/Shared.csproj" />
   </Folder>
   <Folder Name="/src/Hosting/">
@@ -16,6 +17,7 @@
     <Project Path="src/Chapter05.ToolUse.Hosted/Chapter05.ToolUse.Hosted.csproj" />
     <Project Path="src/Chapter06.Planning.Hosted/Chapter06.Planning.Hosted.csproj" />
     <Project Path="src/Chapter08.Memory.Hosted/Chapter08.Memory.Hosted.csproj" />
+    <Project Path="src/Chapter09.LearningAdaptation.Hosted/Chapter09.LearningAdaptation.Hosted.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Foundry.SmokeTests/Foundry.SmokeTests.csproj" />
@@ -25,5 +27,6 @@
     <Project Path="tests/Routing.Tests/Routing.Tests.csproj" />
     <Project Path="tests/Shared.Tests/Shared.Tests.csproj" />
     <Project Path="tests/ToolUse.Tests/ToolUse.Tests.csproj" />
+    <Project Path="tests/LearningAdaptation.Tests/LearningAdaptation.Tests.csproj" />
   </Folder>
 </Solution>

@@ -3,8 +3,9 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Azure.AI.Projects" Version="3.0.0-beta.2" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.1.0" />
+    <PackageVersion Include="Azure.AI.Extensions.OpenAI" Version="3.0.0-beta.3" />
+    <PackageVersion Include="Azure.AI.Projects" Version="3.0.0-beta.3" />
     <PackageVersion Include="Azure.Identity" Version="1.21.0" />
     <PackageVersion Include="Microsoft.Agents.AI.Foundry.Hosting" Version="1.22.0-preview.260918.1" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />

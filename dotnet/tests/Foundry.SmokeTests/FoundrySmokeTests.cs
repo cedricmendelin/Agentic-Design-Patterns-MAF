@@ -89,4 +89,21 @@ public sealed class FoundrySmokeTests
         Assert.Contains("--- Serialize and restore the session ---", result.StandardOutput);
         Assert.Contains("Stored output key: last_response", result.StandardOutput);
     }
+
+    [Fact(Timeout = 240000)]
+    public async Task Chapter09_learning_adaptation_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter09LearningAdaptationAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("--- Baseline evaluation ---", result.StandardOutput);
+        Assert.True(
+            result.StandardOutput.Contains("Candidate score:", StringComparison.Ordinal) ||
+            result.StandardOutput.Contains(
+                "The starting prompt already passes the benchmark; no update is recommended.",
+                StringComparison.Ordinal),
+            result.CombinedOutput);
+        Assert.Contains("--- Adaptation result ---", result.StandardOutput);
+        Assert.Contains("Best-scoring prompt:", result.StandardOutput);
+    }
 }
