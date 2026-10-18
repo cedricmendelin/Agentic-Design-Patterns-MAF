@@ -36,6 +36,11 @@ internal static class DotnetDemoRunner
             Path.Combine(RepositoryRoot, "dotnet", "src", "Chapter06.Planning", "Chapter06.Planning.csproj"),
             ["plan-write"]);
 
+    public static Task<DemoRunResult> RunChapter07CrewAsync() =>
+        RunAsync(
+            Path.Combine(RepositoryRoot, "dotnet", "src", "Chapter07.MultiAgent", "Chapter07.MultiAgent.csproj"),
+            ["crew"]);
+
     public static Task<DemoRunResult> RunChapter08SessionMemoryAsync() =>
         RunAsync(
             Path.Combine(RepositoryRoot, "dotnet", "src", "Chapter08.Memory", "Chapter08.Memory.csproj"),

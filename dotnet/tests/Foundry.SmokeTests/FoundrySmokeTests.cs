@@ -78,6 +78,17 @@ public sealed class FoundrySmokeTests
     }
 
     [Fact(Timeout = 240000)]
+    public async Task Chapter07_crew_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter07CrewAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("--- Crew research task ---", result.StandardOutput);
+        Assert.Contains("--- Crew writing task ---", result.StandardOutput);
+        Assert.Contains("--- Final output ---", result.StandardOutput);
+    }
+
+    [Fact(Timeout = 240000)]
     public async Task Chapter08_session_memory_demo_runs_with_live_foundry_configuration()
     {
         var result = await DotnetDemoRunner.RunChapter08SessionMemoryAsync();
