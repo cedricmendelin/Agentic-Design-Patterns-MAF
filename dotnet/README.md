@@ -56,7 +56,7 @@ The live workflow maps those secrets onto the existing runtime environment varia
 - `Foundry__ModelDeployments__fast`
 - `Foundry__ModelDeployments__quality`
 
-Chapter 06's plan-and-write workflow is included in the live Foundry smoke tests. Its optional Deep Research demo is not part of the smoke suite because it requires a separately deployed Deep Research model and runs as a potentially long background task.
+Chapter 06's plan-and-write and Chapter 09's prompt-adaptation workflows are included in the live Foundry smoke tests. Chapter 06's optional Deep Research demo is not part of the smoke suite because it requires a separately deployed Deep Research model and runs as a potentially long background task.
 
 That means the cloud agent and GitHub Actions jobs can invoke the chapter demos without `dotnet user-secrets`, as long as the workflow job runs inside the protected environment.
 
@@ -64,7 +64,7 @@ To run the live smoke tests manually:
 
 1. Open **Actions** → **Live Foundry smoke tests**.
 2. Start the workflow with an optional deployment alias if you want to target a named deployment.
-3. The workflow builds the solution, runs deterministic tests, then runs smoke tests for Chapters 01–07.
+3. The workflow builds the solution, runs deterministic tests, then runs smoke tests for Chapters 01–07 and 09.
 
 Any new test project that you add to `dotnet/AgenticDesignPatterns.slnx` is picked up by the non-live `dotnet test` step automatically. Live Foundry validation is intentionally narrower: the workflow checks out the default branch before loading protected secrets, so new demos only run there after you add coverage in `dotnet/tests/Foundry.SmokeTests` and merge that change to the default branch.
 
@@ -85,6 +85,7 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 | 05 | Tool Use | `src/Chapter05.ToolUse` | [Chapter 05 guide](src/Chapter05.ToolUse/README.md) |
 | 06 | Planning | `src/Chapter06.Planning` | [Chapter 06 guide](src/Chapter06.Planning/README.md) |
 | 07 | Multi-Agent Collaboration | `src/Chapter07.MultiAgent` | [Chapter 07 guide](src/Chapter07.MultiAgent/README.md) |
+| 09 | Learning & Adaptation | `src/Chapter09.LearningAdaptation` | [Chapter 09 guide](src/Chapter09.LearningAdaptation/README.md) |
 
 ## Hosted-agent companions
 
@@ -99,6 +100,7 @@ The hosted projects expose the same MAF chapter logic through Microsoft Foundry 
 | 06 | [Planning](src/Chapter06.Planning.Hosted/README.md) | Topic to plan and summarize |
 | 07 | [Multi-Agent Collaboration](src/Chapter07.MultiAgent.Hosted/README.md) | `<scenario>: <task>` or a task for the default `crew` scenario |
 | 07 | [Distributed crew](src/Chapter07.MultiAgent.Distributed/README.md) | Topic sent to an orchestrator that calls separately hosted researcher and writer agents |
+| 09 | [Learning & Adaptation](src/Chapter09.LearningAdaptation.Hosted/README.md) | Starting prompt instructions to evaluate and revise |
 
 ### Configure and deploy hosted agents
 
