@@ -56,7 +56,7 @@ The live workflow maps those secrets onto the existing runtime environment varia
 - `Foundry__ModelDeployments__fast`
 - `Foundry__ModelDeployments__quality`
 
-Chapter 06's plan-and-write workflow is included in the live Foundry smoke tests. Its optional Deep Research demo is not part of the smoke suite because it requires a separately deployed Deep Research model and runs as a potentially long background task.
+Chapter 06's plan-and-write and Chapter 09's prompt-adaptation workflows are included in the live Foundry smoke tests. Chapter 06's optional Deep Research demo is not part of the smoke suite because it requires a separately deployed Deep Research model and runs as a potentially long background task.
 
 That means the cloud agent and GitHub Actions jobs can invoke the chapter demos without `dotnet user-secrets`, as long as the workflow job runs inside the protected environment.
 
@@ -84,6 +84,7 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 | 04 | Reflection | `src/Chapter04.Reflection` | [Chapter 04 guide](src/Chapter04.Reflection/README.md) |
 | 05 | Tool Use | `src/Chapter05.ToolUse` | [Chapter 05 guide](src/Chapter05.ToolUse/README.md) |
 | 06 | Planning | `src/Chapter06.Planning` | [Chapter 06 guide](src/Chapter06.Planning/README.md) |
+| 09 | Learning & Adaptation | `src/Chapter09.LearningAdaptation` | [Chapter 09 guide](src/Chapter09.LearningAdaptation/README.md) |
 
 ## Hosted-agent companions
 
@@ -96,6 +97,7 @@ The hosted projects expose the same MAF chapter logic through Microsoft Foundry 
 | 04 | [Reflection](src/Chapter04.Reflection.Hosted/README.md) | `fact-check:`, `product:`, or `code-review:` |
 | 05 | [Tool Use](src/Chapter05.ToolUse.Hosted/README.md) | `search:`, `calculate:`, or `stock:` |
 | 06 | [Planning](src/Chapter06.Planning.Hosted/README.md) | Topic to plan and summarize |
+| 09 | [Learning & Adaptation](src/Chapter09.LearningAdaptation.Hosted/README.md) | Starting prompt instructions to evaluate and revise |
 
 ### Configure and deploy hosted agents
 
