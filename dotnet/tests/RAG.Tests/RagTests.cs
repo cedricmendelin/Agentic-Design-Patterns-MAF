@@ -13,6 +13,71 @@ namespace AgenticDesignPatterns.RAG.Tests;
 
 public sealed class RagTests
 {
+    [Theory]
+    [InlineData("all")]
+    [InlineData("rag")]
+    [InlineData("foundry-files")]
+    [InlineData("foundry-web")]
+    public void Mode_words_after_the_question_starts_remain_question_text(string word)
+    {
+        var options = RagCommandLineOptions.Parse(["Tell", "me", word, "about", "infrastructure"]);
+
+        Assert.Equal("rag", options.Mode);
+        Assert.Equal($"Tell me {word} about infrastructure", options.Question);
+    }
+
+    [Theory]
+    [InlineData("all")]
+    [InlineData("rag")]
+    [InlineData("foundry-files")]
+    [InlineData("foundry-web")]
+    public void Explicit_leading_mode_is_selected_without_consuming_question_words(string mode)
+    {
+        var options = RagCommandLineOptions.Parse([mode, "Tell", "me", "all", "about", "infrastructure"]);
+
+        Assert.Equal(mode, options.Mode);
+        Assert.Equal("Tell me all about infrastructure", options.Question);
+    }
+
+    [Fact]
+    public void Deployment_option_does_not_reopen_mode_detection_after_question_text()
+    {
+        var options = RagCommandLineOptions.Parse(["Tell", "me", "--deployment", "fast", "all", "about", "infrastructure"]);
+
+        Assert.Equal("rag", options.Mode);
+        Assert.Equal("fast", options.DeploymentAlias);
+        Assert.Equal("Tell me all about infrastructure", options.Question);
+    }
+
+    [Fact]
+    public void Deployment_option_before_mode_preserves_explicit_mode_selection()
+    {
+        var options = RagCommandLineOptions.Parse(["--deployment", "fast", "foundry-files", "Summarize", "all", "documents"]);
+
+        Assert.Equal("foundry-files", options.Mode);
+        Assert.Equal("fast", options.DeploymentAlias);
+        Assert.Equal("Summarize all documents", options.Question);
+    }
+
+    [Fact]
+    public void Empty_arguments_preserve_the_default_demo()
+    {
+        var options = RagCommandLineOptions.Parse([]);
+
+        Assert.Equal("rag", options.Mode);
+        Assert.Null(options.DeploymentAlias);
+        Assert.Equal("What did the president say about Justice Breyer?", options.Question);
+    }
+
+    [Theory]
+    [InlineData("--deployment")]
+    [InlineData("--deployment", " ")]
+    [InlineData("--deployment", "fast", "--deployment", "quality")]
+    public void Invalid_deployment_arguments_are_rejected(params string[] args)
+    {
+        Assert.Throws<ArgumentException>(() => RagCommandLineOptions.Parse(args));
+    }
+
     [Fact]
     public void Retrieval_ranks_the_relevant_source_for_the_notebook_questions()
     {

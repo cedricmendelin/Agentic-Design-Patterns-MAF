@@ -8,7 +8,7 @@ Send a plain-text question, such as `What did the president say about Justice Br
 
 ## Prerequisites and configuration
 
-Use .NET 10, a Foundry project with a deployed chat model, and the Azure Developer CLI (`azd`) with the `microsoft.foundry` extension. Follow the [shared hosted-agent setup](../../README.md#configure-and-deploy-hosted-agents) to select your own project/model, configure authentication, and grant deployment permissions.
+Use .NET 10, a Foundry project with a deployed chat model, and the Azure Developer CLI (`azd`) with the `azure.ai.agents` extension. Follow the [shared hosted-agent setup](../../README.md#configure-and-deploy-hosted-agents) to select your own project/model, configure authentication, and grant deployment permissions.
 
 The host reads shared `Foundry` user-secrets and `Foundry__*` environment overrides. If no API key is configured, it uses `DefaultAzureCredential` locally and the hosted agent's managed identity in Azure. Never include API keys in the hosted package.
 

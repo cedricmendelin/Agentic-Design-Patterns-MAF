@@ -2,39 +2,12 @@ using AgenticDesignPatterns.Shared;
 using Chapter14.RAG;
 using Microsoft.Extensions.AI;
 
-var validModes = new HashSet<string>(
-    ["rag", "foundry-files", "foundry-web", "all"],
-    StringComparer.OrdinalIgnoreCase);
-var mode = "rag";
-string? deploymentAlias = null;
-var questionParts = new List<string>();
-var invalidArguments = false;
-var modeSelected = false;
-
-for (var index = 0; index < args.Length; index++)
+RagCommandLineOptions options;
+try
 {
-    if (string.Equals(args[index], "--deployment", StringComparison.OrdinalIgnoreCase))
-    {
-        if (deploymentAlias is not null || index + 1 >= args.Length || string.IsNullOrWhiteSpace(args[index + 1]))
-        {
-            invalidArguments = true;
-            break;
-        }
-
-        deploymentAlias = args[++index];
-    }
-    else if (!modeSelected && validModes.Contains(args[index]))
-    {
-        mode = args[index];
-        modeSelected = true;
-    }
-    else
-    {
-        questionParts.Add(args[index]);
-    }
+    options = RagCommandLineOptions.Parse(args);
 }
-
-if (invalidArguments)
+catch (ArgumentException)
 {
     Console.Error.WriteLine(
         "Usage: dotnet run --project dotnet/src/Chapter14.RAG " +
@@ -42,8 +15,7 @@ if (invalidArguments)
     return 1;
 }
 
-var defaultQuestion = "What did the president say about Justice Breyer?";
-var question = questionParts.Count == 0 ? defaultQuestion : string.Join(' ', questionParts);
+var (mode, deploymentAlias, question) = options;
 
 try
 {
