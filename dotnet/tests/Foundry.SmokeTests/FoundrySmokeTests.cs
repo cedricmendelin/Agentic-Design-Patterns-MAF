@@ -117,4 +117,15 @@ public sealed class FoundrySmokeTests
         Assert.Contains("--- Adaptation result ---", result.StandardOutput);
         Assert.Contains("Best-scoring prompt:", result.StandardOutput);
     }
+
+    [Fact(Timeout = 240000)]
+    public async Task Chapter21_exploration_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter21ExplorationAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("--- Final exploration result ---", result.StandardOutput);
+        Assert.Contains("Final reviewer assessments", result.StandardOutput);
+        Assert.Contains("unverified proposal", result.StandardOutput, StringComparison.OrdinalIgnoreCase);
+    }
 }

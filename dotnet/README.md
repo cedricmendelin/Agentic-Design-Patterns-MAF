@@ -64,7 +64,7 @@ To run the live smoke tests manually:
 
 1. Open **Actions** → **Live Foundry smoke tests**.
 2. Start the workflow with an optional deployment alias if you want to target a named deployment.
-3. The workflow builds the solution, runs deterministic tests, then runs live model smoke tests for Chapters 01–09.
+3. The workflow builds the solution, runs deterministic tests, then runs live model smoke tests for Chapters 01–09 and 21.
 
 Any new test project that you add to `dotnet/AgenticDesignPatterns.slnx` is picked up by the non-live `dotnet test` step automatically. Live Foundry validation is intentionally narrower: the workflow checks out the default branch before loading protected secrets, so new demos only run there after you add coverage in `dotnet/tests/Foundry.SmokeTests` and merge that change to the default branch.
 
@@ -88,6 +88,7 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 | 08 | Memory | `src/Chapter08.Memory` | [Chapter 08 guide](src/Chapter08.Memory/README.md) |
 | 09 | Learning & Adaptation | `src/Chapter09.LearningAdaptation` | [Chapter 09 guide](src/Chapter09.LearningAdaptation/README.md) |
 | 10 | MCP | `src/Chapter10.MCP` | [Chapter 10 guide](src/Chapter10.MCP/README.md) |
+| 21 | Exploration & Discovery | `src/Chapter21.ExplorationDiscovery` | [Chapter 21 guide](src/Chapter21.ExplorationDiscovery/README.md) |
 
 ## Hosted-agent companions
 
@@ -105,6 +106,7 @@ The hosted projects expose the same MAF chapter logic through Microsoft Foundry 
 | 08 | [Memory](src/Chapter08.Memory.Hosted/README.md) | Scripted managed-memory demo; synthetic facts and a fresh scope per request |
 | 09 | [Learning & Adaptation](src/Chapter09.LearningAdaptation.Hosted/README.md) | Starting prompt instructions to evaluate and revise |
 | 10 | [MCP](src/Chapter10.MCP.Hosted/README.md) | Request to the configured remote MCP server |
+| 21 | [Exploration & Discovery](src/Chapter21.ExplorationDiscovery.Hosted/README.md) | Research topic for a bounded proposal and reviewer panel |
 
 ### Configure and deploy hosted agents
 
