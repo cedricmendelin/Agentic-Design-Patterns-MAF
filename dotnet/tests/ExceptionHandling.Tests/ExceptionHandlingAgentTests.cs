@@ -13,6 +13,14 @@ namespace AgenticDesignPatterns.ExceptionHandling.Tests;
 
 public sealed class ExceptionHandlingAgentTests
 {
+    [Theory]
+    [InlineData("1 Market Street, San Francisco", "San Francisco")]
+    [InlineData("1 Market Street, San Francisco, CA, USA", "San Francisco")]
+    public void City_extraction_prefers_supported_city_components(string address, string expectedCity)
+    {
+        Assert.Equal(expectedCity, LocationLookupService.ExtractCity(address));
+    }
+
     [Fact]
     public async Task Transient_lookup_failure_retries_primary_activity_only()
     {

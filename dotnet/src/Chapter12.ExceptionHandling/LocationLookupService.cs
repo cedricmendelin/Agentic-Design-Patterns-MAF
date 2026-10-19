@@ -87,6 +87,13 @@ public static class LocationLookupService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(address);
         var parts = address.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        var supportedCity = GeneralAreas.Keys.FirstOrDefault(city =>
+            parts.Contains(city, StringComparer.OrdinalIgnoreCase));
+        if (supportedCity is not null)
+        {
+            return supportedCity;
+        }
+
         if (parts.Length >= 2)
         {
             return parts[^2];
