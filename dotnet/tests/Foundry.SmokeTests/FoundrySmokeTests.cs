@@ -117,4 +117,16 @@ public sealed class FoundrySmokeTests
         Assert.Contains("--- Adaptation result ---", result.StandardOutput);
         Assert.Contains("Best-scoring prompt:", result.StandardOutput);
     }
+
+    [Fact(Timeout = 240000)]
+    public async Task Chapter16_complexity_routing_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter16ComplexityAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("--- Complexity router decision ---", result.StandardOutput);
+        Assert.Contains("Route: Simple", result.StandardOutput);
+        Assert.Contains("Route: Reasoning", result.StandardOutput);
+        Assert.Contains("--- Final optimized response ---", result.StandardOutput);
+    }
 }
