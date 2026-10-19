@@ -1,0 +1,7 @@
+.azure/
+.env
+.env.*
+**/bin/
+**/obj/
+**/secrets.json
+**/appsettings.*.json
