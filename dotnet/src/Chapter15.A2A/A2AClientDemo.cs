@@ -18,17 +18,15 @@ public static class A2AClientDemo
             throw new ArgumentException("The A2A agent URL must use HTTP or HTTPS.", nameof(agentUrl));
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
         var resolver = new A2ACardResolver(agentUrl);
-        AgentCard card = await resolver.GetAgentCardAsync();
+        AgentCard card = await resolver.GetAgentCardAsync(cancellationToken);
         PrintCard(card);
 
         if (mode.Equals("card", StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
-
-        var sessionAgent = card.AsAIAgent();
-        AgentSession session = await sessionAgent.CreateSessionAsync(cancellationToken);
 
         if (mode is "sync" or "all")
         {
@@ -38,6 +36,7 @@ public static class A2AClientDemo
             {
                 PreferredBindings = [ProtocolBindingNames.JsonRpc]
             });
+            AgentSession session = await jsonRpcAgent.CreateSessionAsync(cancellationToken);
             AgentResponse response = await jsonRpcAgent.RunAsync(
                 message,
                 session,
@@ -53,6 +52,7 @@ public static class A2AClientDemo
             {
                 PreferredBindings = [ProtocolBindingNames.HttpJson]
             });
+            AgentSession session = await httpJsonAgent.CreateSessionAsync(cancellationToken);
             await foreach (var update in httpJsonAgent.RunStreamingAsync(
                                message,
                                session,

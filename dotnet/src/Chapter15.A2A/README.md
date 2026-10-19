@@ -19,7 +19,7 @@ flowchart LR
 
 | Variant | Source notebook | MAF / Foundry building blocks | What to observe |
 |---|---|---|---|
-| A2A client (MAF) | `Chapter_15_Inter_Agent_(Sync_Streaming_Requests).ipynb` | `A2ACardResolver`, `AgentCard.AsAIAgent`, `A2AClientOptions`, `RunAsync`, `RunStreamingAsync` | Discovers a remote card, sends the USD/EUR example synchronously over JSON-RPC, and streams the JPY/GBP example over HTTP+JSON. |
+| A2A client (MAF) | `Chapter_15_Inter_Agent_(Sync_Streaming_Requests).ipynb` | `A2ACardResolver`, `AgentCard.AsAIAgent`, `A2AClientOptions`, `RunAsync`, `RunStreamingAsync` | Discovers a remote card, sends the USD/EUR example synchronously over JSON-RPC, and receives incremental task updates for the JPY/GBP example over HTTP+JSON. |
 | WeatherBot card and A2A server | `Chapter_15_Inter_Agent_(A2A_AgentCard_WeatherBot).ipynb` | `Microsoft.Agents.AI.Hosting.A2A.AspNetCore`, `AddA2AServer`, `MapA2AHttpJson`, `MapA2AJsonRpc`, `MapWellKnownAgentCard` | Publishes the agent's description, skill, protocol bindings, and streaming capability for discovery. |
 | Calendar-agent hosting sketch | `Chapter_15_Inter_Agent_(A2A).ipynb` | A MAF `ChatClientAgent` behind the same A2A server; Foundry hosted companion | Applies the notebook's agent-card/hosting boundary without its unavailable Google ADK and calendar credentials. No calendar operations are claimed. |
 | Foundry-native | Same hosted service | Foundry hosted-agent A2A endpoint and declarative `agentCard` | Foundry publishes the card and exposes the MAF-hosted behavior through A2A; this is a deployment/protocol integration, not a separate native reimplementation. |

@@ -8,6 +8,7 @@ using Chapter15.A2A;
 using Chapter15.A2A.Hosted;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Foundry.Hosting;
+using Microsoft.Agents.AI.Hosting.A2A;
 using Microsoft.Extensions.AI;
 using OpenTelemetry.Trace;
 
@@ -41,11 +42,19 @@ else
 
 using IChatClient modelClient = chatClient;
 AIAgent agent = InterAgentAgent.Create(modelClient);
-var publicUrl = builder.WebApplicationBuilder.Configuration["A2A_PUBLIC_URL"] ?? "http://localhost:5090/";
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8088";
+var publicUrl = builder.WebApplicationBuilder.Configuration["A2A_PUBLIC_URL"]
+    ?? $"http://localhost:{port}/";
 var agentCard = CreateAgentCard(publicUrl);
 
 builder.WebApplicationBuilder.Services.AddHttpClient();
-builder.WebApplicationBuilder.AddA2AServer(agent);
+#pragma warning disable MEAI001
+builder.WebApplicationBuilder.AddA2AServer(agent, options =>
+{
+    options.AgentRunMode = AgentRunMode.ReturnTaskWhen(
+        (context, _) => ValueTask.FromResult(context.RequestContext.StreamingResponse));
+});
+#pragma warning restore MEAI001
 builder.ConfigureTracing(tracing => tracing.AddSource(InterAgentAgent.TelemetrySourceName));
 
 builder.RegisterProtocol("a2a", endpoints =>

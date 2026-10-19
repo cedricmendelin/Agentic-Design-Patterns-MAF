@@ -6,7 +6,7 @@ This companion exposes the Chapter 15 MAF agent through the A2A protocol. It acc
 
 - Input: A2A text messages (`text/plain`).
 - Output: A2A text messages (`text/plain`).
-- Bindings: HTTP+JSON and JSON-RPC; streaming is available through the A2A HTTP+JSON streaming operation.
+- Bindings: HTTP+JSON and JSON-RPC; streaming A2A requests return task updates incrementally through the HTTP+JSON streaming operation, while synchronous requests return a message.
 - Card: standard `/.well-known/agent-card.json` with the `weather-guidance` skill.
 - The model has no live weather, exchange-rate, or calendar integration. It must not claim current observations or completed actions.
 
@@ -30,7 +30,7 @@ In a second terminal, discover the card, send the notebook's synchronous JSON-RP
 dotnet run --project .\dotnet\src\Chapter15.A2A -- all http://localhost:5090/
 ```
 
-The client also accepts `card`, `sync`, or `stream` instead of `all`. Supply a custom request after the URL to replace that mode's sample text. Foundry's AgentHost reads its listen port from `PORT` and defaults to `8088`.
+The client also accepts `card`, `sync`, or `stream` instead of `all`. Supply a custom request after the URL to replace that mode's sample text. Foundry's AgentHost reads its listen port from `PORT` and defaults to `8088`; when `A2A_PUBLIC_URL` is unset, the published card uses that same port on localhost.
 
 ## Foundry deployment
 
