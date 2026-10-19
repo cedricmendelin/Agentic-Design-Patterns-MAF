@@ -95,7 +95,7 @@ try
 }
 catch (Exception exception) when (exception is InvalidOperationException or ArgumentException or HttpRequestException)
 {
-    Console.Error.WriteLine(exception.Message);
+    Console.Error.WriteLine(DescribeException(exception));
     return 1;
 }
 
@@ -113,8 +113,19 @@ static string ResolveRouteDeployment(
         OptimizationCategory.InternetSearch => "quality",
         _ => throw new ArgumentOutOfRangeException(nameof(category))
     };
-    return settings.ModelDeployments.TryGetValue(alias, out var deployment) &&
-        !string.IsNullOrWhiteSpace(deployment)
-            ? deployment
-            : fallbackDeployment;
+    return ResourceOptimizationWorkflow.ResolveDeploymentAlias(
+        settings.ModelDeployments,
+        alias,
+        fallbackDeployment);
+}
+
+static string DescribeException(Exception exception)
+{
+    var messages = new List<string>();
+    for (var current = exception; current is not null; current = current.InnerException)
+    {
+        messages.Add($"{current.GetType().Name}: {current.Message}");
+    }
+
+    return string.Join(" --> ", messages);
 }

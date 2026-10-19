@@ -68,8 +68,8 @@ static string ResolveRouteDeployment(
         OptimizationCategory.InternetSearch => "quality",
         _ => throw new ArgumentOutOfRangeException(nameof(category))
     };
-    return settings.ModelDeployments.TryGetValue(alias, out var deployment) &&
-        !string.IsNullOrWhiteSpace(deployment)
-            ? deployment
-            : fallbackDeployment;
+    return ResourceOptimizationWorkflow.ResolveDeploymentAlias(
+        settings.ModelDeployments,
+        alias,
+        fallbackDeployment);
 }

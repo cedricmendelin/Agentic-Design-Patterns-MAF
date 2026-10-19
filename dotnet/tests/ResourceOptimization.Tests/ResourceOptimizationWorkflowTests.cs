@@ -47,6 +47,45 @@ public sealed class ResourceOptimizationWorkflowTests
             () => ResourceOptimizationWorkflow.ParseClassification(output));
     }
 
+    [Theory]
+    [InlineData("FAST", "fast-deployment")]
+    [InlineData("reasoning", "reasoning-deployment")]
+    [InlineData("QUALITY", "quality-deployment")]
+    public void Deployment_alias_resolution_is_case_insensitive(
+        string alias,
+        string expectedDeployment)
+    {
+        var deployments = new Dictionary<string, string>
+        {
+            ["Fast"] = "fast-deployment",
+            ["REASONING"] = "reasoning-deployment",
+            ["quality"] = "quality-deployment"
+        };
+
+        Assert.Equal(
+            expectedDeployment,
+            ResourceOptimizationWorkflow.ResolveDeploymentAlias(
+                deployments,
+                alias,
+                "default-deployment"));
+    }
+
+    [Fact]
+    public void Missing_deployment_alias_uses_the_default()
+    {
+        var deployments = new Dictionary<string, string>
+        {
+            ["FAST"] = "fast-deployment"
+        };
+
+        Assert.Equal(
+            "default-deployment",
+            ResourceOptimizationWorkflow.ResolveDeploymentAlias(
+                deployments,
+                "reasoning",
+                "default-deployment"));
+    }
+
     [Fact]
     public async Task Complexity_workflow_uses_selected_route_and_reports_provider_usage()
     {

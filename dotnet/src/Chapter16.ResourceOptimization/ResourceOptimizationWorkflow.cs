@@ -28,6 +28,20 @@ public static class ResourceOptimizationWorkflow
             ? OptimizationCategory.Simple
             : OptimizationCategory.Reasoning;
 
+    public static string ResolveDeploymentAlias(
+        IReadOnlyDictionary<string, string> deployments,
+        string alias,
+        string fallbackDeployment)
+    {
+        ArgumentNullException.ThrowIfNull(deployments);
+        ArgumentException.ThrowIfNullOrWhiteSpace(alias);
+        ArgumentException.ThrowIfNullOrWhiteSpace(fallbackDeployment);
+
+        var deployment = deployments.FirstOrDefault(
+            entry => string.Equals(entry.Key, alias, StringComparison.OrdinalIgnoreCase)).Value;
+        return string.IsNullOrWhiteSpace(deployment) ? fallbackDeployment : deployment;
+    }
+
     public static OptimizationCategory ParseClassification(string output)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(output);
