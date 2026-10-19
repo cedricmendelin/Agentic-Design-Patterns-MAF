@@ -88,10 +88,11 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 | 08 | Memory | `src/Chapter08.Memory` | [Chapter 08 guide](src/Chapter08.Memory/README.md) |
 | 09 | Learning & Adaptation | `src/Chapter09.LearningAdaptation` | [Chapter 09 guide](src/Chapter09.LearningAdaptation/README.md) |
 | 10 | MCP | `src/Chapter10.MCP` | [Chapter 10 guide](src/Chapter10.MCP/README.md) |
+| 15 | Inter-Agent Communication (A2A) | `src/Chapter15.A2A` | [Chapter 15 guide](src/Chapter15.A2A/README.md) |
 
 ## Hosted-agent companions
 
-The hosted projects expose the same MAF chapter logic through Microsoft Foundry Agent Service's **Responses protocol**. Use them as starting points for deploying the patterns to your own Foundry project.
+Most hosted projects expose the same MAF chapter logic through Microsoft Foundry Agent Service's **Responses protocol**. Chapter 15 exposes its MAF agent through Foundry's **A2A protocol** and publishes an agent card. Use these companions as starting points for deploying the patterns to your own Foundry project.
 
 | Chapter | Hosted guide | Request |
 |---|---|---|
@@ -105,6 +106,7 @@ The hosted projects expose the same MAF chapter logic through Microsoft Foundry 
 | 08 | [Memory](src/Chapter08.Memory.Hosted/README.md) | Scripted managed-memory demo; synthetic facts and a fresh scope per request |
 | 09 | [Learning & Adaptation](src/Chapter09.LearningAdaptation.Hosted/README.md) | Starting prompt instructions to evaluate and revise |
 | 10 | [MCP](src/Chapter10.MCP.Hosted/README.md) | Request to the configured remote MCP server |
+| 15 | [Inter-Agent Communication (A2A)](src/Chapter15.A2A.Hosted/README.md) | Text request through A2A agent-card discovery, JSON-RPC, or HTTP+JSON streaming |
 
 ### Configure and deploy hosted agents
 
