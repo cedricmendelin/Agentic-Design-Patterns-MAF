@@ -96,8 +96,45 @@ public sealed class GoalSettingWorkflowTests
             Assert.StartsWith(Path.Combine(outputDirectory, "generated-code"), path);
             Assert.EndsWith(".py", path);
             var contents = await File.ReadAllTextAsync(path);
-            Assert.Contains("# Write code: binary gap?", contents);
+            Assert.StartsWith(
+                "# Generated Python program for the requested use case." + Environment.NewLine +
+                "# Caller use case:" + Environment.NewLine +
+                "# Write code: binary gap?",
+                contents);
             Assert.Contains("print('artifact')", contents);
+        }
+        finally
+        {
+            if (Directory.Exists(outputDirectory))
+            {
+                Directory.Delete(outputDirectory, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task Console_demo_keeps_caller_encoding_text_out_of_python_encoding_cookie_lines()
+    {
+        using var model = new ScriptedChatClient(["print('café')", "reviewed", "True"]);
+        var outputDirectory = Path.Combine(Path.GetTempPath(), $"chapter11-encoding-test-{Guid.NewGuid():N}");
+
+        try
+        {
+            var path = await GoalSettingDemo.RunAsync(
+                model,
+                GoalSettingRequest.BinaryGapSample with
+                {
+                    UseCase = "Parse CSV input with encoding: ascii"
+                },
+                outputDirectory,
+                writeOutput: _ => { });
+
+            var contents = await File.ReadAllTextAsync(path);
+            var lines = contents.Split(["\r\n", "\n"], StringSplitOptions.None);
+            Assert.StartsWith("# Generated Python program", lines[0]);
+            Assert.StartsWith("# Caller use case:", lines[1]);
+            Assert.Contains("# Parse CSV input with encoding: ascii", lines[2]);
+            Assert.Contains("café", contents);
         }
         finally
         {

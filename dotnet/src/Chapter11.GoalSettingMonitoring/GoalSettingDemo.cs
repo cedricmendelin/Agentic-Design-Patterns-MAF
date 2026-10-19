@@ -53,7 +53,8 @@ public static partial class GoalSettingDemo
         var commentLines = useCase
             .Split(["\r\n", "\n", "\r"], StringSplitOptions.None)
             .Select(line => $"# {line}");
-        return $"# Generated Python program for:{Environment.NewLine}" +
+        return $"# Generated Python program for the requested use case.{Environment.NewLine}" +
+               $"# Caller use case:{Environment.NewLine}" +
                string.Join(Environment.NewLine, commentLines) +
                $"{Environment.NewLine}{Environment.NewLine}";
     }

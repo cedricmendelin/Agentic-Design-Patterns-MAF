@@ -16,7 +16,7 @@ Send the use case as plain text to use the sample goals and a five-iteration bud
 
 `goals` must contain 1–10 non-empty strings, `useCase` is limited to 2,000 characters, each goal to 300 characters, and `maxIterations` to 1–5. The response contains the goal status, number of iterations used, and final generated Python code. The host processes the caller's input; it does not replay a saved sample batch, save code to its filesystem, or execute generated code.
 
-Requests are isolated and stateless: no caller history is reused to seed another request, and no candidate is promoted. The Responses streaming endpoint buffers the completed workflow result. Cancellation is passed through each model call.
+Requests are isolated and stateless: a host-provided response ID creates a fresh session partition even when service-to-service callers omit the platform user header. No caller history is reused to seed another request, and no candidate is promoted. The Responses streaming endpoint buffers the completed workflow result. Cancellation is passed through each model call.
 
 ## Prerequisites and configuration
 
