@@ -51,6 +51,11 @@ internal static class DotnetDemoRunner
             Path.Combine(RepositoryRoot, "dotnet", "src", "Chapter09.LearningAdaptation", "Chapter09.LearningAdaptation.csproj"),
             ["maf"]);
 
+    public static Task<DemoRunResult> RunChapter18PolicyAsync() =>
+        RunAsync(
+            Path.Combine(RepositoryRoot, "dotnet", "src", "Chapter18.Guardrails", "Chapter18.Guardrails.csproj"),
+            ["policy", "--text", "Explain the benefits of unit testing."]);
+
     private static async Task<DemoRunResult> RunAsync(string projectPath, string[] demoArguments)
     {
         var startInfo = new ProcessStartInfo("dotnet")
