@@ -53,7 +53,7 @@ flowchart LR
    dotnet run --project dotnet/src/Chapter17.Reasoning -- foundry-code-interpreter
    dotnet run --project dotnet/src/Chapter17.Reasoning -- foundry-web-search
    ```
-   They read the shared Foundry project endpoint and model deployment settings and authenticate with Entra ID.
+   They read the shared Foundry project endpoint and model deployment settings and authenticate with Entra ID. Add `--deployment <name>` to select a configured `Foundry:ModelDeployments` alias for either native mode.
 7. For live MAF validation without local secrets, use **Actions** → **Live Foundry smoke tests** after the workflow coverage is on the default branch. It uses the protected `foundry-integration` environment and `Foundry__*` variables.
 
 ## Notebook → C# Mapping

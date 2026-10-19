@@ -85,17 +85,19 @@ public static class ReasoningWorkflow
             chatClient,
             "DraftWriter",
             """
-            Write a short, engaging social media post (maximum 150 characters) announcing a new eco-friendly
-            product line named GreenTech Gadgets. Output only the post. Do not make unsupported product claims.
+            Follow the user's original requirements to write or revise the requested draft. Preserve the requested
+            subject, product or organization names, facts, and tone. The result must not exceed 150 characters,
+            regardless of any conflicting length request. Output only the draft and do not invent unsupported claims.
             """);
         var reviewer = CreateAgent(
             chatClient,
             "IndependentReviewer",
             """
-            Review the draft against the original request. Check the exact product name, eco-friendly announcement,
-            engaging tone, and the 150-character limit. Accept only when all requirements are met. Return structured
-            output with Accept set to true or false and Feedback containing a concise explanation or actionable fixes.
-            Do not invent product features.
+            Review the draft against the user's original requirements. Check that it preserves the requested subject,
+            names, facts, and tone, and that it does not exceed 150 characters. The 150-character limit is mandatory
+            even if the user requests a longer draft. Accept only when the requirements and limit are met. Return
+            structured output with Accept set to true or false and Feedback containing a concise explanation or
+            actionable fixes. Do not invent unsupported claims.
             """);
         var draft = string.Empty;
         var feedback = string.Empty;

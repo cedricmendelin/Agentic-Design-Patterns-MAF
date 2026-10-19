@@ -87,7 +87,7 @@ try
             "foundry-code-interpreter" => "code-interpreter",
             _ => throw new InvalidOperationException("Unknown Foundry-native reasoning demo.")
         };
-        await FoundryNativeDemo.RunAsync(toolName);
+        await FoundryNativeDemo.RunAsync(toolName, deploymentSelection);
         return 0;
     }
 

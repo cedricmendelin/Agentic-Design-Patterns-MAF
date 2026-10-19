@@ -10,7 +10,10 @@ namespace Chapter17.Reasoning;
 
 public static class FoundryNativeDemo
 {
-    public static async Task RunAsync(string toolName, CancellationToken cancellationToken = default)
+    public static async Task RunAsync(
+        string toolName,
+        string? deploymentSelection = null,
+        CancellationToken cancellationToken = default)
     {
         var configuration = new ConfigurationBuilder()
             .AddUserSecrets(typeof(FoundryChatClientFactory).Assembly)
@@ -18,14 +21,21 @@ public static class FoundryNativeDemo
             .Build();
         var projectEndpoint = configuration["Foundry:ProjectEndpoint"]
             ?? configuration["FOUNDRY_PROJECT_ENDPOINT"];
-        var deployment = configuration["Foundry:ModelDeployment"]
+        var defaultDeployment = configuration["Foundry:ModelDeployment"]
             ?? configuration["AZURE_AI_MODEL_DEPLOYMENT_NAME"];
-        if (string.IsNullOrWhiteSpace(projectEndpoint) || string.IsNullOrWhiteSpace(deployment))
+        if (string.IsNullOrWhiteSpace(projectEndpoint) || string.IsNullOrWhiteSpace(defaultDeployment))
         {
             throw new InvalidOperationException(
                 "Configure Foundry:ProjectEndpoint and Foundry:ModelDeployment in shared user-secrets " +
                 "or Foundry__ProjectEndpoint and Foundry__ModelDeployment environment variables.");
         }
+
+        var deployments = configuration.GetSection("Foundry:ModelDeployments")
+            .Get<Dictionary<string, string>>() ?? [];
+        var deployment = FoundrySettings.ResolveModelDeployment(
+            deploymentSelection,
+            defaultDeployment,
+            deployments);
 
         var (instructions, input, tool) = toolName.ToLowerInvariant() switch
         {
