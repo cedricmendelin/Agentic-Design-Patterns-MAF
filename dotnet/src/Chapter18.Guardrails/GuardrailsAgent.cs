@@ -64,7 +64,11 @@ public static class GuardrailsAgent
                     $"Request blocked by the guardrail. {evaluation.EvaluationSummary}"));
             }
 
-            return await innerAgent.RunAsync(messages, session, options, cancellationToken);
+            return await innerAgent.RunAsync(
+                [new ChatMessage(ChatRole.User, request)],
+                session,
+                options,
+                cancellationToken);
         }
 
         return assistant
