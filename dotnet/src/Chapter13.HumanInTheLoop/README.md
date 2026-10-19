@@ -41,7 +41,7 @@ flowchart LR
    dotnet run --project dotnet/src/Chapter13.HumanInTheLoop -- "Please escalate this issue." --deployment fast
    ```
 
-5. At the approval prompt, enter `y` to execute the escalation tool; any other input rejects it.
+5. At each approval prompt, enter `y` to execute that tool; any other input rejects it. If the model requests multiple approvals, the console collects each decision before resuming the agent.
 
 ## Notebook -> C# Mapping
 

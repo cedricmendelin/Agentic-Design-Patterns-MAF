@@ -5,7 +5,15 @@
     <RootNamespace>AgenticDesignPatterns.HumanInTheLoop.Tests</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Chapter13.HumanInTheLoop\Chapter13.HumanInTheLoop.csproj" />
+    <ProjectReference Include="..\..\src\Chapter13.HumanInTheLoop.Hosted\Chapter13.HumanInTheLoop.Hosted.csproj" />
+    <PackageReference Include="Azure.AI.AgentServer.Core" />
+    <PackageReference Include="Azure.AI.AgentServer.Invocations" />
+    <PackageReference Include="Microsoft.Extensions.AI" />
+    <PackageReference Include="System.Memory.Data" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">

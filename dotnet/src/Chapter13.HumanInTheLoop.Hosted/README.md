@@ -18,7 +18,9 @@ Start a request with a task and optional customer context:
 }
 ```
 
-The response is either `status: "completed"` with `final_output`, or `status: "awaiting_approval"` with an `approval` containing the MAF request ID, tool name, and arguments. Resolve an approval by sending another invocation in the same `agent_session_id`:
+The response is either `status: "completed"` with `final_output`, or `status: "awaiting_approval"` with an `approval` (one request) or `approvals` (multiple requests), each containing the MAF request ID, tool name, and arguments. If a task retry arrives for a session with a pending approval and identical task and customer context, the host replays the saved proposal without rerunning the model. This lets the caller recover if the first response was lost. A different task still receives a conflict until the pending approvals are resolved.
+
+For one pending approval, send the decision in the same `agent_session_id`:
 
 ```json
 {
@@ -27,9 +29,20 @@ The response is either `status: "completed"` with `final_output`, or `status: "a
 }
 ```
 
-Use `"reject"` to deny the tool call. The server rejects a stale or mismatched request ID. One approval may be pending per session. A new task can reuse a session only after its pending approval has been resolved.
+Use `"reject"` to deny the tool call. When multiple approvals are pending, send a decision for each request in one invocation:
 
-Each Foundry platform user gets an isolated session partition. MAF's serialized agent session and the pending approval are written atomically under the host user's home directory so a later invocation can resume after process restart. Locally, the protocol session ID is the only caller boundary. The file store and in-process lock are a single-instance sample design, not a distributed store: use encrypted shared persistence and distributed locking for multiple replicas, set retention/deletion policies, and protect customer/profile data in production.
+```json
+{
+  "approvals": [
+    { "decision": "approve", "requestId": "<first request_id>" },
+    { "decision": "reject", "requestId": "<second request_id>" }
+  ]
+}
+```
+
+The server requires each pending request ID exactly once and rejects stale or mismatched IDs. A new task can reuse a session only after its pending approvals have been resolved.
+
+Each Foundry platform user gets an isolated session partition, including both the storage path and in-process lock. A hosted invocation without the platform-injected user identity is rejected. Locally, where platform identity is not present, the protocol session ID is the caller boundary. MAF's serialized agent session and pending approvals are written atomically under the host user's home directory so a later invocation can resume after process restart. The file store and in-process lock are a single-instance sample design, not a distributed store: use encrypted shared persistence and distributed locking for multiple replicas, set retention/deletion policies, and protect customer/profile data in production.
 
 ## Prerequisites and configuration
 
@@ -100,7 +113,7 @@ Copy `approval.request_id` from the response into `approval.json` and invoke aga
 azd ai agent invoke chapter13-human-in-the-loop --protocol invocations --session-id support-demo -f .\approval.json
 ```
 
-Change `"approve"` to `"reject"` to deny the escalation. Deploy only this service. Hosting and model inference incur Azure charges. Remove only the reader-owned agent using Foundry's agent-scoped management controls; do not remove shared project resources.
+Change `"approve"` to `"reject"` to deny the escalation. When a response contains an `approvals` array, send an array of decisions as shown in the request contract. Deploy only this service. Hosting and model inference incur Azure charges. Remove only the reader-owned agent using Foundry's agent-scoped management controls; do not remove shared project resources.
 
 ## Packaging and extension
 

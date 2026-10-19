@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Security.Cryptography;
 using System.Text;
+using Azure.AI.AgentServer.Core;
 using Azure.AI.AgentServer.Invocations;
 using Microsoft.Agents.AI;
 using Chapter13.HumanInTheLoop;
@@ -47,13 +48,24 @@ public sealed class CustomerSupportInvocationHandler(IChatClient chatClient) : I
         }
 
         var hasTask = body.Task is not null;
-        var hasDecision = body.Decision is not null;
+        var hasDecision = body.Decision is not null || body.Approvals is not null;
         if (hasTask == hasDecision)
         {
             await WriteErrorAsync(
                 response,
                 StatusCodes.Status400BadRequest,
                 "Provide exactly one of 'task' or 'decision'.",
+                cancellationToken);
+            return;
+        }
+
+        if (body.Approvals is not null &&
+            (body.Decision is not null || body.RequestId is not null))
+        {
+            await WriteErrorAsync(
+                response,
+                StatusCodes.Status400BadRequest,
+                "Use either 'approvals' or the single-approval 'decision' and 'requestId' fields.",
                 cancellationToken);
             return;
         }
@@ -70,11 +82,22 @@ public sealed class CustomerSupportInvocationHandler(IChatClient chatClient) : I
 
         var sessionId = context.SessionId;
         var ownerId = context.PlatformContext.UserIdKey;
-        var sessionLock = SupportSessionStore.GetLock(sessionId);
+        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("FOUNDRY_HOSTING_ENVIRONMENT")) &&
+            string.IsNullOrWhiteSpace(ownerId))
+        {
+            await WriteErrorAsync(
+                response,
+                StatusCodes.Status401Unauthorized,
+                "The hosted platform did not provide an authenticated caller identity.",
+                cancellationToken);
+            return;
+        }
+
+        var sessionLock = SupportSessionStore.GetLock(sessionId, ownerId);
         await sessionLock.WaitAsync(cancellationToken);
         try
         {
-            var stored = SupportSessionStore.Load(sessionId);
+            var stored = SupportSessionStore.Load(sessionId, ownerId);
             if (stored is not null &&
                 !string.Equals(stored.OwnerId, ownerId, StringComparison.Ordinal))
             {
@@ -131,16 +154,6 @@ public sealed class CustomerSupportInvocationHandler(IChatClient chatClient) : I
         HttpResponse response,
         CancellationToken cancellationToken)
     {
-        if (previousSession?.Status == "awaiting_approval")
-        {
-            await WriteErrorAsync(
-                response,
-                StatusCodes.Status409Conflict,
-                "This session has a pending approval. Resolve it before submitting another task.",
-                cancellationToken);
-            return;
-        }
-
         var task = body.Task!;
         if (task.Length > 4000)
         {
@@ -149,6 +162,32 @@ public sealed class CustomerSupportInvocationHandler(IChatClient chatClient) : I
 
         var customer = body.Customer ?? new SupportCustomer();
         customer.Validate();
+        if (previousSession?.Status == "awaiting_approval")
+        {
+            if (string.Equals(previousSession.Task, task, StringComparison.Ordinal) &&
+                string.Equals(
+                    JsonSerializer.Serialize(previousSession.Customer, JsonOptions),
+                    JsonSerializer.Serialize(customer, JsonOptions),
+                    StringComparison.Ordinal))
+            {
+                await WritePendingResponseAsync(
+                    sessionId,
+                    invocationId,
+                    previousSession.AssistantMessage,
+                    previousSession.PendingApprovals!,
+                    response,
+                    cancellationToken);
+                return;
+            }
+
+            await WriteErrorAsync(
+                response,
+                StatusCodes.Status409Conflict,
+                "This session has a pending approval. Resolve it before submitting another task.",
+                cancellationToken);
+            return;
+        }
+
         var agent = CustomerSupportAgent.Create(chatClient, customer);
         var agentSession = await agent.CreateSessionAsync(cancellationToken);
         var agentResponse = await agent.RunAsync(task, agentSession, cancellationToken: cancellationToken);
@@ -174,7 +213,7 @@ public sealed class CustomerSupportInvocationHandler(IChatClient chatClient) : I
         HttpResponse response,
         CancellationToken cancellationToken)
     {
-        if (stored is null || stored.Status != "awaiting_approval" || stored.PendingApproval is null)
+        if (stored is null || stored.Status != "awaiting_approval" || stored.PendingApprovals is not { Count: > 0 })
         {
             await WriteErrorAsync(
                 response,
@@ -184,23 +223,44 @@ public sealed class CustomerSupportInvocationHandler(IChatClient chatClient) : I
             return;
         }
 
-        var decision = body.Decision!.Trim().ToLowerInvariant();
-        if (decision is not ("approve" or "reject"))
+        var decisions = body.Approvals?.ToArray() ??
+            (body.Decision is not null || body.RequestId is not null
+                ? [new ApprovalDecision(body.RequestId, body.Decision)]
+                : []);
+        if (decisions.Length != stored.PendingApprovals.Count)
         {
-            throw new ArgumentException("Decision must be 'approve' or 'reject'.");
+            throw new ArgumentException("Provide exactly one decision for every pending approval.");
         }
 
-        if (!string.Equals(body.RequestId, stored.PendingApproval.RequestId, StringComparison.Ordinal))
+        var pendingById = stored.PendingApprovals.ToDictionary(
+            approval => approval.RequestId,
+            StringComparer.Ordinal);
+        var responses = new List<AIContent>(decisions.Length);
+        foreach (var item in decisions)
         {
-            throw new ArgumentException("RequestId must match the pending approval request.");
+            var decision = item.Decision?.Trim().ToLowerInvariant();
+            if (decision is not ("approve" or "reject"))
+            {
+                throw new ArgumentException("Each decision must be 'approve' or 'reject'.");
+            }
+
+            if (string.IsNullOrWhiteSpace(item.RequestId) ||
+                !pendingById.Remove(item.RequestId, out var pendingApproval))
+            {
+                throw new ArgumentException("Each requestId must match a pending approval exactly once.");
+            }
+
+            responses.Add(RestoreApprovalRequest(pendingApproval).CreateResponse(decision == "approve"));
+        }
+
+        if (pendingById.Count != 0)
+        {
+            throw new ArgumentException("Provide a decision for every pending approval.");
         }
 
         var agent = CustomerSupportAgent.Create(chatClient, stored.Customer);
         var agentSession = await agent.DeserializeSessionAsync(stored.AgentSession, cancellationToken: cancellationToken);
-        var approvalRequest = RestoreApprovalRequest(stored.PendingApproval);
-        var approvalMessage = new ChatMessage(
-            ChatRole.User,
-            [approvalRequest.CreateResponse(decision == "approve")]);
+        var approvalMessage = new ChatMessage(ChatRole.User, responses);
         var agentResponse = await agent.RunAsync(
             approvalMessage,
             agentSession,
@@ -234,12 +294,8 @@ public sealed class CustomerSupportInvocationHandler(IChatClient chatClient) : I
         var pendingApprovals = agentResponse.Messages
             .SelectMany(message => message.Contents)
             .OfType<ToolApprovalRequestContent>()
+            .Select(SaveApprovalRequest)
             .ToArray();
-        if (pendingApprovals.Length > 1)
-        {
-            throw new InvalidOperationException(
-                "The hosted support demo can pause for one approval at a time.");
-        }
 
         var serializedSession = await agent.SerializeSessionAsync(
             agentSession,
@@ -247,31 +303,23 @@ public sealed class CustomerSupportInvocationHandler(IChatClient chatClient) : I
         var session = new SupportInvocationSession(
             sessionId,
             ownerId,
-            pendingApprovals.Length == 1 ? "awaiting_approval" : "completed",
+            pendingApprovals.Length > 0 ? "awaiting_approval" : "completed",
             task,
             customer,
             serializedSession,
-            pendingApprovals.Length == 1 ? SaveApprovalRequest(pendingApprovals[0]) : null,
+            pendingApprovals.ToList(),
+            agentResponse.Text,
             agentResponse.Text);
         SupportSessionStore.Save(session);
 
-        if (session.PendingApproval is { } pending)
+        if (session.PendingApprovals is { Count: > 0 } pending)
         {
-            await response.WriteAsJsonAsync(
-                new
-                {
-                    session_id = sessionId,
-                    invocation_id = invocationId,
-                    status = session.Status,
-                    assistant_message = agentResponse.Text,
-                    approval = new
-                    {
-                        request_id = pending.RequestId,
-                        tool_name = pending.Name,
-                        arguments = pending.Arguments
-                    }
-                },
-                JsonOptions,
+            await WritePendingResponseAsync(
+                sessionId,
+                invocationId,
+                agentResponse.Text,
+                pending,
+                response,
                 cancellationToken);
             return;
         }
@@ -287,7 +335,50 @@ public sealed class CustomerSupportInvocationHandler(IChatClient chatClient) : I
                 session_id = sessionId,
                 invocation_id = invocationId,
                 status = session.Status,
-                final_output = agentResponse.Text
+                final_output = session.AssistantMessage
+            },
+            JsonOptions,
+            cancellationToken);
+    }
+
+    private static Task WritePendingResponseAsync(
+        string sessionId,
+        string invocationId,
+        string? assistantMessage,
+        IReadOnlyList<PendingApproval> pendingApprovals,
+        HttpResponse response,
+        CancellationToken cancellationToken)
+    {
+        var approvals = pendingApprovals.Select(pending => new
+        {
+            request_id = pending.RequestId,
+            tool_name = pending.Name,
+            arguments = pending.Arguments
+        }).ToArray();
+
+        if (approvals.Length == 1)
+        {
+            return response.WriteAsJsonAsync(
+                new
+                {
+                    session_id = sessionId,
+                    invocation_id = invocationId,
+                    status = "awaiting_approval",
+                    assistant_message = assistantMessage,
+                    approval = approvals[0]
+                },
+                JsonOptions,
+                cancellationToken);
+        }
+
+        return response.WriteAsJsonAsync(
+            new
+            {
+                session_id = sessionId,
+                invocation_id = invocationId,
+                status = "awaiting_approval",
+                assistant_message = assistantMessage,
+                approvals
             },
             JsonOptions,
             cancellationToken);
@@ -355,7 +446,10 @@ public sealed class CustomerSupportInvocationHandler(IChatClient chatClient) : I
         public SupportCustomer? Customer { get; init; }
         public string? Decision { get; init; }
         public string? RequestId { get; init; }
+        public List<ApprovalDecision>? Approvals { get; init; }
     }
+
+    public sealed record ApprovalDecision(string? RequestId, string? Decision);
 
     private sealed record PendingApproval(
         string RequestId,
@@ -370,7 +464,8 @@ public sealed class CustomerSupportInvocationHandler(IChatClient chatClient) : I
         string Task,
         SupportCustomer Customer,
         JsonElement AgentSession,
-        PendingApproval? PendingApproval,
+        List<PendingApproval>? PendingApprovals,
+        string? AssistantMessage,
         string? FinalOutput);
 
     private static class SupportSessionStore
@@ -381,23 +476,24 @@ public sealed class CustomerSupportInvocationHandler(IChatClient chatClient) : I
         private static readonly Dictionary<string, SemaphoreSlim> Locks = new(StringComparer.Ordinal);
         private static readonly object LocksSync = new();
 
-        public static SemaphoreSlim GetLock(string sessionId)
+        public static SemaphoreSlim GetLock(string sessionId, string? ownerId)
         {
+            var partitionKey = GetPartitionKey(sessionId, ownerId);
             lock (LocksSync)
             {
-                if (!Locks.TryGetValue(sessionId, out var sessionLock))
+                if (!Locks.TryGetValue(partitionKey, out var sessionLock))
                 {
                     sessionLock = new SemaphoreSlim(1, 1);
-                    Locks.Add(sessionId, sessionLock);
+                    Locks.Add(partitionKey, sessionLock);
                 }
 
                 return sessionLock;
             }
         }
 
-        public static SupportInvocationSession? Load(string sessionId)
+        public static SupportInvocationSession? Load(string sessionId, string? ownerId)
         {
-            var path = GetPath(sessionId);
+            var path = GetPath(sessionId, ownerId);
             if (!File.Exists(path))
             {
                 return null;
@@ -411,18 +507,22 @@ public sealed class CustomerSupportInvocationHandler(IChatClient chatClient) : I
         public static void Save(SupportInvocationSession session)
         {
             Directory.CreateDirectory(StateDirectory);
-            var path = GetPath(session.SessionId);
+            var path = GetPath(session.SessionId, session.OwnerId);
             var temporaryPath = path + ".tmp";
             var json = JsonSerializer.Serialize(session, JsonOptions);
             File.WriteAllText(temporaryPath, json);
             File.Move(temporaryPath, path, overwrite: true);
         }
 
-        private static string GetPath(string sessionId)
+        private static string GetPath(string sessionId, string? ownerId)
         {
-            var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sessionId)))
+            var hash = Convert.ToHexString(SHA256.HashData(
+                    Encoding.UTF8.GetBytes($"{ownerId ?? string.Empty}\0{sessionId}")))
                 .ToLowerInvariant();
             return Path.Combine(StateDirectory, $"session-{hash}.json");
         }
+
+        private static string GetPartitionKey(string sessionId, string? ownerId) =>
+            $"{ownerId ?? string.Empty}\0{sessionId}";
     }
 }

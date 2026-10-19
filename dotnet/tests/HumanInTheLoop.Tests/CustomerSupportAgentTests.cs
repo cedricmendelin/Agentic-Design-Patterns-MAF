@@ -33,7 +33,34 @@ public sealed class CustomerSupportAgentTests
             new ChatMessage(ChatRole.User, [approval.CreateResponse(approved: true)]),
             session);
 
-        Assert.Contains("Escalated hardware issue to a human specialist.", chatClient.FunctionResults);
+        Assert.Contains("Escalated hardware issue 1 to a human specialist.", chatClient.FunctionResults);
+        Assert.Contains("Escalation was completed.", final.Text);
+    }
+
+    [Fact]
+    public async Task Multiple_escalations_collect_and_apply_each_approval()
+    {
+        using var chatClient = new EscalationChatClient(callCount: 2);
+        var agent = CustomerSupportAgent.Create(chatClient, new SupportCustomer());
+        var session = await agent.CreateSessionAsync();
+
+        var pending = await agent.RunAsync("Escalate both persistent issues.", session);
+        var approvals = pending.Messages
+            .SelectMany(message => message.Contents)
+            .OfType<ToolApprovalRequestContent>()
+            .ToArray();
+
+        Assert.Equal(2, approvals.Length);
+        Assert.Empty(chatClient.FunctionResults);
+
+        var final = await agent.RunAsync(
+            new ChatMessage(
+                ChatRole.User,
+                approvals.Select(approval => approval.CreateResponse(approved: true)).ToArray()),
+            session);
+
+        Assert.Equal(2, chatClient.FunctionResults.Count);
+        Assert.All(chatClient.FunctionResults, result => Assert.Contains("Escalated", result));
         Assert.Contains("Escalation was completed.", final.Text);
     }
 
@@ -50,7 +77,7 @@ public sealed class CustomerSupportAgentTests
         Assert.Throws<ArgumentException>(tooManyHistoryItems.Validate);
     }
 
-    private sealed class EscalationChatClient : IChatClient
+    private sealed class EscalationChatClient(int callCount = 1) : IChatClient
     {
         private readonly ConcurrentQueue<string> _functionResults = new();
         private int _requests;
@@ -71,19 +98,23 @@ public sealed class CustomerSupportAgentTests
                 return Task.FromResult(new ChatResponse(
                     new ChatMessage(
                         ChatRole.Assistant,
-                        [
-                            new FunctionCallContent(
-                                "escalation-1",
+                        Enumerable.Range(1, callCount)
+                            .Select(index => new FunctionCallContent(
+                                $"escalation-{index}",
                                 "escalate_to_human",
-                                new Dictionary<string, object?> { ["issueType"] = "hardware issue" })
-                        ])));
+                                new Dictionary<string, object?> { ["issueType"] = $"hardware issue {index}" }))
+                            .Cast<AIContent>()
+                            .ToArray())));
             }
 
-            var result = messages
+            var results = messages
                 .SelectMany(message => message.Contents)
                 .OfType<FunctionResultContent>()
-                .Single();
-            _functionResults.Enqueue(Convert.ToString(result.Result) ?? string.Empty);
+                .ToArray();
+            foreach (var result in results)
+            {
+                _functionResults.Enqueue(Convert.ToString(result.Result) ?? string.Empty);
+            }
             return Task.FromResult(new ChatResponse(
                 new ChatMessage(ChatRole.Assistant, "Escalation was completed.")));
         }

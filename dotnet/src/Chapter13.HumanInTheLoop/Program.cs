@@ -63,22 +63,26 @@ try
 
     while (true)
     {
-        var pendingApproval = response.Messages
+        var pendingApprovals = response.Messages
             .SelectMany(message => message.Contents)
             .OfType<ToolApprovalRequestContent>()
-            .FirstOrDefault();
-        if (pendingApproval is null)
+            .ToArray();
+        if (pendingApprovals.Length == 0)
         {
             break;
         }
 
-        Console.WriteLine("\n--- Human approval required ---");
-        Console.WriteLine($"Tool: {pendingApproval.ToolCall}");
-        Console.Write("Approve this action? [y/N]: ");
-        var approved = string.Equals(Console.ReadLine(), "y", StringComparison.OrdinalIgnoreCase);
-        var approvalMessage = new ChatMessage(
-            ChatRole.User,
-            [pendingApproval.CreateResponse(approved)]);
+        var approvalResponses = new List<AIContent>(pendingApprovals.Length);
+        foreach (var pendingApproval in pendingApprovals)
+        {
+            Console.WriteLine("\n--- Human approval required ---");
+            Console.WriteLine($"Tool: {pendingApproval.ToolCall}");
+            Console.Write("Approve this action? [y/N]: ");
+            var approved = string.Equals(Console.ReadLine(), "y", StringComparison.OrdinalIgnoreCase);
+            approvalResponses.Add(pendingApproval.CreateResponse(approved));
+        }
+
+        var approvalMessage = new ChatMessage(ChatRole.User, approvalResponses);
         response = await agent.RunAsync(approvalMessage, session);
     }
 
