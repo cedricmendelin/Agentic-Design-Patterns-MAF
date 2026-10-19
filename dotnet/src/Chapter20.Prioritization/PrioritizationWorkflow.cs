@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 using Chapter20.Prioritization.Models;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -13,6 +14,9 @@ public static class PrioritizationWorkflow
     private static readonly ActivitySource ActivitySource = new(TelemetrySourceName);
     private static readonly HashSet<string> AvailableWorkers = new(
         ["Worker A", "Worker B", "Review Team"],
+        StringComparer.OrdinalIgnoreCase);
+    private static readonly HashSet<string> ValidPriorities = new(
+        ["P0", "P1", "P2"],
         StringComparer.OrdinalIgnoreCase);
 
     public static async Task<IReadOnlyList<ProjectTask>> RunAsync(
@@ -103,8 +107,22 @@ public static class PrioritizationWorkflow
                 {correction}
                 """,
                 cancellationToken: cancellationToken);
-            var proposal = response.Result;
-            validationError = GetProposalError(proposal);
+
+            PriorityProposal? proposal = null;
+            try
+            {
+                proposal = response.Result;
+            }
+            catch (JsonException)
+            {
+                validationError = "the structured response was not valid JSON";
+            }
+            catch (InvalidOperationException)
+            {
+                validationError = "the structured response was empty or invalid";
+            }
+
+            validationError ??= GetProposalError(proposal);
             if (validationError is null)
             {
                 return proposal!;
@@ -128,7 +146,9 @@ public static class PrioritizationWorkflow
             return "no structured proposal was returned";
         }
 
-        if (!Enum.TryParse<TaskPriority>(proposal.Priority, ignoreCase: true, out var priority) ||
+        if (string.IsNullOrWhiteSpace(proposal.Priority) ||
+            !ValidPriorities.Contains(proposal.Priority) ||
+            !Enum.TryParse<TaskPriority>(proposal.Priority, ignoreCase: true, out var priority) ||
             !Enum.IsDefined(priority))
         {
             return "priority must be one of P0, P1, or P2";
