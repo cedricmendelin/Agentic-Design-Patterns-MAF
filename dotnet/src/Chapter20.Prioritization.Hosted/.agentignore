@@ -1,0 +1,14 @@
+agent.yaml
+agent.manifest.yaml
+azure.yaml
+.agentignore
+.env
+.env.*
+.azure/
+.git/
+bin/
+obj/
+*.user
+*.suo
+.vs/
+publish/
