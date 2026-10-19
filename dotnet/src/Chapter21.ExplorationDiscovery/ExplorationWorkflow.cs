@@ -294,11 +294,18 @@ public static class ExplorationWorkflow
     private static string NormalizePlanStep(string step)
     {
         var trimmed = step.Trim();
-        var separator = trimmed.IndexOf('.');
-        return separator > 0 &&
-               trimmed[..separator].All(char.IsDigit) &&
-               separator + 1 < trimmed.Length
-            ? trimmed[(separator + 1)..].Trim()
-            : trimmed;
+        while (true)
+        {
+            var separator = trimmed.IndexOf('.');
+            if (separator <= 0 ||
+                !trimmed[..separator].All(char.IsDigit) ||
+                separator + 1 >= trimmed.Length ||
+                !char.IsWhiteSpace(trimmed[separator + 1]))
+            {
+                return trimmed;
+            }
+
+            trimmed = trimmed[(separator + 1)..].TrimStart();
+        }
     }
 }

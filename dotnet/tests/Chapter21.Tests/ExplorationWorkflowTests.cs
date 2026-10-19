@@ -30,6 +30,26 @@ public sealed class ExplorationWorkflowTests
     }
 
     [Fact]
+    public async Task Preserves_decimal_prefixes_while_removing_list_numbering()
+    {
+        using var client = new ScriptedChatClient(
+            ProposalJson(
+                "A decimal-prefix test.",
+                ["1. Define baseline.", "1.5x load: measure p99 latency.", "99.9% confidence interval."]),
+            ReviewJson("Accept", 8),
+            ReviewJson("Accept", 9),
+            ReviewJson("Accept", 8));
+
+        var result = await ExplorationWorkflow.RunAsync(client, "A bounded test question.");
+
+        Assert.Equal(
+            ["Define baseline.", "1.5x load: measure p99 latency.", "99.9% confidence interval."],
+            result.Proposal.Plan);
+        Assert.Contains("1.5x load: measure p99 latency.", client.Requests[1].Input);
+        Assert.Contains("99.9% confidence interval.", client.Requests[1].Input);
+    }
+
+    [Fact]
     public async Task Revises_once_then_returns_the_best_proposal_when_reviewers_reject()
     {
         using var client = new ScriptedChatClient(
@@ -99,11 +119,11 @@ public sealed class ExplorationWorkflowTests
         Assert.Empty(client.Requests);
     }
 
-    private static string ProposalJson(string question) =>
+    private static string ProposalJson(string question, IReadOnlyList<string>? plan = null) =>
         JsonSerializer.Serialize(new
         {
             researchQuestion = question,
-            plan = new[] { "1. Define baseline.", "2. Collect measurements.", "3. Compare outcomes." },
+            plan = plan ?? ["1. Define baseline.", "2. Collect measurements.", "3. Compare outcomes."],
             evidenceNeeds = new[] { "Latency measurements." },
             risks = new[] { "Results may not generalize." }
         });
