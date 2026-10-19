@@ -4,6 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.1.0" />
+    <PackageVersion Include="Azure.AI.AgentServer.Invocations" Version="1.0.0-beta.7" />
     <PackageVersion Include="Azure.Identity" Version="1.21.0" />
     <PackageVersion Include="Microsoft.Agents.AI.Foundry.Hosting" Version="1.22.0-preview.260918.1" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
@@ -13,6 +14,7 @@
     <PackageVersion Include="Microsoft.Agents.AI.OpenAI" Version="1.22.0" />
     <PackageVersion Include="Microsoft.Agents.AI.Workflows" Version="1.22.0" />
     <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="10.10.1" />
+    <PackageVersion Include="Microsoft.Extensions.AI" Version="10.10.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.12" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.12" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.12" />

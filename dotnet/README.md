@@ -88,6 +88,7 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 | 08 | Memory | `src/Chapter08.Memory` | [Chapter 08 guide](src/Chapter08.Memory/README.md) |
 | 09 | Learning & Adaptation | `src/Chapter09.LearningAdaptation` | [Chapter 09 guide](src/Chapter09.LearningAdaptation/README.md) |
 | 10 | MCP | `src/Chapter10.MCP` | [Chapter 10 guide](src/Chapter10.MCP/README.md) |
+| 13 | Human-in-the-Loop | `src/Chapter13.HumanInTheLoop` | [Chapter 13 guide](src/Chapter13.HumanInTheLoop/README.md) |
 
 ## Hosted-agent companions
 
@@ -105,6 +106,7 @@ The hosted projects expose the same MAF chapter logic through Microsoft Foundry 
 | 08 | [Memory](src/Chapter08.Memory.Hosted/README.md) | Scripted managed-memory demo; synthetic facts and a fresh scope per request |
 | 09 | [Learning & Adaptation](src/Chapter09.LearningAdaptation.Hosted/README.md) | Starting prompt instructions to evaluate and revise |
 | 10 | [MCP](src/Chapter10.MCP.Hosted/README.md) | Request to the configured remote MCP server |
+| 13 | [Human-in-the-Loop](src/Chapter13.HumanInTheLoop.Hosted/README.md) | Customer-support task followed by an approval decision in the same Invocations session |
 
 ### Configure and deploy hosted agents
 
