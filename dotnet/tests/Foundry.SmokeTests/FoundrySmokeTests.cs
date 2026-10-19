@@ -117,4 +117,16 @@ public sealed class FoundrySmokeTests
         Assert.Contains("--- Adaptation result ---", result.StandardOutput);
         Assert.Contains("Best-scoring prompt:", result.StandardOutput);
     }
+
+    [Fact(Timeout = 240000)]
+    public async Task Chapter17_reasoning_demos_run_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter17ReasoningAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("Reasoning prompt with a concise rationale (cot)", result.StandardOutput);
+        Assert.Contains("Bounded self-correction (self-correction)", result.StandardOutput);
+        Assert.Contains("ReAct with a deterministic factorial tool (react)", result.StandardOutput);
+        Assert.Contains("Bounded query planning, reflection, and synthesis (deep-search)", result.StandardOutput);
+    }
 }
