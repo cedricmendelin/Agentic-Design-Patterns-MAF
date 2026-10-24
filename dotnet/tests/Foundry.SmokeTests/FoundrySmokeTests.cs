@@ -128,4 +128,16 @@ public sealed class FoundrySmokeTests
         Assert.Contains("SOTU-2022-BREYER", result.StandardOutput);
         Assert.Contains("--- Final grounded response ---", result.StandardOutput);
     }
+
+    [Fact(Timeout = 240000)]
+    public async Task Chapter12_recovery_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter12RecoveryAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("--- Checkpoint: primary lookup succeeded on attempt 1 ---", result.StandardOutput);
+        Assert.Contains("--- Checkpoint: primary lookup succeeded on attempt 2 ---", result.StandardOutput);
+        Assert.Contains("--- General-area fallback ---", result.StandardOutput);
+        Assert.Contains("--- Final recovered response ---", result.StandardOutput);
+    }
 }
