@@ -21,11 +21,14 @@ dotnet user-secrets set "Foundry:ModelDeployment" "<deployment-name>" --project 
 
 ```powershell
 dotnet user-secrets set "Foundry:ModelDeployments:fast" "<fast-deployment-name>" --project dotnet/src/Shared
+dotnet user-secrets set "Foundry:ModelDeployments:reasoning" "<reasoning-deployment-name>" --project dotnet/src/Shared
 dotnet user-secrets set "Foundry:ModelDeployments:quality" "<quality-deployment-name>" --project dotnet/src/Shared
 ```
 
 All chapter projects use the same `UserSecretsId`. The corresponding environment variable overrides are `Foundry__ProjectEndpoint`, `Foundry__ApiKey`, and `Foundry__ModelDeployment`; named deployments use `Foundry__ModelDeployments__<name>`.
 For the OpenAI-compatible model API, the shared client derives `https://<resource>.openai.azure.com/openai/v1/` from a standard Foundry project endpoint on `<resource>.services.ai.azure.com`.
+
+Chapter 16 can optionally route to `fast`, `reasoning`, and `quality` model deployment aliases. Its console demo supports Google Custom Search for current-information requests; configure `GoogleCustomSearch:ApiKey` and `GoogleCustomSearch:SearchEngineId` in user-secrets or use `GOOGLE_CUSTOM_SEARCH_API_KEY` and `GOOGLE_CSE_ID` environment variables. Keep these external-service credentials out of source control. The hosted companion instead uses Foundry's Bing-backed `web_search` tool with Azure credentials and needs no external search API key.
 
 Select a configured name when running a chapter demo; omit it to use the default:
 
@@ -46,7 +49,7 @@ Create a GitHub Environment named `foundry-integration` and add these secrets:
 - `FOUNDRY_PROJECT_ENDPOINT`
 - `FOUNDRY_API_KEY`
 - `FOUNDRY_MODEL_DEPLOYMENT`
-- Optional aliases such as `FOUNDRY_MODEL_DEPLOYMENT_FAST` and `FOUNDRY_MODEL_DEPLOYMENT_QUALITY`
+- Optional aliases such as `FOUNDRY_MODEL_DEPLOYMENT_FAST`, `FOUNDRY_MODEL_DEPLOYMENT_REASONING`, and `FOUNDRY_MODEL_DEPLOYMENT_QUALITY`
 
 The live workflow maps those secrets onto the existing runtime environment variables:
 
@@ -54,9 +57,12 @@ The live workflow maps those secrets onto the existing runtime environment varia
 - `Foundry__ApiKey`
 - `Foundry__ModelDeployment`
 - `Foundry__ModelDeployments__fast`
+- `Foundry__ModelDeployments__reasoning`
 - `Foundry__ModelDeployments__quality`
 
-Chapter 06's plan-and-write, Chapter 08's session-memory, and Chapter 09's prompt-adaptation workflows are included in the live Foundry smoke tests. Chapter 06's optional Deep Research demo is not part of the smoke suite because it requires a separately deployed Deep Research model and runs as a potentially long background task. Chapter 08's Foundry-managed memory variant requires a configured embedding deployment and Entra ID, so it is an opt-in demo rather than part of the API-key smoke suite.
+Chapter 06's plan-and-write, Chapter 08's session-memory, Chapter 09's prompt-adaptation, Chapter 11's goal-setting, Chapter 12's recovery, Chapter 14's local-corpus RAG workflows, and Chapter 19's notebook/MEAI evaluation demos are included in the live Foundry smoke tests. Chapter 06's optional Deep Research demo is not part of the smoke suite because it requires a separately deployed Deep Research model and runs as a potentially long background task. Chapter 08's Foundry-managed memory variant requires a configured embedding deployment and Entra ID, so it is an opt-in demo rather than part of the API-key smoke suite. Chapter 19's separate native cloud evaluation also requires Entra ID and creates evaluation resources, so it is run explicitly rather than by this API-key smoke suite.
+Chapter 17's reasoning smoke test covers the four MAF/model-deployment demos. Its Foundry-native Web Search and Code Interpreter variants require Entra ID and are run separately.
+Chapter 16's resource-optimization and Chapter 18's policy-guardrail workflows are also included in the live Foundry smoke tests.
 
 That means the cloud agent and GitHub Actions jobs can invoke the chapter demos without `dotnet user-secrets`, as long as the workflow job runs inside the protected environment.
 
@@ -64,7 +70,7 @@ To run the live smoke tests manually:
 
 1. Open **Actions** → **Live Foundry smoke tests**.
 2. Start the workflow with an optional deployment alias if you want to target a named deployment.
-3. The workflow builds the solution, runs deterministic tests, then runs live model smoke tests for Chapters 01–09.
+3. The workflow builds the solution, runs deterministic tests, then runs live model smoke tests for Chapters 01–09, 11, 12, 14, 16, 17, 18, and 19.
 
 Any new test project that you add to `dotnet/AgenticDesignPatterns.slnx` is picked up by the non-live `dotnet test` step automatically. Live Foundry validation is intentionally narrower: the workflow checks out the default branch before loading protected secrets, so new demos only run there after you add coverage in `dotnet/tests/Foundry.SmokeTests` and merge that change to the default branch.
 
@@ -88,7 +94,15 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 | 08 | Memory | `src/Chapter08.Memory` | [Chapter 08 guide](src/Chapter08.Memory/README.md) |
 | 09 | Learning & Adaptation | `src/Chapter09.LearningAdaptation` | [Chapter 09 guide](src/Chapter09.LearningAdaptation/README.md) |
 | 10 | MCP | `src/Chapter10.MCP` | [Chapter 10 guide](src/Chapter10.MCP/README.md) |
+| 11 | Goal Setting & Monitoring | `src/Chapter11.GoalSettingMonitoring` | [Chapter 11 guide](src/Chapter11.GoalSettingMonitoring/README.md) |
+| 12 | Exception Handling and Recovery | `src/Chapter12.ExceptionHandling` | [Chapter 12 guide](src/Chapter12.ExceptionHandling/README.md) |
+| 14 | Retrieval-Augmented Generation (RAG) | `src/Chapter14.RAG` | [Chapter 14 guide](src/Chapter14.RAG/README.md) |
 | 15 | Inter-Agent Communication (A2A) | `src/Chapter15.A2A` | [Chapter 15 guide](src/Chapter15.A2A/README.md) |
+| 16 | Resource Optimization | `src/Chapter16.ResourceOptimization` | [Chapter 16 guide](src/Chapter16.ResourceOptimization/README.md) |
+| 17 | Reasoning | `src/Chapter17.Reasoning` | [Chapter 17 guide](src/Chapter17.Reasoning/README.md) |
+| 18 | Guardrails | `src/Chapter18.Guardrails` | [Chapter 18 guide](src/Chapter18.Guardrails/README.md) |
+| 19 | Evaluation & Monitoring | `src/Chapter19.Evaluation` | [Chapter 19 guide and evaluation-tool comparison](src/Chapter19.Evaluation/README.md) |
+| 20 | Prioritization | `src/Chapter20.Prioritization` | [Chapter 20 guide](src/Chapter20.Prioritization/README.md) |
 
 ## Hosted-agent companions
 
@@ -106,7 +120,15 @@ Most hosted projects expose the same MAF chapter logic through Microsoft Foundry
 | 08 | [Memory](src/Chapter08.Memory.Hosted/README.md) | Scripted managed-memory demo; synthetic facts and a fresh scope per request |
 | 09 | [Learning & Adaptation](src/Chapter09.LearningAdaptation.Hosted/README.md) | Starting prompt instructions to evaluate and revise |
 | 10 | [MCP](src/Chapter10.MCP.Hosted/README.md) | Request to the configured remote MCP server |
+| 11 | [Goal Setting & Monitoring](src/Chapter11.GoalSettingMonitoring.Hosted/README.md) | Use case and optional JSON goals/iteration budget |
+| 12 | [Exception Handling and Recovery](src/Chapter12.ExceptionHandling.Hosted/README.md) | Location address; bounded retry and area fallback |
+| 14 | [Retrieval-Augmented Generation](src/Chapter14.RAG.Hosted/README.md) | Plain-text question grounded in the sample corpus |
 | 15 | [Inter-Agent Communication (A2A)](src/Chapter15.A2A.Hosted/README.md) | Text request through A2A agent-card discovery, JSON-RPC, or HTTP+JSON streaming |
+| 16 | [Resource Optimization](src/Chapter16.ResourceOptimization.Hosted/README.md) | Request routed by intent; current-information requests use Foundry's Bing-backed `web_search` tool |
+| 17 | [Reasoning](src/Chapter17.Reasoning.Hosted/README.md) | `cot:`, `self-correction:`, `react:`, or `deep-search:` request |
+| 18 | [Guardrails](src/Chapter18.Guardrails.Hosted/README.md) | Request screened before the guarded assistant responds |
+| 19 | [Evaluation](src/Chapter19.Evaluation.Hosted/README.md) | Legal survey question for a structured five-criterion review |
+| 20 | [Prioritization](src/Chapter20.Prioritization.Hosted/README.md) | One task message or a JSON `tasks` array |
 
 ### Configure and deploy hosted agents
 

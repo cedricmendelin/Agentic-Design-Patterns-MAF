@@ -6,6 +6,20 @@ namespace AgenticDesignPatterns.Foundry.SmokeTests;
 public sealed class FoundrySmokeTests
 {
     [Fact(Timeout = 240000)]
+    public async Task Chapter19_evaluation_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter19EvaluationAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("Response accuracy: 0", result.StandardOutput);
+        Assert.Contains("--- MAF response latency and provider token usage ---", result.StandardOutput);
+        Assert.Contains("--- Legal survey judge: Biased ---", result.StandardOutput);
+        Assert.Contains("\"overall_score\"", result.StandardOutput);
+        Assert.Contains("--- MEAI semantic equivalence: notebook paraphrase ---", result.StandardOutput);
+        Assert.Contains("Legal Survey Quality:", result.StandardOutput);
+    }
+
+    [Fact(Timeout = 240000)]
     public async Task Chapter01_specs_demo_runs_with_live_foundry_configuration()
     {
         var result = await DotnetDemoRunner.RunChapter01SpecsAsync();
@@ -116,5 +130,76 @@ public sealed class FoundrySmokeTests
             result.CombinedOutput);
         Assert.Contains("--- Adaptation result ---", result.StandardOutput);
         Assert.Contains("Best-scoring prompt:", result.StandardOutput);
+    }
+
+    [Fact(Timeout = 240000)]
+    public async Task Chapter17_reasoning_demos_run_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter17ReasoningAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("Reasoning prompt with a concise rationale (cot)", result.StandardOutput);
+        Assert.Contains("Bounded self-correction (self-correction)", result.StandardOutput);
+        Assert.Contains("ReAct with a deterministic factorial tool (react)", result.StandardOutput);
+        Assert.Contains("Bounded query planning, reflection, and synthesis (deep-search)", result.StandardOutput);
+    }
+
+    [Fact(Timeout = 240000)]
+    public async Task Chapter14_rag_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter14RagAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("--- Retrieved context ---", result.StandardOutput);
+        Assert.Contains("SOTU-2022-BREYER", result.StandardOutput);
+        Assert.Contains("--- Final grounded response ---", result.StandardOutput);
+    }
+
+    [Fact(Timeout = 240000)]
+    public async Task Chapter11_goal_setting_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter11GoalSettingMonitoringAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("--- Generated code (iteration 1) ---", result.StandardOutput);
+        Assert.Contains("--- Goal review (iteration 1) ---", result.StandardOutput);
+        Assert.Contains("--- Goal decision (iteration 1) ---", result.StandardOutput);
+        Assert.Contains("--- Final Python code ---", result.StandardOutput);
+        Assert.Contains("Saved generated code to:", result.StandardOutput);
+    }
+
+    [Fact(Timeout = 240000)]
+    public async Task Chapter16_complexity_routing_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter16ComplexityAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("--- Complexity router decision ---", result.StandardOutput);
+        Assert.Contains("Route: Simple", result.StandardOutput);
+        Assert.Contains("Route: Reasoning", result.StandardOutput);
+        Assert.Contains("--- Final optimized response ---", result.StandardOutput);
+    }
+
+    [Fact(Timeout = 240000)]
+    public async Task Chapter12_recovery_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter12RecoveryAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("--- Checkpoint: primary lookup succeeded on attempt 1 ---", result.StandardOutput);
+        Assert.Contains("--- Checkpoint: primary lookup succeeded on attempt 2 ---", result.StandardOutput);
+        Assert.Contains("--- General-area fallback ---", result.StandardOutput);
+        Assert.Contains("--- Final recovered response ---", result.StandardOutput);
+    }
+
+    [Fact(Timeout = 240000)]
+    public async Task Chapter18_policy_guardrail_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter18PolicyAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("--- Structured policy result ---", result.StandardOutput);
+        Assert.Contains("Decision: COMPLIANT", result.StandardOutput);
+        Assert.Contains("--- Guarded assistant response ---", result.StandardOutput);
     }
 }
