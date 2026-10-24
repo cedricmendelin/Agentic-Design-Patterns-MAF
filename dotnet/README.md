@@ -94,6 +94,7 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 | 08 | Memory | `src/Chapter08.Memory` | [Chapter 08 guide](src/Chapter08.Memory/README.md) |
 | 09 | Learning & Adaptation | `src/Chapter09.LearningAdaptation` | [Chapter 09 guide](src/Chapter09.LearningAdaptation/README.md) |
 | 10 | MCP | `src/Chapter10.MCP` | [Chapter 10 guide](src/Chapter10.MCP/README.md) |
+| 13 | Human-in-the-Loop | `src/Chapter13.HumanInTheLoop` | [Chapter 13 guide](src/Chapter13.HumanInTheLoop/README.md) |
 | 11 | Goal Setting & Monitoring | `src/Chapter11.GoalSettingMonitoring` | [Chapter 11 guide](src/Chapter11.GoalSettingMonitoring/README.md) |
 | 17 | Reasoning | `src/Chapter17.Reasoning` | [Chapter 17 guide](src/Chapter17.Reasoning/README.md) |
 | 12 | Exception Handling and Recovery | `src/Chapter12.ExceptionHandling` | [Chapter 12 guide](src/Chapter12.ExceptionHandling/README.md) |
@@ -105,7 +106,7 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 
 ## Hosted-agent companions
 
-The hosted projects expose the same MAF chapter logic through Microsoft Foundry Agent Service's **Responses protocol**. Use them as starting points for deploying the patterns to your own Foundry project.
+The hosted projects expose the same MAF chapter logic through Microsoft Foundry Agent Service protocols. Use them as starting points for deploying the patterns to your own Foundry project.
 
 | Chapter | Hosted guide | Request |
 |---|---|---|
@@ -119,6 +120,7 @@ The hosted projects expose the same MAF chapter logic through Microsoft Foundry 
 | 08 | [Memory](src/Chapter08.Memory.Hosted/README.md) | Scripted managed-memory demo; synthetic facts and a fresh scope per request |
 | 09 | [Learning & Adaptation](src/Chapter09.LearningAdaptation.Hosted/README.md) | Starting prompt instructions to evaluate and revise |
 | 10 | [MCP](src/Chapter10.MCP.Hosted/README.md) | Request to the configured remote MCP server |
+| 13 | [Human-in-the-Loop](src/Chapter13.HumanInTheLoop.Hosted/README.md) | Customer-support task followed by an approval decision in the same Invocations session |
 | 11 | [Goal Setting & Monitoring](src/Chapter11.GoalSettingMonitoring.Hosted/README.md) | Use case and optional JSON goals/iteration budget |
 | 17 | [Reasoning](src/Chapter17.Reasoning.Hosted/README.md) | `cot:`, `self-correction:`, `react:`, or `deep-search:` request |
 | 12 | [Exception Handling and Recovery](src/Chapter12.ExceptionHandling.Hosted/README.md) | Location address; bounded retry and area fallback |
