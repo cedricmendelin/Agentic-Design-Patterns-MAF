@@ -302,6 +302,30 @@ services:
         protocols:
             - protocol: responses
               version: 2.0.0
+    chapter17-reasoning:
+        project: ./src/Chapter17.Reasoning.Hosted
+        host: azure.ai.agent
+        language: csharp
+        startupCommand: dotnet run --project Chapter17.Reasoning.Hosted.csproj
+        displayName: Chapter 17 - Reasoning
+        description: Runs bounded reasoning, self-correction, factorial tool-use, and research-planning scenarios.
+        uses:
+            - mvp-playground-foundry-proj
+        env:
+            AZURE_AI_MODEL_DEPLOYMENT_NAME: gpt-5-mini
+        codeConfiguration:
+            dependencyResolution: bundled
+            entryPoint: Chapter17.Reasoning.Hosted.dll
+            runtime: dotnet_10
+        container:
+            resources:
+                cpu: "0.5"
+                memory: 1Gi
+        kind: hosted
+        name: chapter17-reasoning
+        protocols:
+            - protocol: responses
+              version: 2.0.0
     chapter14-rag:
         project: ./src/Chapter14.RAG.Hosted
         host: azure.ai.agent
