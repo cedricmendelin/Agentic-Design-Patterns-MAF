@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.azure/
+**/.git/
+**/.env
+**/.env.*
+**/secrets.json
+**/appsettings.Development.json
+**/publish/
