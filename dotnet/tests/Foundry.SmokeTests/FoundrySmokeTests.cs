@@ -6,6 +6,20 @@ namespace AgenticDesignPatterns.Foundry.SmokeTests;
 public sealed class FoundrySmokeTests
 {
     [Fact(Timeout = 240000)]
+    public async Task Chapter19_evaluation_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter19EvaluationAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("Response accuracy: 0", result.StandardOutput);
+        Assert.Contains("--- MAF response latency and provider token usage ---", result.StandardOutput);
+        Assert.Contains("--- Legal survey judge: Biased ---", result.StandardOutput);
+        Assert.Contains("\"overall_score\"", result.StandardOutput);
+        Assert.Contains("--- MEAI semantic equivalence: notebook paraphrase ---", result.StandardOutput);
+        Assert.Contains("Legal Survey Quality:", result.StandardOutput);
+    }
+
+    [Fact(Timeout = 240000)]
     public async Task Chapter01_specs_demo_runs_with_live_foundry_configuration()
     {
         var result = await DotnetDemoRunner.RunChapter01SpecsAsync();
@@ -128,6 +142,30 @@ public sealed class FoundrySmokeTests
         Assert.Contains("Bounded self-correction (self-correction)", result.StandardOutput);
         Assert.Contains("ReAct with a deterministic factorial tool (react)", result.StandardOutput);
         Assert.Contains("Bounded query planning, reflection, and synthesis (deep-search)", result.StandardOutput);
+    }
+
+    [Fact(Timeout = 240000)]
+    public async Task Chapter14_rag_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter14RagAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("--- Retrieved context ---", result.StandardOutput);
+        Assert.Contains("SOTU-2022-BREYER", result.StandardOutput);
+        Assert.Contains("--- Final grounded response ---", result.StandardOutput);
+    }
+
+    [Fact(Timeout = 240000)]
+    public async Task Chapter11_goal_setting_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter11GoalSettingMonitoringAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("--- Generated code (iteration 1) ---", result.StandardOutput);
+        Assert.Contains("--- Goal review (iteration 1) ---", result.StandardOutput);
+        Assert.Contains("--- Goal decision (iteration 1) ---", result.StandardOutput);
+        Assert.Contains("--- Final Python code ---", result.StandardOutput);
+        Assert.Contains("Saved generated code to:", result.StandardOutput);
     }
 
     [Fact(Timeout = 240000)]
