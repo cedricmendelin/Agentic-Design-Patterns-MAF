@@ -21,11 +21,14 @@ dotnet user-secrets set "Foundry:ModelDeployment" "<deployment-name>" --project 
 
 ```powershell
 dotnet user-secrets set "Foundry:ModelDeployments:fast" "<fast-deployment-name>" --project dotnet/src/Shared
+dotnet user-secrets set "Foundry:ModelDeployments:reasoning" "<reasoning-deployment-name>" --project dotnet/src/Shared
 dotnet user-secrets set "Foundry:ModelDeployments:quality" "<quality-deployment-name>" --project dotnet/src/Shared
 ```
 
 All chapter projects use the same `UserSecretsId`. The corresponding environment variable overrides are `Foundry__ProjectEndpoint`, `Foundry__ApiKey`, and `Foundry__ModelDeployment`; named deployments use `Foundry__ModelDeployments__<name>`.
 For the OpenAI-compatible model API, the shared client derives `https://<resource>.openai.azure.com/openai/v1/` from a standard Foundry project endpoint on `<resource>.services.ai.azure.com`.
+
+Chapter 16 can optionally route to `fast`, `reasoning`, and `quality` model deployment aliases. Its console demo supports Google Custom Search for current-information requests; configure `GoogleCustomSearch:ApiKey` and `GoogleCustomSearch:SearchEngineId` in user-secrets or use `GOOGLE_CUSTOM_SEARCH_API_KEY` and `GOOGLE_CSE_ID` environment variables. Keep these external-service credentials out of source control. The hosted companion instead uses Foundry's Bing-backed `web_search` tool with Azure credentials and needs no external search API key.
 
 Select a configured name when running a chapter demo; omit it to use the default:
 
@@ -46,7 +49,7 @@ Create a GitHub Environment named `foundry-integration` and add these secrets:
 - `FOUNDRY_PROJECT_ENDPOINT`
 - `FOUNDRY_API_KEY`
 - `FOUNDRY_MODEL_DEPLOYMENT`
-- Optional aliases such as `FOUNDRY_MODEL_DEPLOYMENT_FAST` and `FOUNDRY_MODEL_DEPLOYMENT_QUALITY`
+- Optional aliases such as `FOUNDRY_MODEL_DEPLOYMENT_FAST`, `FOUNDRY_MODEL_DEPLOYMENT_REASONING`, and `FOUNDRY_MODEL_DEPLOYMENT_QUALITY`
 
 The live workflow maps those secrets onto the existing runtime environment variables:
 
@@ -54,9 +57,10 @@ The live workflow maps those secrets onto the existing runtime environment varia
 - `Foundry__ApiKey`
 - `Foundry__ModelDeployment`
 - `Foundry__ModelDeployments__fast`
+- `Foundry__ModelDeployments__reasoning`
 - `Foundry__ModelDeployments__quality`
 
-Chapter 06's plan-and-write, Chapter 08's session-memory, Chapter 09's prompt-adaptation, Chapter 12's recovery, and Chapter 18's policy-guardrail workflows are included in the live Foundry smoke tests. Chapter 06's optional Deep Research demo is not part of the smoke suite because it requires a separately deployed Deep Research model and runs as a potentially long background task. Chapter 08's Foundry-managed memory variant requires a configured embedding deployment and Entra ID, so it is an opt-in demo rather than part of the API-key smoke suite.
+Chapter 06's plan-and-write, Chapter 08's session-memory, Chapter 09's prompt-adaptation, Chapter 12's recovery, Chapter 16's resource-optimization, and Chapter 18's policy-guardrail workflows are included in the live Foundry smoke tests. Chapter 06's optional Deep Research demo is not part of the smoke suite because it requires a separately deployed Deep Research model and runs as a potentially long background task. Chapter 08's Foundry-managed memory variant requires a configured embedding deployment and Entra ID, so it is an opt-in demo rather than part of the API-key smoke suite.
 
 That means the cloud agent and GitHub Actions jobs can invoke the chapter demos without `dotnet user-secrets`, as long as the workflow job runs inside the protected environment.
 
@@ -64,7 +68,7 @@ To run the live smoke tests manually:
 
 1. Open **Actions** → **Live Foundry smoke tests**.
 2. Start the workflow with an optional deployment alias if you want to target a named deployment.
-3. The workflow builds the solution, runs deterministic tests, then runs live model smoke tests for Chapters 01–09, 12, and 18.
+3. The workflow builds the solution, runs deterministic tests, then runs live model smoke tests for Chapters 01–09, 12, 16, and 18.
 
 Any new test project that you add to `dotnet/AgenticDesignPatterns.slnx` is picked up by the non-live `dotnet test` step automatically. Live Foundry validation is intentionally narrower: the workflow checks out the default branch before loading protected secrets, so new demos only run there after you add coverage in `dotnet/tests/Foundry.SmokeTests` and merge that change to the default branch.
 
@@ -89,6 +93,7 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 | 09 | Learning & Adaptation | `src/Chapter09.LearningAdaptation` | [Chapter 09 guide](src/Chapter09.LearningAdaptation/README.md) |
 | 10 | MCP | `src/Chapter10.MCP` | [Chapter 10 guide](src/Chapter10.MCP/README.md) |
 | 12 | Exception Handling and Recovery | `src/Chapter12.ExceptionHandling` | [Chapter 12 guide](src/Chapter12.ExceptionHandling/README.md) |
+| 16 | Resource Optimization | `src/Chapter16.ResourceOptimization` | [Chapter 16 guide](src/Chapter16.ResourceOptimization/README.md) |
 | 18 | Guardrails | `src/Chapter18.Guardrails` | [Chapter 18 guide](src/Chapter18.Guardrails/README.md) |
 
 ## Hosted-agent companions
@@ -108,6 +113,7 @@ The hosted projects expose the same MAF chapter logic through Microsoft Foundry 
 | 09 | [Learning & Adaptation](src/Chapter09.LearningAdaptation.Hosted/README.md) | Starting prompt instructions to evaluate and revise |
 | 10 | [MCP](src/Chapter10.MCP.Hosted/README.md) | Request to the configured remote MCP server |
 | 12 | [Exception Handling and Recovery](src/Chapter12.ExceptionHandling.Hosted/README.md) | Location address; bounded retry and area fallback |
+| 16 | [Resource Optimization](src/Chapter16.ResourceOptimization.Hosted/README.md) | Request routed by intent; current-information requests use Foundry's Bing-backed `web_search` tool |
 | 18 | [Guardrails](src/Chapter18.Guardrails.Hosted/README.md) | Request screened before the guarded assistant responds |
 
 ### Configure and deploy hosted agents
