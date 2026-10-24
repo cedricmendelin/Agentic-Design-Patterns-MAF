@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Chapter14.RAG;
 using Chapter14.RAG.Hosted;
+using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Foundry.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.AI;
@@ -13,6 +14,34 @@ namespace AgenticDesignPatterns.RAG.Tests;
 
 public sealed class RagTests
 {
+    [Fact]
+    public void Native_search_preserves_unique_citation_urls_from_metadata()
+    {
+        var content = new TextContent("A sourced answer.")
+        {
+            Annotations =
+            [
+                new CitationAnnotation { Title = "Official source", Url = new Uri("https://example.com/source") },
+                new CitationAnnotation { Title = "Duplicate", Url = new Uri("https://example.com/source") },
+                new CitationAnnotation { Url = new Uri("https://example.com/another") },
+                new CitationAnnotation { Title = "File without a URL" }
+            ]
+        };
+        var response = new AgentResponse(new ChatMessage(ChatRole.Assistant, [content]));
+
+        Assert.Equal(
+            "A sourced answer.\n\nSources:\nOfficial source: https://example.com/source\nSource: https://example.com/another",
+            FoundryNativeDemo.FormatResponse(response));
+    }
+
+    [Fact]
+    public void Native_search_preserves_text_when_no_url_citations_are_available()
+    {
+        var response = new AgentResponse(new ChatMessage(ChatRole.Assistant, "An answer without URL citations."));
+
+        Assert.Equal("An answer without URL citations.", FoundryNativeDemo.FormatResponse(response));
+    }
+
     [Theory]
     [InlineData("all")]
     [InlineData("rag")]

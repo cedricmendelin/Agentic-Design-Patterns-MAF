@@ -21,7 +21,7 @@ flowchart LR
 |---|---|---|---|
 | Local sample-corpus RAG (`rag`) | `Chapter_14_Knowledge_Retrieval_(RAG_LangChain).ipynb` | `ChatClientAgent`, `AIFunctionFactory.Create`, deterministic chunking and lexical ranking | The agent calls a retrieval tool, sees up to five ranked chunks, then answers from those passages with source IDs. The small sample corpus is shipped in code so the demo is reproducible without provisioning a vector database. |
 | Foundry File Search (`foundry-files`) | `Chapter_14_Knowledge_Retrieval_(RAG_VertexAI).ipynb` | `AIProjectClient.AsAIAgent`, Foundry File Search tool | Queries a reader-provided Foundry vector store. Configure a vector store ID and populate it with documents before running. |
-| Foundry Web Search (`foundry-web`) | `Chapter_14_Knowledge_Retrieval_(RAG_Google_Search).ipynb` | `AIProjectClient.AsAIAgent`, Foundry hosted Web Search tool | Searches current web sources instead of a fixed corpus. Requires a compatible model and a configured Web Search / Bing grounding connection. |
+| Foundry Web Search (`foundry-web`) | `Chapter_14_Knowledge_Retrieval_(RAG_Google_Search).ipynb` | `AIProjectClient.AsAIAgent`, Foundry hosted Web Search tool | Searches current web sources instead of a fixed corpus. Appends source titles and URLs supplied through citation metadata. Requires a compatible model and a configured Web Search / Bing grounding connection. |
 | Hosted companion | Local sample-corpus RAG | Existing `RagAgent` behind Foundry Agent Service Responses | Accepts the caller's question, retrieves from the same sample corpus, and returns a buffered answer with citations. Requests are isolated and stateless. See [the hosted guide](../Chapter14.RAG.Hosted/README.md). |
 
 ## Setup

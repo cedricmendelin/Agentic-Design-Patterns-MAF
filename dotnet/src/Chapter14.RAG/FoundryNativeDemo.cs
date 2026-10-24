@@ -68,7 +68,23 @@ public static class FoundryNativeDemo
             throw new InvalidOperationException($"The {mode} agent returned an empty response.");
         }
 
-        return response.Text;
+        return FormatResponse(response);
+    }
+
+    public static string FormatResponse(AgentResponse response)
+    {
+        var citations = response.Messages
+            .SelectMany(message => message.Contents)
+            .SelectMany(content => content.Annotations ?? [])
+            .OfType<CitationAnnotation>()
+            .Where(citation => citation.Url is not null)
+            .DistinctBy(citation => citation.Url)
+            .Select(citation => $"{citation.Title ?? "Source"}: {citation.Url}")
+            .ToList();
+
+        return citations.Count == 0
+            ? response.Text
+            : response.Text + "\n\nSources:\n" + string.Join("\n", citations);
     }
 
     private static (string Instructions, AITool Tool) CreateFileSearchTool(IConfiguration configuration)
