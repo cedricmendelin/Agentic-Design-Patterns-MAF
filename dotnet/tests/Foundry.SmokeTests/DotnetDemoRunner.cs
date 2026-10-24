@@ -76,6 +76,11 @@ internal static class DotnetDemoRunner
             Path.Combine(RepositoryRoot, "dotnet", "src", "Chapter12.ExceptionHandling", "Chapter12.ExceptionHandling.csproj"),
             ["all"]);
 
+    public static Task<DemoRunResult> RunChapter16ComplexityAsync() =>
+        RunAsync(
+            Path.Combine(RepositoryRoot, "dotnet", "src", "Chapter16.ResourceOptimization", "Chapter16.ResourceOptimization.csproj"),
+            ["complexity"]);
+
     private static async Task<DemoRunResult> RunAsync(string projectPath, string[] demoArguments)
     {
         var startInfo = new ProcessStartInfo("dotnet")
