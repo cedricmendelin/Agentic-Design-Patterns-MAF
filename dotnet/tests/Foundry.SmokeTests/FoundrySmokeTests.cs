@@ -1,10 +1,46 @@
 using Xunit;
+using AgenticDesignPatterns.Shared;
+using Chapter13.HumanInTheLoop;
+using Microsoft.Extensions.AI;
 
 namespace AgenticDesignPatterns.Foundry.SmokeTests;
 
 [Trait("Category", "LiveFoundry")]
 public sealed class FoundrySmokeTests
 {
+    [Fact(Timeout = 240000)]
+    public async Task Chapter13_customer_support_escalation_runs_with_live_foundry_configuration()
+    {
+        var settings = FoundryChatClientFactory.LoadSettings();
+        var deploymentAlias = Environment.GetEnvironmentVariable("FOUNDRY_TEST_DEPLOYMENT_ALIAS");
+        using IChatClient chatClient = FoundryChatClientFactory.CreateChatClient(settings, deploymentAlias);
+        var agent = CustomerSupportAgent.Create(
+            chatClient,
+            new SupportCustomer
+            {
+                Name = "Sam",
+                Tier = "premium",
+                RecentPurchases = ["Wireless headphones"],
+                SupportHistory = ["The device disconnected during a previous support session."]
+            });
+        var session = await agent.CreateSessionAsync();
+
+        var pending = await agent.RunAsync(
+            "This is a complex, persistent headphone issue. Use escalate_to_human to transfer it to a specialist now.",
+            session);
+        var approval = Assert.Single(pending.Messages
+            .SelectMany(message => message.Contents)
+            .OfType<ToolApprovalRequestContent>());
+
+        Assert.Equal("escalate_to_human", Assert.IsType<FunctionCallContent>(approval.ToolCall).Name);
+
+        var completed = await agent.RunAsync(
+            new ChatMessage(ChatRole.User, [approval.CreateResponse(approved: true)]),
+            session);
+
+        Assert.Contains("Escalated", completed.Text, StringComparison.OrdinalIgnoreCase);
+    }
+
     [Fact(Timeout = 240000)]
     public async Task Chapter19_evaluation_demo_runs_with_live_foundry_configuration()
     {

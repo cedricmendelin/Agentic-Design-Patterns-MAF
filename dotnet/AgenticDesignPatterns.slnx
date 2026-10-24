@@ -10,6 +10,7 @@
     <Project Path="src/Chapter08.Memory/Chapter08.Memory.csproj" />
     <Project Path="src/Chapter09.LearningAdaptation/Chapter09.LearningAdaptation.csproj" />
     <Project Path="src/Chapter10.MCP/Chapter10.MCP.csproj" />
+    <Project Path="src/Chapter13.HumanInTheLoop/Chapter13.HumanInTheLoop.csproj" />
     <Project Path="src/Chapter14.RAG/Chapter14.RAG.csproj" />
     <Project Path="src/Chapter11.GoalSettingMonitoring/Chapter11.GoalSettingMonitoring.csproj" />
     <Project Path="src/Chapter10.MCP.Server/Chapter10.MCP.Server.csproj" />
@@ -31,6 +32,7 @@
     <Project Path="src/Chapter08.Memory.Hosted/Chapter08.Memory.Hosted.csproj" />
     <Project Path="src/Chapter09.LearningAdaptation.Hosted/Chapter09.LearningAdaptation.Hosted.csproj" />
     <Project Path="src/Chapter10.MCP.Hosted/Chapter10.MCP.Hosted.csproj" />
+    <Project Path="src/Chapter13.HumanInTheLoop.Hosted/Chapter13.HumanInTheLoop.Hosted.csproj" />
     <Project Path="src/Chapter11.GoalSettingMonitoring.Hosted/Chapter11.GoalSettingMonitoring.Hosted.csproj" />
     <Project Path="src/Chapter12.ExceptionHandling.Hosted/Chapter12.ExceptionHandling.Hosted.csproj" />
     <Project Path="src/Chapter14.RAG.Hosted/Chapter14.RAG.Hosted.csproj" />
@@ -51,6 +53,7 @@
     <Project Path="tests/ToolUse.Tests/ToolUse.Tests.csproj" />
     <Project Path="tests/LearningAdaptation.Tests/LearningAdaptation.Tests.csproj" />
     <Project Path="tests/MCP.Tests/MCP.Tests.csproj" />
+    <Project Path="tests/HumanInTheLoop.Tests/HumanInTheLoop.Tests.csproj" />
     <Project Path="tests/GoalSettingMonitoring.Tests/GoalSettingMonitoring.Tests.csproj" />
     <Project Path="tests/ExceptionHandling.Tests/ExceptionHandling.Tests.csproj" />
     <Project Path="tests/RAG.Tests/RAG.Tests.csproj" />
