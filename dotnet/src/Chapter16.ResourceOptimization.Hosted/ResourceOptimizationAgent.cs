@@ -10,11 +10,11 @@ namespace Chapter16.ResourceOptimization.Hosted;
 public sealed class ResourceOptimizationAgent(
     IChatClient classifierClient,
     IReadOnlyDictionary<OptimizationCategory, OptimizationModelClient> modelClients,
-    IGoogleCustomSearch? searchClient) : AIAgent
+    AIAgent webSearchAgent) : AIAgent
 {
     public override string Name => "chapter16-resource-optimization";
     public override string Description =>
-        "Classifies each request and routes it to a suitable model, with optional current-information search.";
+        "Classifies each request and routes it to a suitable model, using Foundry web search for current information.";
 
     protected override async Task<AgentResponse> RunCoreAsync(
         IEnumerable<ChatMessage> messages,
@@ -29,8 +29,8 @@ public sealed class ResourceOptimizationAgent(
             RoutingStrategy.IntentClassification,
             classifierClient,
             modelClients,
-            searchClient,
-            cancellationToken: cancellationToken);
+            cancellationToken: cancellationToken,
+            webSearchAgent: webSearchAgent);
 
         var response = $"""
             Classification: {result.Category}

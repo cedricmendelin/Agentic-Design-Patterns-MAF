@@ -26,7 +26,7 @@ flowchart LR
 | Complexity router (`complexity`) | `Chapter_16_Resource_Optimization_(Code_Snippets).ipynb` | `WorkflowBuilder`, custom router and answer executors, `ChatClientAgent`, `UsageDetails` | Requests under 20 words use the simple route; longer requests use the reasoning route. The selected deployment and provider-reported token usage are printed. |
 | Intent and search router (`research`) | `Chapter_16_Resource_Optimization_(OI_Google_Search).ipynb` | MAF workflow executors, classifier `ChatClientAgent`, route-specific answer agents, Google Custom Search REST API | The classifier chooses `simple`, `reasoning`, or `internet_search`. Current-information requests fetch three web results and answer from their titles, snippets, and links. |
 | Foundry-native | Same scenarios | Not applicable | Foundry provides model deployments, but no separate native budget/complexity-routing primitive is used by these examples. The MAF workflow owns deterministic routing and usage reporting. |
-| Hosted companion | Intent and search router | Existing MAF workflow, Foundry Responses protocol host, managed identity | A caller's request is processed per-request without replaying console samples or persisting conversation state. See [hosted setup and deployment](../Chapter16.ResourceOptimization.Hosted/README.md). |
+| Hosted companion | Intent and search router | Existing MAF workflow, Foundry Responses protocol host, managed identity, native `web_search` tool | A caller's request is processed per-request without replaying console samples or persisting conversation state. The hosted search route uses Foundry's Bing-backed web search instead of Google credentials. See [hosted setup and deployment](../Chapter16.ResourceOptimization.Hosted/README.md). |
 
 ## Setup
 
@@ -91,11 +91,11 @@ flowchart LR
 
 ## Hosted Deployment Companion
 
-- Suitability: ordinary request/response processing is supported with a fresh, stateless workflow per request; current-information requests require separately configured Google Custom Search access.
+- Suitability: ordinary request/response processing is supported with a fresh, stateless workflow per request; current-information requests use Foundry's built-in Bing-backed `web_search` tool without external search credentials.
 - Project and deployment guide: [Chapter 16 hosted agent](../Chapter16.ResourceOptimization.Hosted/README.md).
 - Authentication: console execution uses API keys in shared user-secrets; hosted Foundry model inference uses developer credentials locally and managed identity in Azure. Before remote inference, verify or assign **Cognitive Services OpenAI User** to the deployed `instance_identity.principal_id` at the model-hosting Foundry account scope, allow RBAC propagation, and recheck after redeployment.
 - Packaging: azd bundled deployment includes the host and referenced Chapter 16 and Shared projects; keep user-secrets, `.azure`, and environment files out of the package.
-- Request contract: accepts one text prompt, classifies it, returns the selected deployment and final answer, and does not retain conversation history. A search-classified request requires Google Custom Search configuration.
+- Request contract: accepts one text prompt, classifies it, returns the selected deployment and final answer with search source URLs, and does not retain conversation history. A search-classified request uses the quality model via the Foundry project Responses API with Azure credentials.
 - Deployment: the hosted guide documents permissions, local invocation, service-scoped deploy/invoke commands, runtime inference role and scope, RBAC propagation, expected costs, and agent-scoped cleanup.
 
 ## Risks & Limitations

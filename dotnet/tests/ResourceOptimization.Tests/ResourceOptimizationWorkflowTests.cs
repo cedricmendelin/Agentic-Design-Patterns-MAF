@@ -5,6 +5,7 @@ using Azure.AI.AgentServer.Core;
 using Chapter16.ResourceOptimization;
 using Chapter16.ResourceOptimization.Hosted;
 using Chapter16.ResourceOptimization.Models;
+using Microsoft.Agents.AI;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Agents.AI.Foundry.Hosting;
 using Microsoft.Extensions.AI;
@@ -141,8 +142,14 @@ public sealed class ResourceOptimizationWorkflowTests
             results);
     }
 
-    [Fact]
-    public async Task Responses_protocol_returns_classification_and_final_answer()
+    [Theory]
+    [InlineData("simple", "Simple", "fast-deployment")]
+    [InlineData("reasoning", "Reasoning", "reasoning-deployment")]
+    [InlineData("internet_search", "InternetSearch", "quality-deployment")]
+    public async Task Responses_protocol_returns_classification_and_final_answer(
+        string classification,
+        string expectedCategory,
+        string expectedDeployment)
     {
         var activities = new List<Activity>();
         using var listener = new ActivityListener
@@ -153,9 +160,18 @@ public sealed class ResourceOptimizationWorkflowTests
         };
         ActivitySource.AddActivityListener(listener);
         using var model = new ScriptedChatClient(
-            ("{\"classification\":\"simple\"}", 2, 1),
+            ($"{{\"classification\":\"{classification}\"}}", 2, 1),
             ("Canberra.", 4, 3));
-        var agent = new ResourceOptimizationAgent(model, CreateModelClients(model), searchClient: null);
+        using var webModel = new ScriptedChatClient(("Current answer.", 6, 5))
+        {
+            Citation = new CitationAnnotation
+            {
+                Title = "Official source",
+                Url = new Uri("https://example.com/current")
+            }
+        };
+        var webSearchAgent = new ChatClientAgent(webModel, name: "TestWebSearch");
+        var agent = new ResourceOptimizationAgent(model, CreateModelClients(model), webSearchAgent);
         var builder = AgentHost.CreateBuilder([]);
         builder.WebApplicationBuilder.WebHost.UseTestServer();
         builder.ConfigureTracing(tracing =>
@@ -182,14 +198,48 @@ public sealed class ResourceOptimizationWorkflowTests
                     .SelectMany(item => item.GetProperty("content").EnumerateArray())
                     .Where(item => item.GetProperty("type").GetString() == "output_text")
                     .Select(item => item.GetProperty("text").GetString()));
-            Assert.Contains("Classification: Simple", text);
-            Assert.Contains("Model deployment: fast-deployment", text);
-            Assert.Contains("Canberra.", text);
+            Assert.Contains($"Classification: {expectedCategory}", text);
+            Assert.Contains($"Model deployment: {expectedDeployment}", text);
+            if (classification == "internet_search")
+            {
+                Assert.Contains("Current answer.", text);
+                Assert.Contains("Official source: https://example.com/current", text);
+                Assert.Contains("input=8, output=6, total=14", text);
+                Assert.Single(model.Requests);
+                Assert.Single(webModel.Requests);
+            }
+            else
+            {
+                Assert.Contains("Canberra.", text);
+                Assert.Contains("input=6, output=4, total=10", text);
+                Assert.Equal(2, model.Requests.Count);
+                Assert.Empty(webModel.Requests);
+            }
         }
         finally
         {
             await app.StopAsync();
         }
+    }
+
+    [Fact]
+    public async Task Native_web_search_failure_is_propagated_without_a_google_fallback()
+    {
+        using var classifier = new ScriptedChatClient(
+            ("{\"classification\":\"internet_search\"}", 2, 1));
+        using var webModel = new ScriptedChatClient();
+        var agent = new ResourceOptimizationAgent(
+            classifier,
+            CreateModelClients(classifier),
+            new ChatClientAgent(webModel, name: "FailingWebSearch"));
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => agent.RunAsync("What is the latest schedule?"));
+
+        Assert.Contains("A scripted model response is missing", error.ToString());
+        Assert.DoesNotContain("Google Custom Search is not configured", error.ToString());
+        Assert.Single(classifier.Requests);
+        Assert.Single(webModel.Requests);
     }
 
     private static IReadOnlyDictionary<OptimizationCategory, OptimizationModelClient> CreateModelClients(
@@ -206,6 +256,7 @@ public sealed class ResourceOptimizationWorkflowTests
     {
         private readonly Queue<(string Text, long Input, long Output)> _responses = new(responses);
         public List<List<ChatMessage>> Requests { get; } = [];
+        public CitationAnnotation? Citation { get; init; }
 
         public Task<ChatResponse> GetResponseAsync(
             IEnumerable<ChatMessage> messages,
@@ -219,7 +270,13 @@ public sealed class ResourceOptimizationWorkflowTests
                 throw new InvalidOperationException("A scripted model response is missing.");
             }
 
-            return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, response.Text))
+            var content = new TextContent(response.Text);
+            if (Citation is not null)
+            {
+                content.Annotations = [Citation];
+            }
+
+            return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, [content]))
             {
                 Usage = new UsageDetails
                 {

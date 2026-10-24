@@ -6,7 +6,7 @@ Expose the [Chapter 16 MAF workflow](../Chapter16.ResourceOptimization/README.md
 
 Send the user's question as the Responses `input` text. Each request is independent: the host uses only the latest user message, creates a fresh MAF workflow, and does not persist conversation history. The completed response reports the classification, selected deployment, provider-reported token usage, and actual model answer. The host buffers a completed workflow result before returning it; it does not stream intermediate router decisions.
 
-When a request is classified as `internet_search`, both Google Custom Search settings must be present. Otherwise the request fails with an explicit configuration error rather than answering current-event questions from model memory. Search/network errors are propagated to the caller.
+When a request is classified as `internet_search`, the quality-route agent uses Foundry's built-in Bing-backed `web_search` tool through the project Responses API. Source URLs from citation annotations are included in the completed answer. No Google API key, search engine ID, Bing resource, or project connection is required. Search/network errors are propagated to the caller rather than falling back to model memory.
 
 ## Prerequisites and configuration
 
@@ -22,22 +22,7 @@ Optional model aliases provide per-route resource choices:
 
 An unset alias falls back to `Foundry:ModelDeployment`. If a single default deployment is used, all routes therefore share it.
 
-For live web lookup, configure both values in shared user-secrets for local runs:
-
-```powershell
-dotnet user-secrets set "GoogleCustomSearch:ApiKey" "<google-custom-search-api-key>" --project .\dotnet\src\Shared
-dotnet user-secrets set "GoogleCustomSearch:SearchEngineId" "<programmable-search-engine-id>" --project .\dotnet\src\Shared
-```
-
-For deployment, supply `GOOGLE_CUSTOM_SEARCH_API_KEY` and `GOOGLE_CSE_ID` as protected azd environment values when needed:
-
-```powershell
-Set-Location .\dotnet
-azd env set GOOGLE_CUSTOM_SEARCH_API_KEY '<google-custom-search-api-key>'
-azd env set GOOGLE_CSE_ID '<programmable-search-engine-id>'
-```
-
-Never commit either value. The hosted runtime uses managed identity for Foundry inference; Google Custom Search credentials are separate external-service credentials.
+For live web lookup, use a quality-route model deployment that supports Foundry `web_search` and ensure web search is permitted by the subscription administrator. The project Responses API uses `DefaultAzureCredential`: sign in with Azure CLI for local runs; the hosted runtime uses its managed identity in Azure. A model API key alone is not sufficient for this route. The console demo retains Google Custom Search solely to match the original notebook; those credentials are not used by this host.
 
 To use route-specific deployments in Azure, set any desired aliases in the azd environment before deployment. These names match the service environment entries in `azure.yaml`:
 
@@ -64,7 +49,7 @@ azd ai agent invoke chapter16-resource-optimization --local --protocol responses
 azd ai agent invoke chapter16-resource-optimization --local --protocol responses 'When does the Australian Open 2026 start?'
 ```
 
-The second request needs Google Custom Search configured.
+The second request exercises Foundry web search using Azure credentials, without external search credentials.
 
 ## Deploy and invoke
 
@@ -86,7 +71,9 @@ azd ai agent invoke chapter16-resource-optimization --protocol responses 'Explai
 
 ## Permissions, packaging, and cost
 
-The deploying identity needs permission to deploy hosted agents to the selected Foundry project. The hosted agent needs model inference access at the model-hosting account scope and outbound access to Google Custom Search when that route is used. Google Search API and Foundry model calls may incur usage charges. The bundled deployment excludes user-secrets and local environment files; keep any runtime Google API values in protected deployment configuration.
+The deploying identity needs permission to deploy hosted agents to the selected Foundry project. The hosted agent needs model inference access at the model-hosting account scope, including Responses API access for web search. Foundry model calls and Bing-backed web search incur usage charges. The bundled deployment excludes user-secrets and local environment files.
+
+Web search is a preview feature governed by the [Grounding with Bing terms](https://www.microsoft.com/bing/apis/grounding-legal-enterprise) and [Microsoft Privacy Statement](https://go.microsoft.com/fwlink/?LinkId=521839). The Microsoft Data Protection Addendum does not apply to data sent to Bing grounding, and data can leave compliance and geographic boundaries. Use non-sensitive sample prompts. See the [Foundry web search documentation](https://learn.microsoft.com/azure/ai-foundry/agents/how-to/tools/web-search?view=foundry) for administrator controls and supported models.
 
 When removing an experiment, use agent-scoped controls for the agent resources you own. Do not delete the shared project, its model deployments, or unrelated agents.
 

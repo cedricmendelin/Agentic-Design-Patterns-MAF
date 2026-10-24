@@ -308,7 +308,7 @@ services:
         language: csharp
         startupCommand: dotnet run --project Chapter16.ResourceOptimization.Hosted.csproj
         displayName: Chapter 16 - Resource Optimization
-        description: Routes each request to an appropriate model deployment and optionally searches current information.
+        description: Routes each request to an appropriate model deployment and uses Foundry web search for current information.
         uses:
             - mvp-playground-foundry-proj
         env:
@@ -316,8 +316,6 @@ services:
             Foundry__ModelDeployments__fast: ${FOUNDRY_MODEL_DEPLOYMENT_FAST}
             Foundry__ModelDeployments__reasoning: ${FOUNDRY_MODEL_DEPLOYMENT_REASONING}
             Foundry__ModelDeployments__quality: ${FOUNDRY_MODEL_DEPLOYMENT_QUALITY}
-            GOOGLE_CUSTOM_SEARCH_API_KEY: ${GOOGLE_CUSTOM_SEARCH_API_KEY}
-            GOOGLE_CSE_ID: ${GOOGLE_CSE_ID}
         codeConfiguration:
             dependencyResolution: bundled
             entryPoint: Chapter16.ResourceOptimization.Hosted.dll

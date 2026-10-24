@@ -74,7 +74,8 @@ public static class ResourceOptimizationWorkflow
         IReadOnlyDictionary<OptimizationCategory, OptimizationModelClient> modelClients,
         IGoogleCustomSearch? searchClient = null,
         Action<string>? writeOutput = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        AIAgent? webSearchAgent = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(request);
         ArgumentNullException.ThrowIfNull(classifierClient);
@@ -85,7 +86,8 @@ public static class ResourceOptimizationWorkflow
             classifierClient,
             modelClients,
             searchClient,
-            writeOutput);
+            writeOutput,
+            webSearchAgent);
         await using var run = await InProcessExecution.RunAsync(
             workflow,
             new ChatMessage(ChatRole.User, request),
@@ -122,7 +124,8 @@ public static class ResourceOptimizationWorkflow
         IChatClient classifierClient,
         IReadOnlyDictionary<OptimizationCategory, OptimizationModelClient> modelClients,
         IGoogleCustomSearch? searchClient,
-        Action<string>? writeOutput)
+        Action<string>? writeOutput,
+        AIAgent? webSearchAgent)
     {
         foreach (var category in Enum.GetValues<OptimizationCategory>())
         {
@@ -167,7 +170,8 @@ public static class ResourceOptimizationWorkflow
             modelClients[OptimizationCategory.InternetSearch],
             "Answer using the supplied web results. Cite relevant result links and distinguish sourced facts from uncertainty.",
             searchClient,
-            writeOutput);
+            writeOutput,
+            webSearchAgent);
         router.SetClassifierUsage(classifierUsage);
 
         return new WorkflowBuilder(router)
@@ -183,7 +187,8 @@ public static class ResourceOptimizationWorkflow
         OptimizationModelClient modelClient,
         string instructions,
         IGoogleCustomSearch? searchClient,
-        Action<string>? writeOutput)
+        Action<string>? writeOutput,
+        AIAgent? webSearchAgent = null)
     {
         var agent = CreateAgent(
             modelClient.Client,
@@ -195,7 +200,7 @@ public static class ResourceOptimizationWorkflow
                 _ => throw new ArgumentOutOfRangeException(nameof(category))
             },
             instructions);
-        return new AnswerExecutor(category, modelClient.Deployment, agent, searchClient, writeOutput);
+        return new AnswerExecutor(category, modelClient.Deployment, agent, searchClient, writeOutput, webSearchAgent);
     }
 
     private static TrackedAgent CreateAgent(IChatClient chatClient, string name, string instructions)
@@ -325,7 +330,8 @@ public static class ResourceOptimizationWorkflow
         string deployment,
         TrackedAgent answerer,
         IGoogleCustomSearch? searchClient,
-        Action<string>? writeOutput)
+        Action<string>? writeOutput,
+        AIAgent? webSearchAgent)
         : Executor<RoutedRequest, OptimizationResult>($"{category}Answerer")
     {
         public override async ValueTask<OptimizationResult> HandleAsync(
@@ -335,7 +341,7 @@ public static class ResourceOptimizationWorkflow
         {
             IReadOnlyList<GoogleSearchResult> searchResults = [];
             var answerInput = route.Prompt;
-            if (category == OptimizationCategory.InternetSearch)
+            if (category == OptimizationCategory.InternetSearch && webSearchAgent is null)
             {
                 if (searchClient is null)
                 {
@@ -354,7 +360,7 @@ public static class ResourceOptimizationWorkflow
                 answerInput = BuildSearchPrompt(route.Prompt, searchResults);
             }
 
-            var response = await answerer.Agent.RunAsync(
+            var response = await (webSearchAgent ?? answerer.Agent).RunAsync(
                 answerInput,
                 cancellationToken: cancellationToken);
             if (string.IsNullOrWhiteSpace(response.Text))
@@ -362,9 +368,28 @@ public static class ResourceOptimizationWorkflow
                 throw new InvalidOperationException($"The {category} model returned an empty response.");
             }
 
-            var usage = CombineUsage(route.ClassifierUsage, answerer.UsageClient.Usage);
+            var answer = response.Text;
+            if (webSearchAgent is not null)
+            {
+                var citations = response.Messages
+                    .SelectMany(message => message.Contents)
+                    .SelectMany(content => content.Annotations ?? [])
+                    .OfType<CitationAnnotation>()
+                    .Where(citation => citation.Url is not null)
+                    .DistinctBy(citation => citation.Url)
+                    .Select(citation => $"{citation.Title ?? "Source"}: {citation.Url}")
+                    .ToList();
+                if (citations.Count > 0)
+                {
+                    answer += "\n\nSources:\n" + string.Join("\n", citations);
+                }
+            }
+
+            var usage = CombineUsage(
+                route.ClassifierUsage,
+                webSearchAgent is null ? answerer.UsageClient.Usage : response.Usage);
             writeOutput?.Invoke($"\n--- {category} answer ({deployment}) ---");
-            writeOutput?.Invoke(response.Text);
+            writeOutput?.Invoke(answer);
             writeOutput?.Invoke(
                 $"Token usage: input={usage?.InputTokenCount?.ToString() ?? "not reported"}, " +
                 $"output={usage?.OutputTokenCount?.ToString() ?? "not reported"}, " +
@@ -373,7 +398,7 @@ public static class ResourceOptimizationWorkflow
             return new OptimizationResult(
                 category,
                 deployment,
-                response.Text,
+                answer,
                 route.WordCount,
                 usage?.InputTokenCount,
                 usage?.OutputTokenCount,
