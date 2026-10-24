@@ -4,7 +4,7 @@ Expose the [Chapter 16 MAF workflow](../Chapter16.ResourceOptimization/README.md
 
 ## Request contract and state
 
-Send the user's question as the Responses `input` text. Each request is independent: the host uses only the latest user message, creates a fresh MAF workflow, and does not persist conversation history. The completed response reports the classification, selected deployment, provider-reported token usage, and actual model answer. The host buffers a completed workflow result before returning it; it does not stream intermediate router decisions.
+Send the user's question as the Responses `input` text. Each request is independent: the host uses only the latest user message, creates a fresh MAF workflow, and does not persist conversation history. The completed response reports the classification, selected deployment, provider-reported token usage, and actual model answer. Token totals are also returned as structured Responses usage metadata, including in the completed streaming response. The host buffers a completed workflow result before returning it; it does not stream intermediate router decisions.
 
 When a request is classified as `internet_search`, the quality-route agent uses Foundry's built-in Bing-backed `web_search` tool through the project Responses API. Source URLs from citation annotations are included in the completed answer. No Google API key, search engine ID, Bing resource, or project connection is required. Search/network errors are propagated to the caller rather than falling back to model memory.
 

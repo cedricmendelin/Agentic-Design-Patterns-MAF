@@ -12,6 +12,12 @@ public sealed class ResourceOptimizationAgent(
     IReadOnlyDictionary<OptimizationCategory, OptimizationModelClient> modelClients,
     AIAgent webSearchAgent) : AIAgent
 {
+    private readonly AIAgent _webSearchAgent = webSearchAgent.AsBuilder()
+        .UseOpenTelemetry(
+            ResourceOptimizationWorkflow.TelemetrySourceName,
+            configure: options => options.EnableSensitiveData = true)
+        .Build();
+
     public override string Name => "chapter16-resource-optimization";
     public override string Description =>
         "Classifies each request and routes it to a suitable model, using Foundry web search for current information.";
@@ -30,7 +36,7 @@ public sealed class ResourceOptimizationAgent(
             classifierClient,
             modelClients,
             cancellationToken: cancellationToken,
-            webSearchAgent: webSearchAgent);
+            webSearchAgent: _webSearchAgent);
 
         var response = $"""
             Classification: {result.Category}
@@ -39,7 +45,17 @@ public sealed class ResourceOptimizationAgent(
             Answer:
             {result.Answer}
             """;
-        return new AgentResponse(new ChatMessage(ChatRole.Assistant, response));
+        return new AgentResponse(new ChatMessage(ChatRole.Assistant, response))
+        {
+            Usage = result.InputTokens is null && result.OutputTokens is null && result.TotalTokens is null
+                ? null
+                : new UsageDetails
+                {
+                    InputTokenCount = result.InputTokens,
+                    OutputTokenCount = result.OutputTokens,
+                    TotalTokenCount = result.TotalTokens
+                }
+        };
     }
 
     protected override async IAsyncEnumerable<AgentResponseUpdate> RunCoreStreamingAsync(
@@ -49,11 +65,10 @@ public sealed class ResourceOptimizationAgent(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var response = await RunCoreAsync(messages, session, options, cancellationToken);
-        yield return new AgentResponseUpdate
+        foreach (var update in response.ToAgentResponseUpdates())
         {
-            Role = ChatRole.Assistant,
-            Contents = [new TextContent(response.Text)]
-        };
+            yield return update;
+        }
     }
 
     protected override ValueTask<AgentSession> CreateSessionCoreAsync(

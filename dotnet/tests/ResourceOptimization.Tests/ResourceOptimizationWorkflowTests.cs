@@ -143,13 +143,17 @@ public sealed class ResourceOptimizationWorkflowTests
     }
 
     [Theory]
-    [InlineData("simple", "Simple", "fast-deployment")]
-    [InlineData("reasoning", "Reasoning", "reasoning-deployment")]
-    [InlineData("internet_search", "InternetSearch", "quality-deployment")]
+    [InlineData("simple", "Simple", "fast-deployment", false)]
+    [InlineData("reasoning", "Reasoning", "reasoning-deployment", false)]
+    [InlineData("internet_search", "InternetSearch", "quality-deployment", false)]
+    [InlineData("simple", "Simple", "fast-deployment", true)]
+    [InlineData("reasoning", "Reasoning", "reasoning-deployment", true)]
+    [InlineData("internet_search", "InternetSearch", "quality-deployment", true)]
     public async Task Responses_protocol_returns_classification_and_final_answer(
         string classification,
         string expectedCategory,
-        string expectedDeployment)
+        string expectedDeployment,
+        bool stream)
     {
         var activities = new List<Activity>();
         using var listener = new ActivityListener
@@ -187,11 +191,11 @@ public sealed class ResourceOptimizationWorkflowTests
             {
                 model = "chapter16-resource-optimization",
                 input = "What is the capital of Australia?",
-                stream = false,
+                stream,
                 store = false
             });
             response.EnsureSuccessStatusCode();
-            using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            using var body = ReadCompletedResponse(await response.Content.ReadAsStringAsync(), stream);
             Assert.Equal("completed", body.RootElement.GetProperty("status").GetString());
             var text = string.Concat(
                 body.RootElement.GetProperty("output").EnumerateArray()
@@ -207,6 +211,8 @@ public sealed class ResourceOptimizationWorkflowTests
                 Assert.Contains("input=8, output=6, total=14", text);
                 Assert.Single(model.Requests);
                 Assert.Single(webModel.Requests);
+                Assert.Contains(activities, activity =>
+                    activity.GetTagItem("gen_ai.agent.name")?.ToString() == "TestWebSearch");
             }
             else
             {
@@ -215,11 +221,40 @@ public sealed class ResourceOptimizationWorkflowTests
                 Assert.Equal(2, model.Requests.Count);
                 Assert.Empty(webModel.Requests);
             }
+
+            var usage = body.RootElement.GetProperty("usage");
+            Assert.Equal(classification == "internet_search" ? 8 : 6, usage.GetProperty("input_tokens").GetInt64());
+            Assert.Equal(classification == "internet_search" ? 6 : 4, usage.GetProperty("output_tokens").GetInt64());
+            Assert.Equal(classification == "internet_search" ? 14 : 10, usage.GetProperty("total_tokens").GetInt64());
         }
         finally
         {
             await app.StopAsync();
         }
+    }
+
+    private static JsonDocument ReadCompletedResponse(string payload, bool stream)
+    {
+        if (!stream)
+        {
+            return JsonDocument.Parse(payload);
+        }
+
+        foreach (var line in payload.Split('\n'))
+        {
+            if (!line.StartsWith("data: ", StringComparison.Ordinal) || line.TrimEnd() == "data: [DONE]")
+            {
+                continue;
+            }
+
+            using var message = JsonDocument.Parse(line["data: ".Length..]);
+            if (message.RootElement.GetProperty("type").GetString() == "response.completed")
+            {
+                return JsonDocument.Parse(message.RootElement.GetProperty("response").GetRawText());
+            }
+        }
+
+        throw new InvalidOperationException("The Responses stream did not include a completed response.");
     }
 
     [Fact]
