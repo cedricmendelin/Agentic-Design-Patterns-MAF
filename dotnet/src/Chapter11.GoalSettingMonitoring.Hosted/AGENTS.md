@@ -1,0 +1,1 @@
+This project exposes Chapter 11's bounded goal-setting workflow through Foundry's Responses protocol. Keep caller requests isolated, use managed identity in Azure, and retain sensitive telemetry only with suitable access and retention controls.
