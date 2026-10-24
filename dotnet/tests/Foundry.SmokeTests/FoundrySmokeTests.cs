@@ -42,6 +42,20 @@ public sealed class FoundrySmokeTests
     }
 
     [Fact(Timeout = 240000)]
+    public async Task Chapter19_evaluation_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter19EvaluationAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("Response accuracy: 0", result.StandardOutput);
+        Assert.Contains("--- MAF response latency and provider token usage ---", result.StandardOutput);
+        Assert.Contains("--- Legal survey judge: Biased ---", result.StandardOutput);
+        Assert.Contains("\"overall_score\"", result.StandardOutput);
+        Assert.Contains("--- MEAI semantic equivalence: notebook paraphrase ---", result.StandardOutput);
+        Assert.Contains("Legal Survey Quality:", result.StandardOutput);
+    }
+
+    [Fact(Timeout = 240000)]
     public async Task Chapter01_specs_demo_runs_with_live_foundry_configuration()
     {
         var result = await DotnetDemoRunner.RunChapter01SpecsAsync();
