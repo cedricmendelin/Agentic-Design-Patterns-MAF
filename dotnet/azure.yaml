@@ -316,6 +316,16 @@ services:
         codeConfiguration:
             dependencyResolution: bundled
             entryPoint: Chapter17.Reasoning.Hosted.dll
+            runtime: dotnet_10
+        container:
+            resources:
+                cpu: "0.5"
+                memory: 1Gi
+        kind: hosted
+        name: chapter17-reasoning
+        protocols:
+            - protocol: responses
+              version: 2.0.0
     chapter14-rag:
         project: ./src/Chapter14.RAG.Hosted
         host: azure.ai.agent
@@ -336,7 +346,7 @@ services:
                 cpu: "0.5"
                 memory: 1Gi
         kind: hosted
-        name: chapter17-reasoning
+        name: chapter14-rag
         protocols:
             - protocol: responses
               version: 2.0.0
@@ -460,6 +470,30 @@ services:
                 memory: 1Gi
         kind: hosted
         name: chapter16-resource-optimization
+        protocols:
+            - protocol: responses
+              version: 2.0.0
+    chapter18-guardrails:
+        project: ./src/Chapter18.Guardrails.Hosted
+        host: azure.ai.agent
+        language: csharp
+        startupCommand: dotnet run --project Chapter18.Guardrails.Hosted.csproj
+        displayName: Chapter 18 - Guardrails
+        description: Screens caller requests with a structured policy evaluator before allowing the assistant to respond.
+        uses:
+            - mvp-playground-foundry-proj
+        env:
+            AZURE_AI_MODEL_DEPLOYMENT_NAME: gpt-5-mini
+        codeConfiguration:
+            dependencyResolution: bundled
+            entryPoint: Chapter18.Guardrails.Hosted.dll
+            runtime: dotnet_10
+        container:
+            resources:
+                cpu: "0.5"
+                memory: 1Gi
+        kind: hosted
+        name: chapter18-guardrails
         protocols:
             - protocol: responses
               version: 2.0.0
