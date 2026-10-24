@@ -6,6 +6,20 @@ namespace AgenticDesignPatterns.Foundry.SmokeTests;
 public sealed class FoundrySmokeTests
 {
     [Fact(Timeout = 240000)]
+    public async Task Chapter19_evaluation_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter19EvaluationAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("Response accuracy: 0", result.StandardOutput);
+        Assert.Contains("--- MAF response latency and provider token usage ---", result.StandardOutput);
+        Assert.Contains("--- Legal survey judge: Biased ---", result.StandardOutput);
+        Assert.Contains("\"overall_score\"", result.StandardOutput);
+        Assert.Contains("--- MEAI semantic equivalence: notebook paraphrase ---", result.StandardOutput);
+        Assert.Contains("Legal Survey Quality:", result.StandardOutput);
+    }
+
+    [Fact(Timeout = 240000)]
     public async Task Chapter01_specs_demo_runs_with_live_foundry_configuration()
     {
         var result = await DotnetDemoRunner.RunChapter01SpecsAsync();
@@ -116,6 +130,17 @@ public sealed class FoundrySmokeTests
             result.CombinedOutput);
         Assert.Contains("--- Adaptation result ---", result.StandardOutput);
         Assert.Contains("Best-scoring prompt:", result.StandardOutput);
+    }
+
+    [Fact(Timeout = 240000)]
+    public async Task Chapter14_rag_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter14RagAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("--- Retrieved context ---", result.StandardOutput);
+        Assert.Contains("SOTU-2022-BREYER", result.StandardOutput);
+        Assert.Contains("--- Final grounded response ---", result.StandardOutput);
     }
 
     [Fact(Timeout = 240000)]
