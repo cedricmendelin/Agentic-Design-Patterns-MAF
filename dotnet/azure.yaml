@@ -353,6 +353,30 @@ services:
         protocols:
             - protocol: responses
               version: 2.0.0
+    chapter21-exploration-discovery:
+        project: ./src/Chapter21.ExplorationDiscovery.Hosted
+        host: azure.ai.agent
+        language: csharp
+        startupCommand: dotnet run --project Chapter21.ExplorationDiscovery.Hosted.csproj
+        displayName: Chapter 21 - Exploration and Discovery
+        description: Produces a bounded research proposal and reviews it from three independent perspectives.
+        uses:
+            - mvp-playground-foundry-proj
+        env:
+            AZURE_AI_MODEL_DEPLOYMENT_NAME: gpt-5-mini
+        codeConfiguration:
+            dependencyResolution: bundled
+            entryPoint: Chapter21.ExplorationDiscovery.Hosted.dll
+            runtime: dotnet_10
+        container:
+            resources:
+                cpu: "0.5"
+                memory: 1Gi
+        kind: hosted
+        name: chapter21-exploration-discovery
+        protocols:
+            - protocol: responses
+              version: 2.0.0
     mvp-playground-foundry-proj:
         host: azure.ai.project
         endpoint: https://mvp-playground-foundry.services.ai.azure.com/api/projects/mvp-playground-foundry-proj

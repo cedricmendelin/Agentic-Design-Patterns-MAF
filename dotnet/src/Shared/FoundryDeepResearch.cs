@@ -1,11 +1,10 @@
 using System.Diagnostics;
 using System.Net.Http.Json;
 using System.Text.Json;
-using AgenticDesignPatterns.Shared;
 
-namespace Chapter06.Planning;
+namespace AgenticDesignPatterns.Shared;
 
-public static class DeepResearchDemo
+public static class FoundryDeepResearch
 {
     private static readonly TimeSpan MaximumWait = TimeSpan.FromMinutes(15);
     private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(3);
@@ -15,51 +14,62 @@ public static class DeepResearchDemo
         string deploymentAlias,
         string researchQuestion,
         Action<string>? writeOutput = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string? researchInstructions = null,
+        IReadOnlyList<string>? allowedDomains = null)
     {
         ArgumentNullException.ThrowIfNull(settings);
         ArgumentException.ThrowIfNullOrWhiteSpace(deploymentAlias);
         ArgumentException.ThrowIfNullOrWhiteSpace(researchQuestion);
         cancellationToken.ThrowIfCancellationRequested();
+        var searchTool = CreateWebSearchTool(allowedDomains);
 
         var deployment = settings.ResolveModelDeployment(deploymentAlias);
         var endpoint = new Uri(settings.OpenAIEndpoint, "responses");
         using var client = new HttpClient();
+        var researchInput = new object[]
+        {
+            new
+            {
+                role = "developer",
+                content = new[]
+                {
+                    new
+                    {
+                        type = "input_text",
+                        text = researchInstructions ??
+                            "You are a professional researcher preparing a structured, data-driven report. Focus on data-rich insights, use reliable sources, and include inline citations."
+                    }
+                }
+            },
+            new
+            {
+                role = "user",
+                content = new[]
+                {
+                    new { type = "input_text", text = researchQuestion }
+                }
+            }
+        };
+        var requestPayload = new Dictionary<string, object?>
+        {
+            ["model"] = deployment,
+            ["background"] = true,
+            ["reasoning"] = new { summary = "auto" },
+            ["tools"] = new[] { searchTool },
+            ["input"] = researchInput
+        };
+        if (allowedDomains is not null)
+        {
+            requestPayload["max_tool_calls"] = 8;
+        }
+
         using var response = await SendRequestAsync(
             client,
             endpoint,
             HttpMethod.Post,
             settings.ApiKey,
-            new
-            {
-                model = deployment,
-                background = true,
-                reasoning = new { summary = "auto" },
-                tools = new[] { new { type = "web_search_preview" } },
-                input = new object[]
-                {
-                    new
-                    {
-                        role = "developer",
-                        content = new[]
-                        {
-                            new
-                            {
-                                type = "input_text",
-                                text = "You are a professional researcher preparing a structured, data-driven report. Focus on data-rich insights, use reliable sources, and include inline citations."
-                            }
-                        }
-                    },
-                    new
-                    {
-                        role = "user",
-                        content = new[]
-                        {
-                            new { type = "input_text", text = researchQuestion }
-                        }
-                    }
-                }
-            },
+            requestPayload,
             cancellationToken);
 
         using var initialDocument = await JsonDocument.ParseAsync(
@@ -348,4 +358,36 @@ public static class DeepResearchDemo
         value.TryGetInt32(out var result)
             ? result
             : 0;
+
+    private static object CreateWebSearchTool(IReadOnlyList<string>? allowedDomains)
+    {
+        if (allowedDomains is null)
+        {
+            return new { type = "web_search_preview" };
+        }
+
+        if (allowedDomains.Count is < 1 or > 10)
+        {
+            throw new ArgumentException("Provide between one and ten allowed search domains.", nameof(allowedDomains));
+        }
+
+        var domains = allowedDomains
+            .Select(domain => domain.Trim().ToLowerInvariant())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (domains.Any(domain =>
+                string.IsNullOrWhiteSpace(domain) ||
+                Uri.CheckHostName(domain) == UriHostNameType.Unknown))
+        {
+            throw new ArgumentException(
+                "Search domains must be host names without a scheme, path, or wildcard.",
+                nameof(allowedDomains));
+        }
+
+        return new
+        {
+            type = "web_search",
+            filters = new { allowed_domains = domains }
+        };
+    }
 }
