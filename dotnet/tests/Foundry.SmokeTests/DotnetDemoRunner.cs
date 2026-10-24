@@ -76,6 +76,11 @@ internal static class DotnetDemoRunner
             Path.Combine(RepositoryRoot, "dotnet", "src", "Chapter12.ExceptionHandling", "Chapter12.ExceptionHandling.csproj"),
             ["all"]);
 
+    public static Task<DemoRunResult> RunChapter14RagAsync() =>
+        RunAsync(
+            Path.Combine(RepositoryRoot, "dotnet", "src", "Chapter14.RAG", "Chapter14.RAG.csproj"),
+            ["rag", "What", "did", "the", "president", "say", "about", "Justice", "Breyer?"]);
+
     public static Task<DemoRunResult> RunChapter19EvaluationAsync() =>
         RunAsync(
             Path.Combine(RepositoryRoot, "dotnet", "src", "Chapter19.Evaluation", "Chapter19.Evaluation.csproj"),

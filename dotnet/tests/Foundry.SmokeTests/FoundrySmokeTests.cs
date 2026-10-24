@@ -169,6 +169,17 @@ public sealed class FoundrySmokeTests
     }
 
     [Fact(Timeout = 240000)]
+    public async Task Chapter14_rag_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter14RagAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("--- Retrieved context ---", result.StandardOutput);
+        Assert.Contains("SOTU-2022-BREYER", result.StandardOutput);
+        Assert.Contains("--- Final grounded response ---", result.StandardOutput);
+    }
+
+    [Fact(Timeout = 240000)]
     public async Task Chapter11_goal_setting_demo_runs_with_live_foundry_configuration()
     {
         var result = await DotnetDemoRunner.RunChapter11GoalSettingMonitoringAsync();
