@@ -70,6 +70,7 @@ jobs:
           Foundry__ApiKey: ${{ secrets.FOUNDRY_API_KEY }}
           Foundry__ModelDeployment: ${{ secrets.FOUNDRY_MODEL_DEPLOYMENT }}
           Foundry__ModelDeployments__fast: ${{ secrets.FOUNDRY_MODEL_DEPLOYMENT_FAST }}
+          Foundry__ModelDeployments__reasoning: ${{ secrets.FOUNDRY_MODEL_DEPLOYMENT_REASONING }}
           Foundry__ModelDeployments__quality: ${{ secrets.FOUNDRY_MODEL_DEPLOYMENT_QUALITY }}
           SMOKE_FILTER: ${{ inputs.smoke_filter }}
         run: |
