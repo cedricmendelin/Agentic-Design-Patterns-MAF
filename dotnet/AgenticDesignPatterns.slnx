@@ -16,6 +16,7 @@
     <Project Path="src/Chapter12.ExceptionHandling/Chapter12.ExceptionHandling.csproj" />
     <Project Path="src/Chapter19.Evaluation/Chapter19.Evaluation.csproj" />
     <Project Path="src/Chapter16.ResourceOptimization/Chapter16.ResourceOptimization.csproj" />
+    <Project Path="src/Chapter20.Prioritization/Chapter20.Prioritization.csproj" />
     <Project Path="src/Shared/Shared.csproj" />
   </Folder>
   <Folder Name="/src/Hosting/">
@@ -34,6 +35,7 @@
     <Project Path="src/Chapter12.ExceptionHandling.Hosted/Chapter12.ExceptionHandling.Hosted.csproj" />
     <Project Path="src/Chapter19.Evaluation.Hosted/Chapter19.Evaluation.Hosted.csproj" />
     <Project Path="src/Chapter16.ResourceOptimization.Hosted/Chapter16.ResourceOptimization.Hosted.csproj" />
+    <Project Path="src/Chapter20.Prioritization.Hosted/Chapter20.Prioritization.Hosted.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Evaluation.Tests/Evaluation.Tests.csproj" />
@@ -51,5 +53,6 @@
     <Project Path="tests/GoalSettingMonitoring.Tests/GoalSettingMonitoring.Tests.csproj" />
     <Project Path="tests/ExceptionHandling.Tests/ExceptionHandling.Tests.csproj" />
     <Project Path="tests/ResourceOptimization.Tests/ResourceOptimization.Tests.csproj" />
+    <Project Path="tests/Prioritization.Tests/Prioritization.Tests.csproj" />
   </Folder>
 </Solution>
