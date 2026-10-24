@@ -56,6 +56,26 @@ internal static class DotnetDemoRunner
             Path.Combine(RepositoryRoot, "dotnet", "src", "Chapter21.ExplorationDiscovery", "Chapter21.ExplorationDiscovery.csproj"),
             ["explore"]);
 
+    public static async Task<DemoRunResult> RunChapter11GoalSettingMonitoringAsync()
+    {
+        var outputDirectory = Path.Combine(
+            Path.GetTempPath(),
+            $"chapter11-goal-setting-{Guid.NewGuid():N}");
+        try
+        {
+            return await RunAsync(
+                Path.Combine(RepositoryRoot, "dotnet", "src", "Chapter11.GoalSettingMonitoring", "Chapter11.GoalSettingMonitoring.csproj"),
+                ["--iterations", "1", "--output-dir", outputDirectory]);
+        }
+        finally
+        {
+            if (Directory.Exists(outputDirectory))
+            {
+                Directory.Delete(outputDirectory, recursive: true);
+            }
+        }
+    }
+
     public static Task<DemoRunResult> RunChapter12RecoveryAsync() =>
         RunAsync(
             Path.Combine(RepositoryRoot, "dotnet", "src", "Chapter12.ExceptionHandling", "Chapter12.ExceptionHandling.csproj"),
