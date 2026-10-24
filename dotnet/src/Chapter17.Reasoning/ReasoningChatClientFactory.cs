@@ -1,9 +1,10 @@
 using AgenticDesignPatterns.Shared;
-using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.AI;
 using OpenAI;
+using OpenAI.Responses;
 using System.ClientModel;
+using System.ClientModel.Primitives;
 
 namespace Chapter17.Reasoning;
 
@@ -36,11 +37,11 @@ public static class ReasoningChatClientFactory
         ArgumentException.ThrowIfNullOrWhiteSpace(deployment);
         ArgumentNullException.ThrowIfNull(credential);
 
-        var client = new AzureOpenAIClient(
-            new Uri(settings.OpenAIEndpoint.GetLeftPart(UriPartial.Authority)),
-            credential);
 #pragma warning disable OPENAI001
-        var chatClient = client.GetResponsesClient().AsIChatClient(deployment);
+        var client = new ResponsesClient(
+            authenticationPolicy: new BearerTokenPolicy(credential, "https://ai.azure.com/.default"),
+            options: new ResponsesClientOptions { Endpoint = settings.OpenAIEndpoint });
+        var chatClient = client.AsIChatClient(deployment);
 #pragma warning restore OPENAI001
         return chatClient;
     }
