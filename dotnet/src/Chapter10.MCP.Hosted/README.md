@@ -48,7 +48,7 @@ azd ai agent invoke chapter10-mcp --local --protocol responses 'Use the greet to
 azd ai agent invoke chapter10-mcp --local --protocol responses 'Please greet Morgan using the greeting tool.'
 ```
 
-For direct `dotnet run`, configure the shared Foundry project/model settings as documented in the [shared user-secrets guide](../../README.md#configure-foundry-user-secrets). Local model calls can use the configured API key or developer identity; hosted Azure model calls use the runtime managed identity, not a packaged API key. The Chapter 10 console MAF demo retains its separate shared user-secrets API-key path. Stop both processes with Ctrl+C. The Chapter 10 console greeting demo can also use this server with `dotnet run --project .\dotnet\src\Chapter10.MCP -- greet`; the console filesystem demo is a separate stdio child-process example and requires Node.js/`npx`.
+For direct `dotnet run`, configure the shared Foundry project/model settings as documented in the [shared user-secrets guide](../../README.md#configure-foundry-user-secrets). Local model calls can use the configured API key or developer identity; hosted Azure model calls use the runtime managed identity, not a packaged API key. The Chapter 10 console MAF demo retains its separate shared user-secrets API-key path. Stop both processes with Ctrl+C. The Chapter 10 console greeting demo can also use this server with `dotnet run --project ..\Chapter10.MCP -- greet` (from this hosted-project folder); the console filesystem demo is a separate stdio child-process example and requires Node.js/`npx`.
 
 ## Deploy to Foundry
 

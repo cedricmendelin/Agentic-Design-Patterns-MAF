@@ -35,7 +35,7 @@ azd ai agent run extension01-agent-harness
 dotnet run
 ```
 
-`Foundry:ProjectEndpoint` and `Foundry:ModelDeployment` shared user-secrets are fallbacks. The canonical environment variables take precedence. The server listens on port 8088 by default; keep it private. In a second terminal, from the same folder:
+`Foundry:ProjectEndpoint` and `Foundry:ModelDeployment` are checked first, so shared user-secrets win over `FOUNDRY_PROJECT_ENDPOINT` and `AZURE_AI_MODEL_DEPLOYMENT_NAME`. To override shared user-secrets locally, set `$env:Foundry__ProjectEndpoint` and `$env:Foundry__ModelDeployment` instead. The server listens on port 8088 by default; keep it private. In a second terminal, from the same folder:
 
 ```powershell
 azd ai agent invoke extension01-agent-harness --local --protocol responses 'Investigate checkout latency. Check health and the runbook and recommend next steps.'

@@ -6,7 +6,7 @@ Expose the [Chapter 17 MAF reasoning demos](../Chapter17.Reasoning/README.md) th
 
 - **Input:** Latest user message as Responses `input` text. Prefixes select a scenario: `cot:` or `reason:`, `self-correction:` or `selfcorrection:`, `react:`, and `deep-search:` or `deepsearch:`. Unprefixed text, or text with an unrecognized prefix, uses chain-of-thought mode with the full text as input.
 - **Output:** One completed text response. Chain-of-thought mode returns a direct answer and concise user-facing rationale, not private chain-of-thought. Self-correction returns outcome, round count, final draft, and review feedback. ReAct returns the answer from the bounded factorial tool. Deep-search returns a synthesis of model-knowledge notes without claiming live search or verified citations.
-- **Bounds:** Self-correction uses at most three generation/review rounds and deterministically enforces a 150-character limit. ReAct exposes only factorial for integers 0 through 20, not arbitrary code execution. Deep-search plans at most three queries per round and runs at most two research rounds.
+- **Bounds:** Self-correction uses at most three generation/review rounds; a draft is accepted only if the reviewer approves it and code confirms it has 150 characters or fewer. If the budget runs out, the last draft is returned unchanged with outcome `MaxRoundsReached`. ReAct exposes only factorial for integers 0 through 20, not arbitrary code execution. Deep-search plans at most three queries per round and runs at most two research rounds.
 - **State:** Each request starts with fresh workflow state and retains no conversation history. The completed run is buffered into one final Responses update; intermediate stages may be available in configured traces.
 
 ## Try it: example prompts
@@ -14,7 +14,7 @@ Expose the [Chapter 17 MAF reasoning demos](../Chapter17.Reasoning/README.md) th
 | Prompt | What happens | Expected result |
 |---|---|---|
 | `cot: Explain why daylight varies over the year.` | Selects the reasoned-answer scenario. | Direct answer with a concise, user-facing rationale; no hidden step-by-step reasoning. |
-| `self-correction: Write a short post about a new eco-friendly product.` | Generates and reviews a draft, revising within the three-round budget. | Outcome, rounds, final draft, and review; code enforces at most 150 characters for the draft. |
+| `self-correction: Write a short post about a new eco-friendly product.` | Generates and reviews a draft, revising within the three-round budget. | Outcome, rounds, final draft, and review. `Accepted` requires reviewer approval and at most 150 characters; otherwise `MaxRoundsReached` with the last draft, which may exceed 150. |
 | `react: Calculate 10 factorial.` | Selects ReAct and requires a `calculate_factorial` tool call. | Exact tool result and brief explanation; the supported range is 0–20. |
 | `deep-search: Summarize the development of electric vehicles.` | Plans focused queries, researches with model knowledge, reflects, and synthesizes. | Bounded synthesis that identifies model-knowledge limits; no live browsing or citations are claimed. |
 | `Summarize the main causes of tides.` | No recognized prefix is present, so the request defaults to chain-of-thought mode. | Direct answer with a concise rationale. |

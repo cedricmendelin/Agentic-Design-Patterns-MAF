@@ -41,7 +41,7 @@ azd ai agent invoke chapter08-memory --local --protocol responses 'Run the memor
 azd ai agent invoke chapter08-memory --local --protocol responses 'My name is Alex and I prefer aisle seats. Remember this.'
 ```
 
-For direct local execution, configure the project endpoint, chat deployment, embedding deployment, and memory-store name as `Foundry:ProjectEndpoint` (or `FOUNDRY_PROJECT_ENDPOINT`), `Foundry:ModelDeployment` (or `AZURE_AI_MODEL_DEPLOYMENT_NAME`), `Foundry:ModelDeployments:embedding` (or `AZURE_AI_EMBEDDING_DEPLOYMENT_NAME`), and `Foundry:MemoryStoreName` (or `AZURE_AI_MEMORY_STORE_ID`). The azd local service maps `AZURE_AI_PROJECT_ENDPOINT`, the chat model, embedding model, and store ID from this folder's environment into the host. Stop the local process with Ctrl+C.
+For direct local execution, configure the project endpoint, chat deployment, embedding deployment, and memory-store name as `Foundry:ProjectEndpoint` (or `FOUNDRY_PROJECT_ENDPOINT`), `Foundry:ModelDeployment` (or `AZURE_AI_MODEL_DEPLOYMENT_NAME`), `Foundry:ModelDeployments:embedding` (or `AZURE_AI_EMBEDDING_DEPLOYMENT_NAME`), and `Foundry:MemoryStoreName` (or `AZURE_AI_MEMORY_STORE_ID`). The azd local service maps `AZURE_AI_PROJECT_ENDPOINT` from this folder's environment into the host, but the chat deployment, embedding deployment, and store ID come from the literal sample values in [`azure.yaml`](azure.yaml) (`gpt-5-mini`, `text-embedding-3-large`, `chapter08-hosted-memory`). Replace them as described in deployment step 2 before using `azd ai agent run`. Stop the local process with Ctrl+C.
 
 ## Deploy to Foundry
 
