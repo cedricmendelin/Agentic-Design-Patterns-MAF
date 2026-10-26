@@ -99,7 +99,7 @@ try
         }
 
         Console.WriteLine("\n=== Foundry Deep Research ===");
-        await DeepResearchDemo.RunAsync(
+        await FoundryDeepResearch.RunAsync(
             settings,
             researchDeploymentAlias,
             task ?? defaultResearchQuestion,
