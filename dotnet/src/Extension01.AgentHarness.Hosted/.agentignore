@@ -1,0 +1,12 @@
+.agentignore
+.azure/
+.env
+.env.*
+.git/
+.vs/
+bin/
+obj/
+publish/
+**/secrets.json
+*.user
+*.suo

@@ -20,6 +20,7 @@
     <Project Path="src/Chapter17.Reasoning/Chapter17.Reasoning.csproj" />
     <Project Path="src/Chapter21.ExplorationDiscovery/Chapter21.ExplorationDiscovery.csproj" />
     <Project Path="src/Chapter18.Guardrails/Chapter18.Guardrails.csproj" />
+    <Project Path="src/Extension01.AgentHarness/Extension01.AgentHarness.csproj" />
     <Project Path="src/Chapter19.Evaluation/Chapter19.Evaluation.csproj" />
     <Project Path="src/Chapter20.Prioritization/Chapter20.Prioritization.csproj" />
     <Project Path="src/Shared/Shared.csproj" />
@@ -44,10 +45,12 @@
     <Project Path="src/Chapter17.Reasoning.Hosted/Chapter17.Reasoning.Hosted.csproj" />
     <Project Path="src/Chapter21.ExplorationDiscovery.Hosted/Chapter21.ExplorationDiscovery.Hosted.csproj" />
     <Project Path="src/Chapter18.Guardrails.Hosted/Chapter18.Guardrails.Hosted.csproj" />
+    <Project Path="src/Extension01.AgentHarness.Hosted/Extension01.AgentHarness.Hosted.csproj" />
     <Project Path="src/Chapter19.Evaluation.Hosted/Chapter19.Evaluation.Hosted.csproj" />
     <Project Path="src/Chapter20.Prioritization.Hosted/Chapter20.Prioritization.Hosted.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/AgentHarness.Tests/AgentHarness.Tests.csproj" />
     <Project Path="tests/Evaluation.Tests/Evaluation.Tests.csproj" />
     <Project Path="tests/Foundry.SmokeTests/Foundry.SmokeTests.csproj" />
     <Project Path="tests/Parallelization.Tests/Parallelization.Tests.csproj" />

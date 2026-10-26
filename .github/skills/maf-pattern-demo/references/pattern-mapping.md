@@ -25,3 +25,11 @@
 | 21 | Exploration & Discovery | `Chapter_21_*` | Magentic / bounded exploration loop with budgets | Agent Service deep research |
 
 Research sources: `ai-research/agentic-design-patterns-report-1.md` (sections by pattern number), `ai-research/enterprise-agentic-design-patterns-2026-extension-report-2.md` (enterprise hardening).
+
+## Enterprise extensions
+
+These are original patterns beyond the book chapters, not additional book chapters or notebook ports.
+
+| ID | Pattern | Research source | Primary MAF primitive (C#) | Foundry companion |
+|---|---|---|---|---|
+| E01 | Agent Harness | `ai-research/agent-harness-pattern.md`; enterprise report section 1 | `HarnessAgent`, `HarnessAgentOptions`, `TodoProvider`, mode provider, bounded todo loop, compaction, tracing | `dotnet/src/Extension01.AgentHarness.Hosted` exposes the same runner through Responses with Entra ID |
