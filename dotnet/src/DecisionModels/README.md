@@ -61,6 +61,7 @@ dotnet user-secrets set "Foundry:ModelDeployments:decision" "<microsoft-decision
 dotnet user-secrets set "Foundry:ModelDeployments:openaiDecision" "<gpt-6-luna-deployment>" --project dotnet\src\Shared
 
 dotnet run --project dotnet\src\DecisionModels
+dotnet run --project dotnet\src\DecisionModels -- --input "My account is locked."
 dotnet run --project dotnet\src\DecisionModels -- microsoft
 dotnet run --project dotnet\src\DecisionModels -- openai
 dotnet run --project dotnet\src\DecisionModels -- maf --provider openai

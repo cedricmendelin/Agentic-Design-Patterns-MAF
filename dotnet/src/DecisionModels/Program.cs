@@ -9,30 +9,7 @@ if (args.Contains("--help"))
     return;
 }
 
-var variant = args.Length == 0 ? "all" : args[0];
-if (variant is not ("all" or "microsoft" or "openai" or "maf"))
-{
-    throw new ArgumentException("Variant must be all, microsoft, openai, or maf. Use --help.");
-}
-string? input = null;
-var provider = "microsoft";
-for (var i = 1; i < args.Length; i += 2)
-{
-    if (i + 1 >= args.Length)
-    {
-        throw new ArgumentException($"Missing value for {args[i]}.");
-    }
-    switch (args[i])
-    {
-        case "--input": input = args[i + 1]; ArgumentException.ThrowIfNullOrWhiteSpace(input); break;
-        case "--provider": provider = args[i + 1]; break;
-        default: throw new ArgumentException($"Unknown option {args[i]}.");
-    }
-}
-if (provider is not ("microsoft" or "openai"))
-{
-    throw new ArgumentException("Provider must be microsoft or openai.");
-}
+var (variant, provider, input) = DemoArguments.Parse(args);
 var configuration = new ConfigurationBuilder()
     .AddUserSecrets(typeof(FoundryChatClientFactory).Assembly)
     .AddEnvironmentVariables().Build();

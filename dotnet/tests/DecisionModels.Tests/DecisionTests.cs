@@ -19,6 +19,33 @@ namespace AgenticDesignPatterns.DecisionModels.Tests;
 
 public sealed class DecisionTests
 {
+    [Fact]
+    public void Options_without_a_variant_use_all_and_parse_from_the_first_argument()
+    {
+        Assert.Equal(new DemoArguments("all", "microsoft", null), DemoArguments.Parse([]));
+        Assert.Equal(new DemoArguments("all", "microsoft", "My account is locked"),
+            DemoArguments.Parse(["--input", "My account is locked"]));
+        Assert.Equal(new DemoArguments("all", "openai", "request"),
+            DemoArguments.Parse(["--provider", "openai", "--input", "request"]));
+        Assert.Equal(new DemoArguments("maf", "openai", "request"),
+            DemoArguments.Parse(["maf", "--input", "request", "--provider", "openai"]));
+    }
+
+    [Theory]
+    [InlineData("--input")]
+    [InlineData("--provider")]
+    [InlineData("unknown")]
+    public void Invalid_or_incomplete_console_arguments_are_rejected(string argument) =>
+        Assert.Throws<ArgumentException>(() => DemoArguments.Parse([argument]));
+
+    [Fact]
+    public void Unsupported_options_and_providers_are_rejected()
+    {
+        Assert.Throws<ArgumentException>(() => DemoArguments.Parse(["--unknown", "value"]));
+        Assert.Throws<ArgumentException>(() => DemoArguments.Parse(["--provider", "unknown"]));
+        Assert.ThrowsAny<ArgumentException>(() => DemoArguments.Parse(["--input", " "]));
+    }
+
     [Theory]
     [InlineData(0.799, 0.1, 0.0, "human-review")]
     [InlineData(0.8, 0.1, 0.0, "draft-response")]
