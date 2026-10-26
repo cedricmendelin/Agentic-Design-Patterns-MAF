@@ -1,4 +1,5 @@
 using Extension01.AgentHarness.Models;
+using System.Text.RegularExpressions;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 
@@ -32,16 +33,16 @@ public static class HarnessRunner
         var tools = new SupportTools(writeStep);
         using var todos = new TodoProvider();
         var harness = CreateAgent(budgetClient, tools, todos);
-        var agent = harness.AsBuilder()
-            .UseOpenTelemetry(
-                TelemetrySourceName,
-                configure: options => options.EnableSensitiveData = enableSensitiveTelemetry)
-            .Build();
+        using var agent = new OpenTelemetryAgent(harness, TelemetrySourceName)
+        {
+            EnableSensitiveData = enableSensitiveTelemetry
+        };
         var session = await agent.CreateSessionAsync(token);
         writeStep?.Invoke("--- Harness envelope ---\nFresh session; read-only tools; 12 model calls; 3-minute deadline.");
         var response = await agent.RunAsync(request, session, cancellationToken: token);
         token.ThrowIfCancellationRequested();
-        if (string.IsNullOrWhiteSpace(response.Text))
+        var answer = response.Messages.LastOrDefault(message => message.Role == ChatRole.Assistant)?.Text;
+        if (string.IsNullOrWhiteSpace(answer))
         {
             throw new InvalidOperationException("The harness returned no final answer.");
         }
@@ -49,18 +50,21 @@ public static class HarnessRunner
         var items = (await todos.GetAllTodosAsync(session, token))
             .Select(item => new TodoSnapshot(item.Id, item.Title, item.IsComplete)).ToArray();
         var evidence = tools.Evidence;
+        var targets = Regex.Matches(request, @"\b(checkout|identity)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)
+            .Select(match => match.Value.ToLowerInvariant()).Distinct().ToArray();
         var reason = items.Length == 0 ? "No work plan was recorded."
             : items.Any(item => !item.IsComplete) ? "The work plan still has unfinished items."
-            : !evidence.Any(status => status.Kind == "status" &&
-                evidence.Any(runbook => runbook.Kind == "runbook" && runbook.Service == status.Service))
-                ? "Both service health and a runbook for the same service must be consulted."
+            : targets.Length == 0 ? "The request must name a supported target service: checkout or identity."
+            : !targets.All(target => evidence.Any(item => item.Service == target && item.Kind == "status") &&
+                evidence.Any(item => item.Service == target && item.Kind == "runbook"))
+                ? "Both service health and a runbook for the same service named in the request must be consulted."
                 : null;
         writeStep?.Invoke("--- Todo state ---\n" + string.Join("\n",
             items.Select(item => $"{item.Id}: {(item.IsComplete ? "done" : "pending")} - {item.Title}")));
         writeStep?.Invoke($"--- Termination ---\n{reason ?? "Plan complete; evidence collected."}");
         return new HarnessResult(
             reason is null ? "completed" : "incomplete",
-            response.Text,
+            answer,
             budgetClient.Calls,
             items,
             evidence,

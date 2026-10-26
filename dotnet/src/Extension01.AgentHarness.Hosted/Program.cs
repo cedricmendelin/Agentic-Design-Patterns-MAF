@@ -23,8 +23,8 @@ if (string.IsNullOrWhiteSpace(endpoint) || string.IsNullOrWhiteSpace(deployment)
         "FOUNDRY_PROJECT_ENDPOINT and AZURE_AI_MODEL_DEPLOYMENT_NAME. Hosted inference uses Entra ID, never an API key.");
 }
 
-TokenCredential credential = string.Equals(
-    Environment.GetEnvironmentVariable("FOUNDRY_HOSTING_ENVIRONMENT"), "true", StringComparison.OrdinalIgnoreCase)
+TokenCredential credential = !string.IsNullOrEmpty(
+    Environment.GetEnvironmentVariable("FOUNDRY_HOSTING_ENVIRONMENT"))
     ? new ManagedIdentityCredential(ManagedIdentityId.SystemAssigned)
     : new DefaultAzureCredential();
 using IChatClient model = new AzureOpenAIClient(

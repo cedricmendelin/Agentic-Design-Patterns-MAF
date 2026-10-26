@@ -59,7 +59,7 @@ There is no matching book chapter or Python notebook. This example maps the ente
 | Tool registry | `AIFunctionFactory.Create` for `GetServiceStatus` and `ReadRunbook` | Code restricts service names to `checkout` and `identity` |
 | Context lifecycle | Per-service-call history; 16,384-token context envelope and 4,096-token output setting | MAF compaction is an estimate-based context control, not an exact spend limit |
 | Termination | Two outer todo-loop passes, 12 model calls across the entire request, three-minute cancellation deadline | `ModelCallBudgetClient` sits below the harness's function loop |
-| Completion | Non-empty final answer, non-empty completed todo list, health and runbook receipts for the same service | Code emits `incomplete` when these checks fail |
+| Completion | Non-empty final assistant message, non-empty completed todo list, health and runbook receipts for each named supported service | Code emits `incomplete` when progress or target evidence is missing |
 | Telemetry | `UseOpenTelemetry` around the real harness | Hosted service registers the matching source |
 | Files, skills, search | Default file memory, filesystem skill discovery, and hosted web search explicitly disabled | Avoid unrequested storage/network capabilities |
 
@@ -77,9 +77,9 @@ Default disk memory and directory-based skill discovery are disabled deliberatel
 
 ## Request Behavior
 
-Provide one plain-text question, up to 4,000 characters, about `checkout` or `identity`. Caller text supplies the task, not tool permissions or budget settings. Unsupported services cannot produce synthetic evidence and therefore cannot satisfy the completion contract.
+Provide one plain-text question, up to 4,000 characters, naming `checkout` or `identity` as a whole word (case-insensitive). Completion requires health and runbook receipts for every supported service named in the request, not merely any matching service pair. Requests naming no supported service remain incomplete. Caller text supplies the task, not tool permissions or budget settings.
 
-`HarnessResult` contains `status`, `answer`, `modelCalls`, `todos`, `evidence`, and `incompleteReason`. Each evidence entry contains `service`, `kind`, and `content`. Empty output, cancellation, budget exhaustion, and provider failures propagate as errors; they are not converted into a successful answer.
+`HarnessResult` contains `status`, `answer`, `modelCalls`, `todos`, `evidence`, and `incompleteReason`. The answer is the last assistant message, not concatenated loop progress or evaluator feedback. Each evidence entry contains `service`, `kind`, and `content`. Empty final output, cancellation, budget exhaustion, and provider failures propagate as errors; they are not converted into a successful answer.
 
 There are no write tools, approval prompts, or persistent conversations. The harness does not silently approve operational changes; it cannot execute them. Integrate [Human-in-the-Loop](../Chapter13.HumanInTheLoop/README.md) before exposing consequential actions.
 

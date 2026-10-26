@@ -24,7 +24,7 @@ The assistant's `output_text` is a JSON-serialized `HarnessResult`, with:
 | `modelCalls` | Model-client calls across the entire request |
 | `todos` | `{ id, title, isComplete }` snapshots from MAF's session-backed provider |
 | `evidence` | `{ service, kind, content }` receipts recorded by successful domain tools |
-| `incompleteReason` | Missing work plan, unfinished todos, or missing matching health/runbook evidence; otherwise null |
+| `incompleteReason` | Missing work plan, unfinished todos, no named supported target, or missing health/runbook evidence for each named supported service; otherwise null |
 
 The outer Responses status describes protocol completion; always inspect the **inner `status`** before treating an investigation as complete. Budget exhaustion, cancellation, empty model output, and provider failures propagate through the host error path rather than becoming successful synthetic answers.
 

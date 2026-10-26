@@ -27,6 +27,7 @@ public sealed class HarnessTests
         Assert.Equal("completed", result.Status);
         Assert.Null(result.IncompleteReason);
         Assert.Equal(4, result.ModelCalls);
+        Assert.False(client.IsDisposed);
         Assert.Equal(3, result.Todos.Count);
         Assert.All(result.Todos, todo => Assert.True(todo.IsComplete));
         Assert.Equal(2, result.Evidence.Count);
@@ -82,6 +83,56 @@ public sealed class HarnessTests
 
         Assert.Equal("incomplete", result.Status);
         Assert.Contains("same service", result.IncompleteReason);
+    }
+
+    [Theory]
+    [InlineData("Investigate identity.")]
+    [InlineData("Investigate payments.")]
+    [InlineData("Investigate checkout and identity.")]
+    [InlineData("Investigate checkoutservice.")]
+    public async Task Unrelated_service_evidence_cannot_complete_request(string request)
+    {
+        using var client = SuccessfulInvestigation();
+        var result = await HarnessRunner.RunAsync(client, request);
+
+        Assert.Equal("incomplete", result.Status);
+        Assert.NotNull(result.IncompleteReason);
+    }
+
+    [Fact]
+    public async Task Target_service_matching_is_case_insensitive()
+    {
+        using var client = SuccessfulInvestigation();
+        var result = await HarnessRunner.RunAsync(client, "Investigate CHECKOUT.");
+        Assert.Equal("completed", result.Status);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("Final recommendation.")]
+    public async Task Earlier_loop_progress_is_not_used_as_final_answer(string finalAnswer)
+    {
+        using var client = new ScriptedClient(
+            _ => AddTodos(),
+            _ => Calls(
+                Call("status", "GetServiceStatus", new() { ["service"] = "checkout" }),
+                Call("runbook", "ReadRunbook", new() { ["service"] = "checkout" })),
+            _ => Text("Earlier progress report."),
+            _ => CompleteTodos(),
+            _ => Text(finalAnswer));
+
+        if (finalAnswer.Length == 0)
+        {
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                HarnessRunner.RunAsync(client, "Investigate checkout."));
+            Assert.Contains("no final answer", exception.Message);
+        }
+        else
+        {
+            var result = await HarnessRunner.RunAsync(client, "Investigate checkout.");
+            Assert.Equal("completed", result.Status);
+            Assert.Equal(finalAnswer, result.Answer);
+        }
     }
 
     [Fact]
@@ -154,6 +205,7 @@ public sealed class HarnessTests
     {
         using var client = new ScriptedClient(_ => throw new HttpRequestException("Model unavailable."));
         await Assert.ThrowsAsync<HttpRequestException>(() => HarnessRunner.RunAsync(client, "Investigate checkout."));
+        Assert.False(client.IsDisposed);
     }
 
     [Fact]
@@ -283,6 +335,7 @@ public sealed class HarnessTests
         private ConcurrentQueue<Func<int, ChatResponse>> _responses = new(responses);
         private int _calls;
         public int Calls => _calls;
+        public bool IsDisposed { get; private set; }
         public List<string[]> Requests { get; } = [];
         public HashSet<string> ToolNames { get; } = [];
 
@@ -328,7 +381,7 @@ public sealed class HarnessTests
 
         public object? GetService(Type serviceType, object? serviceKey = null) =>
             serviceKey is null && serviceType.IsInstanceOfType(this) ? this : null;
-        public void Dispose() { }
+        public void Dispose() => IsDisposed = true;
     }
 
     private sealed class TestResponseContext(string responseId) : ResponseContext(responseId);
