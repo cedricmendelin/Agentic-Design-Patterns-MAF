@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <AssemblyName>Chapter13.HumanInTheLoop.Hosted</AssemblyName>
+    <RootNamespace>Chapter13.HumanInTheLoop.Hosted</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Chapter13.HumanInTheLoop\Chapter13.HumanInTheLoop.csproj" />
+    <PackageReference Include="Azure.AI.AgentServer.Invocations" />
+    <PackageReference Include="Azure.AI.OpenAI" />
+    <PackageReference Include="Azure.Identity" />
+  </ItemGroup>
+</Project>
