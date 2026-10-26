@@ -104,6 +104,9 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 | 20 | Prioritization | `src/Chapter20.Prioritization` | [Chapter 20 guide](src/Chapter20.Prioritization/README.md) |
 | 21 | Exploration & Discovery | `src/Chapter21.ExplorationDiscovery` | [Chapter 21 guide](src/Chapter21.ExplorationDiscovery/README.md) |
 | 18 | Guardrails | `src/Chapter18.Guardrails` | [Chapter 18 guide](src/Chapter18.Guardrails/README.md) |
+| Supplement | Decision Models | `src/DecisionModels` | [Microsoft-Decision-1, OpenAI Decisions, and MAF guide](src/DecisionModels/README.md) |
+
+The decision-model supplement uses `ElBruno.AI.Decisions.Foundry` for both native decision APIs and composes typed judgments with MAF/MEAI specialists. It needs separate `Foundry:ModelDeployments:decision` (Microsoft-Decision-1) and `Foundry:ModelDeployments:openaiDecision` (gpt-6-luna) aliases; keep `Foundry:ModelDeployment` set to a generative chat model. See its guide for contracts, confidence/probability semantics, policy thresholds, and mapping to Routing, Prioritization, Guardrails, and Evaluation.
 
 ## Hosted-agent companions
 
@@ -131,6 +134,7 @@ The hosted projects expose the same MAF chapter logic through Microsoft Foundry 
 | 20 | [Prioritization](src/Chapter20.Prioritization.Hosted/README.md) | One task message or a JSON `tasks` array |
 | 21 | [Exploration & Discovery](src/Chapter21.ExplorationDiscovery.Hosted/README.md) | Research topic for a bounded proposal and reviewer panel |
 | 18 | [Guardrails](src/Chapter18.Guardrails.Hosted/README.md) | Request screened before the guarded assistant responds |
+| Supplement | [Decision Models](src/DecisionModels.Hosted/README.md) | Text support request; typed decisions, deterministic review gates, and an optional specialist draft |
 
 ### Configure and deploy hosted agents
 

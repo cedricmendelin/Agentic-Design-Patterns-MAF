@@ -1,0 +1,11 @@
+.azure/
+.env
+.env.*
+secrets.json
+*.user
+*.suo
+.git/
+.vs/
+bin/
+obj/
+README.md

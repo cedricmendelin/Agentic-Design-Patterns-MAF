@@ -1,0 +1,78 @@
+using System.Text.Json;
+using AgenticDesignPatterns.Shared;
+using DecisionModels;
+using Microsoft.Extensions.Configuration;
+
+if (args.Contains("--help"))
+{
+    Console.WriteLine("DecisionModels [all|microsoft|openai|maf] [--provider microsoft|openai] [--input \"support request\"]");
+    return;
+}
+
+var variant = args.Length == 0 ? "all" : args[0];
+if (variant is not ("all" or "microsoft" or "openai" or "maf"))
+{
+    throw new ArgumentException("Variant must be all, microsoft, openai, or maf. Use --help.");
+}
+string? input = null;
+var provider = "microsoft";
+for (var i = 1; i < args.Length; i += 2)
+{
+    if (i + 1 >= args.Length)
+    {
+        throw new ArgumentException($"Missing value for {args[i]}.");
+    }
+    switch (args[i])
+    {
+        case "--input": input = args[i + 1]; ArgumentException.ThrowIfNullOrWhiteSpace(input); break;
+        case "--provider": provider = args[i + 1]; break;
+        default: throw new ArgumentException($"Unknown option {args[i]}.");
+    }
+}
+if (provider is not ("microsoft" or "openai"))
+{
+    throw new ArgumentException("Provider must be microsoft or openai.");
+}
+var configuration = new ConfigurationBuilder()
+    .AddUserSecrets(typeof(FoundryChatClientFactory).Assembly)
+    .AddEnvironmentVariables().Build();
+var settings = DecisionConfiguration.LoadSettings(configuration);
+using var cancellation = new CancellationTokenSource();
+Console.CancelKeyPress += (_, e) => { e.Cancel = true; cancellation.Cancel(); };
+
+string[] samples = input is null
+    ? ["I was charged twice. Please return the extra payment.",
+       "Checkout is down for all EU customers. Every API call returns 500.",
+       "I cannot sign in after resetting my password."]
+    : [input];
+var jsonOptions = new JsonSerializerOptions { WriteIndented = true };
+
+foreach (var selected in variant == "all" ? new[] { "microsoft", "openai" } :
+         variant == "maf" ? Array.Empty<string>() : [variant])
+{
+    using var decisions = DecisionConfiguration.CreateClient(settings, selected);
+    foreach (var sample in samples)
+    {
+        Console.WriteLine($"\n=== {selected}: {sample} ===");
+        var report = await DecisionWorkflow.EvaluateAsync(decisions, sample, Console.WriteLine, cancellation.Token);
+        Console.WriteLine("\n--- Deterministic disposition and priority ---");
+        Console.WriteLine($"{report.Disposition}; {report.Priority}");
+    }
+}
+if (variant is "all" or "maf")
+{
+    if (string.IsNullOrWhiteSpace(settings.ModelDeployment))
+    {
+        throw new InvalidOperationException("Foundry:ModelDeployment must select a generative chat model for MAF.");
+    }
+    using var decisions = DecisionConfiguration.CreateClient(settings, provider);
+    using var chat = FoundryChatClientFactory.CreateChatClient(settings);
+    foreach (var sample in samples)
+    {
+        Console.WriteLine($"\n=== MAF + {provider}: {sample} ===");
+        var result = await DecisionAgentWorkflow.RunAsync(
+            decisions, chat, sample, Console.WriteLine, cancellation.Token);
+        Console.WriteLine("\n--- Final workflow result ---");
+        Console.WriteLine(JsonSerializer.Serialize(result, jsonOptions));
+    }
+}
