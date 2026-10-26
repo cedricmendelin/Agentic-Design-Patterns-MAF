@@ -6,6 +6,7 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Extension01.AgentHarness\Extension01.AgentHarness.csproj" />
     <ProjectReference Include="..\..\src\Chapter13.HumanInTheLoop\Chapter13.HumanInTheLoop.csproj" />
     <ProjectReference Include="..\..\src\Shared\Shared.csproj" />
     <PackageReference Include="Microsoft.Extensions.AI" />
