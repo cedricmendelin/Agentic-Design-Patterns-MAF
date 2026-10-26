@@ -169,6 +169,17 @@ public sealed class FoundrySmokeTests
     }
 
     [Fact(Timeout = 240000)]
+    public async Task Chapter21_exploration_demo_runs_with_live_foundry_configuration()
+    {
+        var result = await DotnetDemoRunner.RunChapter21ExplorationAsync();
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("--- Final exploration result ---", result.StandardOutput);
+        Assert.Contains("Final reviewer assessments", result.StandardOutput);
+        Assert.Contains("unverified proposal", result.StandardOutput, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact(Timeout = 240000)]
     public async Task Chapter17_reasoning_demos_run_with_live_foundry_configuration()
     {
         var result = await DotnetDemoRunner.RunChapter17ReasoningAsync();

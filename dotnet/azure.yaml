@@ -547,6 +547,70 @@ services:
         protocols:
             - protocol: responses
               version: 2.0.0
+    chapter21-exploration-discovery:
+        project: ./src/Chapter21.ExplorationDiscovery.Hosted
+        host: azure.ai.agent
+        language: csharp
+        startupCommand: dotnet run --project Chapter21.ExplorationDiscovery.Hosted.csproj
+        displayName: Chapter 21 - Exploration and Discovery
+        description: Produces a bounded research proposal and reviews it from three independent perspectives.
+        uses:
+            - mvp-playground-foundry-proj
+        env:
+            AZURE_AI_MODEL_DEPLOYMENT_NAME: gpt-5-mini
+        codeConfiguration:
+            dependencyResolution: bundled
+            entryPoint: Chapter21.ExplorationDiscovery.Hosted.dll
+            runtime: dotnet_10
+        container:
+            resources:
+                cpu: "0.5"
+                memory: 1Gi
+        kind: hosted
+        name: chapter21-exploration-discovery
+        protocols:
+            - protocol: responses
+              version: 2.0.0
+    chapter15-a2a:
+        project: ./src/Chapter15.A2A.Hosted
+        host: azure.ai.agent
+        language: csharp
+        startupCommand: dotnet run --project Chapter15.A2A.Hosted.csproj
+        displayName: Chapter 15 - Inter-Agent Communication (A2A)
+        description: Exposes a MAF-backed specialist through A2A agent-card discovery, JSON-RPC, and HTTP+JSON streaming.
+        uses:
+            - mvp-playground-foundry-proj
+        env:
+            Foundry__ProjectEndpoint: ${AZURE_AI_PROJECT_ENDPOINT}
+            AZURE_AI_MODEL_DEPLOYMENT_NAME: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
+        codeConfiguration:
+            dependencyResolution: bundled
+            entryPoint: Chapter15.A2A.Hosted.dll
+            runtime: dotnet_10
+        container:
+            resources:
+                cpu: "0.5"
+                memory: 1Gi
+        kind: hosted
+        name: chapter15-a2a
+        protocols:
+            - protocol: a2a
+              version: 1.0.0
+        agentEndpoint:
+            protocols:
+                - a2a
+        agentCard:
+            description: Answers weather-related questions with general guidance and clearly distinguishes it from live observations.
+            version: "1.0"
+            skills:
+                - id: weather-guidance
+                  name: Weather guidance
+                  description: Answers weather questions with general guidance, not live observations.
+                  tags:
+                      - weather
+                      - guidance
+                  examples:
+                      - What's the weather in Paris?
     mvp-playground-foundry-proj:
         host: azure.ai.project
         endpoint: https://mvp-playground-foundry.services.ai.azure.com/api/projects/mvp-playground-foundry-proj

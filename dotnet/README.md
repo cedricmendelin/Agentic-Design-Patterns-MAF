@@ -70,7 +70,7 @@ To run the live smoke tests manually:
 
 1. Open **Actions** → **Live Foundry smoke tests**.
 2. Start the workflow with an optional deployment alias if you want to target a named deployment.
-3. The workflow builds the solution, runs deterministic tests, then runs live model smoke tests for Chapters 01–09, 11, 12, 14, 16, 17, 18, and 19.
+3. The workflow builds the solution, runs deterministic tests, then runs live model smoke tests for Chapters 01–09, 11, 12, 14, 16, 17, 18, 19, and 21.
 
 Any new test project that you add to `dotnet/AgenticDesignPatterns.slnx` is picked up by the non-live `dotnet test` step automatically. Live Foundry validation is intentionally narrower: the workflow checks out the default branch before loading protected secrets, so new demos only run there after you add coverage in `dotnet/tests/Foundry.SmokeTests` and merge that change to the default branch.
 
@@ -94,15 +94,18 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 | 08 | Memory | `src/Chapter08.Memory` | [Chapter 08 guide](src/Chapter08.Memory/README.md) |
 | 09 | Learning & Adaptation | `src/Chapter09.LearningAdaptation` | [Chapter 09 guide](src/Chapter09.LearningAdaptation/README.md) |
 | 10 | MCP | `src/Chapter10.MCP` | [Chapter 10 guide](src/Chapter10.MCP/README.md) |
-| 13 | Human-in-the-Loop | `src/Chapter13.HumanInTheLoop` | [Chapter 13 guide](src/Chapter13.HumanInTheLoop/README.md) |
 | 11 | Goal Setting & Monitoring | `src/Chapter11.GoalSettingMonitoring` | [Chapter 11 guide](src/Chapter11.GoalSettingMonitoring/README.md) |
-| 17 | Reasoning | `src/Chapter17.Reasoning` | [Chapter 17 guide](src/Chapter17.Reasoning/README.md) |
 | 12 | Exception Handling and Recovery | `src/Chapter12.ExceptionHandling` | [Chapter 12 guide](src/Chapter12.ExceptionHandling/README.md) |
+| 13 | Human-in-the-Loop | `src/Chapter13.HumanInTheLoop` | [Chapter 13 guide](src/Chapter13.HumanInTheLoop/README.md) |
 | 14 | Retrieval-Augmented Generation (RAG) | `src/Chapter14.RAG` | [Chapter 14 guide](src/Chapter14.RAG/README.md) |
-| 19 | Evaluation & Monitoring | `src/Chapter19.Evaluation` | [Chapter 19 guide and evaluation-tool comparison](src/Chapter19.Evaluation/README.md) |
+| 15 | Inter-Agent Communication (A2A) | `src/Chapter15.A2A` | [Chapter 15 guide](src/Chapter15.A2A/README.md) |
 | 16 | Resource Optimization | `src/Chapter16.ResourceOptimization` | [Chapter 16 guide](src/Chapter16.ResourceOptimization/README.md) |
+| 17 | Reasoning | `src/Chapter17.Reasoning` | [Chapter 17 guide](src/Chapter17.Reasoning/README.md) |
 | 20 | Prioritization | `src/Chapter20.Prioritization` | [Chapter 20 guide](src/Chapter20.Prioritization/README.md) |
+| 21 | Exploration & Discovery | `src/Chapter21.ExplorationDiscovery` | [Chapter 21 guide](src/Chapter21.ExplorationDiscovery/README.md) |
 | 18 | Guardrails | `src/Chapter18.Guardrails` | [Chapter 18 guide](src/Chapter18.Guardrails/README.md) |
+| 19 | Evaluation & Monitoring | `src/Chapter19.Evaluation` | [Chapter 19 guide and evaluation-tool comparison](src/Chapter19.Evaluation/README.md) |
+| 20 | Prioritization | `src/Chapter20.Prioritization` | [Chapter 20 guide](src/Chapter20.Prioritization/README.md) |
 
 ## Enterprise extension patterns
 
@@ -116,7 +119,7 @@ Agent Harness demonstrates the packaged MAF runtime with todos, bounded tool use
 
 ## Hosted-agent companions
 
-The hosted projects expose the same MAF chapter logic through Microsoft Foundry Agent Service protocols. Use them as starting points for deploying the patterns to your own Foundry project.
+Most hosted projects expose the same MAF chapter logic through Microsoft Foundry Agent Service protocols. Chapter 15 exposes its MAF agent through Foundry's **A2A protocol** and publishes an agent card. Use these companions as starting points for deploying the patterns to your own Foundry project.
 
 | Chapter | Hosted guide | Request |
 |---|---|---|
@@ -130,16 +133,18 @@ The hosted projects expose the same MAF chapter logic through Microsoft Foundry 
 | 08 | [Memory](src/Chapter08.Memory.Hosted/README.md) | Scripted managed-memory demo; synthetic facts and a fresh scope per request |
 | 09 | [Learning & Adaptation](src/Chapter09.LearningAdaptation.Hosted/README.md) | Starting prompt instructions to evaluate and revise |
 | 10 | [MCP](src/Chapter10.MCP.Hosted/README.md) | Request to the configured remote MCP server |
-| 13 | [Human-in-the-Loop](src/Chapter13.HumanInTheLoop.Hosted/README.md) | Customer-support task followed by an approval decision in the same Invocations session |
 | 11 | [Goal Setting & Monitoring](src/Chapter11.GoalSettingMonitoring.Hosted/README.md) | Use case and optional JSON goals/iteration budget |
-| 17 | [Reasoning](src/Chapter17.Reasoning.Hosted/README.md) | `cot:`, `self-correction:`, `react:`, or `deep-search:` request |
 | 12 | [Exception Handling and Recovery](src/Chapter12.ExceptionHandling.Hosted/README.md) | Location address; bounded retry and area fallback |
+| 13 | [Human-in-the-Loop](src/Chapter13.HumanInTheLoop.Hosted/README.md) | Customer-support task followed by an approval decision in the same Invocations session |
 | 14 | [Retrieval-Augmented Generation](src/Chapter14.RAG.Hosted/README.md) | Plain-text question grounded in the sample corpus |
-| 19 | [Evaluation](src/Chapter19.Evaluation.Hosted/README.md) | Legal survey question for a structured five-criterion review |
+| 15 | [Inter-Agent Communication (A2A)](src/Chapter15.A2A.Hosted/README.md) | Text request through A2A agent-card discovery, JSON-RPC, or HTTP+JSON streaming |
 | 16 | [Resource Optimization](src/Chapter16.ResourceOptimization.Hosted/README.md) | Request routed by intent; current-information requests use Foundry's Bing-backed `web_search` tool |
+| 17 | [Reasoning](src/Chapter17.Reasoning.Hosted/README.md) | `cot:`, `self-correction:`, `react:`, or `deep-search:` request |
 | 20 | [Prioritization](src/Chapter20.Prioritization.Hosted/README.md) | One task message or a JSON `tasks` array |
+| 21 | [Exploration & Discovery](src/Chapter21.ExplorationDiscovery.Hosted/README.md) | Research topic for a bounded proposal and reviewer panel |
 | 18 | [Guardrails](src/Chapter18.Guardrails.Hosted/README.md) | Request screened before the guarded assistant responds |
 | E01 | [Agent Harness](src/Extension01.AgentHarness.Hosted/README.md) | Self-contained question about synthetic checkout or identity service health; read-only recommendations and completion/evidence JSON |
+| 19 | [Evaluation](src/Chapter19.Evaluation.Hosted/README.md) | Legal survey question for a structured five-criterion review |
 
 ### Configure and deploy hosted agents
 
