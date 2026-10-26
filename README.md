@@ -17,6 +17,8 @@ For runnable C# examples built with Microsoft Agent Framework, start with the [.
 
 The [hosted-agent guides](dotnet/README.md#hosted-agent-companions) describe request contracts, local invocation, managed-identity permissions, and service-scoped deployment. Configure your own project endpoint and model deployment before deploying.
 
+The [Agent Harness enterprise extension](dotnet/src/Extension01.AgentHarness/README.md) adds a researched runtime meta-pattern beyond the book chapters, with a runnable MAF harness, a [Foundry-hosted agent](dotnet/src/Extension01.AgentHarness.Hosted/README.md), and guidance on combining it with the existing patterns.
+
 ## 🎯 What You'll Learn
 
 This comprehensive guide covers 21 chapters and 7 appendices on building intelligent AI agent systems, including:

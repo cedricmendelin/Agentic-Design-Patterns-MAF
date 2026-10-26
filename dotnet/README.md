@@ -109,6 +109,16 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 
 The decision-model supplement uses `ElBruno.AI.Decisions.Foundry` for both native decision APIs and composes typed judgments with MAF/MEAI specialists. It needs separate `Foundry:ModelDeployments:decision` (Microsoft-Decision-1) and `Foundry:ModelDeployments:openaiDecision` (gpt-6-luna) aliases; keep `Foundry:ModelDeployment` set to a generative chat model. See its guide for contracts, confidence/probability semantics, policy thresholds, and mapping to Routing, Prioritization, Guardrails, and Evaluation.
 
+## Enterprise extension patterns
+
+These are original additions beyond the book's 21 chapters, not notebook ports or additional book chapters.
+
+| Extension | Pattern | Project | Guide |
+|---|---|---|---|
+| E01 | Agent Harness | `src/Extension01.AgentHarness` | [Pattern, MAF implementation, and combinations](src/Extension01.AgentHarness/README.md) |
+
+Agent Harness demonstrates the packaged MAF runtime with todos, bounded tool use, compaction, tracing, and deterministic completion checks. Its [research note](../ai-research/agent-harness-pattern.md) cites primary sources and out-of-the-box examples. Its `AgentHarnessSmokeTests` run through the existing protected live workflow after merge.
+
 ## Hosted-agent companions
 
 Most hosted projects expose the same MAF chapter logic through Microsoft Foundry Agent Service protocols. Chapter 15 exposes its MAF agent through Foundry's **A2A protocol** and publishes an agent card. Use these companions as starting points for deploying the patterns to your own Foundry project.
@@ -135,6 +145,7 @@ Most hosted projects expose the same MAF chapter logic through Microsoft Foundry
 | 20 | [Prioritization](src/Chapter20.Prioritization.Hosted/README.md) | One task message or a JSON `tasks` array |
 | 21 | [Exploration & Discovery](src/Chapter21.ExplorationDiscovery.Hosted/README.md) | Research topic for a bounded proposal and reviewer panel |
 | 18 | [Guardrails](src/Chapter18.Guardrails.Hosted/README.md) | Request screened before the guarded assistant responds |
+| E01 | [Agent Harness](src/Extension01.AgentHarness.Hosted/README.md) | Self-contained question about synthetic checkout or identity service health; read-only recommendations and completion/evidence JSON |
 | 19 | [Evaluation](src/Chapter19.Evaluation.Hosted/README.md) | Legal survey question for a structured five-criterion review |
 | Supplement | [Decision Models](src/DecisionModels.Hosted/README.md) | Text support request; typed decisions, deterministic review gates, and an optional specialist draft |
 
@@ -191,7 +202,7 @@ These guides target an existing project and model; they do not provision either.
 
 #### Authentication and runtime permissions
 
-Hosted startup reads the shared `Foundry` user-secrets and corresponding `Foundry__*` environment overrides. When canonical settings are absent, `FOUNDRY_PROJECT_ENDPOINT` and `AZURE_AI_MODEL_DEPLOYMENT_NAME` provide runtime fallbacks. Make sure local secrets or overrides do not point at a different project or model.
+Hosted startup reads the shared `Foundry` user-secrets and corresponding `Foundry__*` environment overrides. When canonical settings are absent, `FOUNDRY_PROJECT_ENDPOINT` and `AZURE_AI_MODEL_DEPLOYMENT_NAME` provide runtime fallbacks. Make sure local secrets or overrides do not point at a different project or model. The Agent Harness companion always uses Entra ID and ignores any shared API key; its Azure runtime explicitly uses managed identity.
 
 For local Entra ID authentication, leave `Foundry:ApiKey` blank or unset it, and remove any nonempty `Foundry__ApiKey` override. The console demos require an API key; if you remove a shared key for a hosted run, configure it again before running a console demo. Azure execution should use managed identity, not an API key. Azure CLI and azd sign-in are separate from model-client configuration.
 
