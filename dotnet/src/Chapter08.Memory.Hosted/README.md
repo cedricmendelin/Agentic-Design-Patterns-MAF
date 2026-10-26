@@ -1,55 +1,103 @@
 # Chapter 08 - Hosted Foundry Memory
 
-Exposes the [Chapter 08 Foundry-managed memory demo](../Chapter08.Memory/README.md) through the Foundry Responses protocol using `AgentHost` and `FoundryMemoryProvider`.
+Expose the [Chapter 08 Foundry-managed memory demo](../Chapter08.Memory/README.md) through Microsoft Foundry Agent Service's **Responses protocol**. This folder is self-contained for deployment: its own [`azure.yaml`](azure.yaml) defines the `chapter08-memory` service.
 
-## Behavior and isolation
+## What it does
 
-Send `Run the memory demo` (any nonempty text starts the same scripted demonstration). The agent stores the synthetic fact "Sam prefers window seats", waits for memory extraction, creates a **new MAF session**, recalls the travel preference, and deletes the temporary scope's memories after a successful run.
+Any non-empty caller message starts the same scripted demonstration: the agent stores the synthetic fact “Sam prefers window seats,” waits for memory extraction, creates a new MAF session, recalls the travel preference, then deletes the temporary scope's stored memories after a successful run. Caller text is only used to satisfy the request contract; it is not sent to the inner model or stored as a memory.
 
-This is a runnable pattern demonstration, **not a personal-memory chatbot**. Caller messages and previous response history are not passed to the inner model or memory provider. Foundry's outer Responses conversation history can still retain requests and responses; that history is separate from the managed memory store. Every request generates a fresh scope, even if `Foundry:MemoryScope` is configured. Memory is shared only between the two inner sessions of that request, not between callers or invocations. An interrupted or failed run can leave synthetic memories in its isolated scope; use store retention or administrative deletion to clean those up.
+- **Input:** any non-empty plain-text user message; no prefix or JSON wrapper is required. Empty or whitespace-only text is rejected.
+- **Output:** a transcript showing the synthetic store, memory-update wait, recall in a new session, and cleanup steps.
+- **State and isolation:** each invocation creates a fresh scope, even if `Foundry:MemoryScope` is configured. The memory is shared only between the two inner sessions in that request, not between callers or invocations. The outer Responses protocol may retain its own request/response history; the app does not pass that history to the inner model or memory provider.
+- **Cleanup and failures:** temporary-scope memories are deleted after a successful run. An interrupted or failed run may leave synthetic memories in that isolated scope; use store retention or administrative deletion to clean them up. Memory extraction is asynchronous and can make requests take longer than ordinary chat.
+- **Purpose:** this is a pattern demonstration, not a personal-memory chatbot. A production agent must map authenticated callers to authorized durable scopes and define consent, retention, correction, and deletion policies; a raw request header or model-selected user ID is not sufficient authorization.
 
-A production personal-memory agent must first map authenticated callers to authorized, durable memory scopes and define consent, retention, correction, and deletion policies. A raw request header or model-selected user ID is not sufficient authorization.
+## Try it: example prompts
 
-## Configuration
+| Prompt | What happens | Expected result |
+|---|---|---|
+| `Run the memory demo` | Runs the fixed synthetic store-and-recall flow. | Transcript shows Sam's window-seat preference stored and recalled in a new session, followed by temporary-scope cleanup. |
+| `Please show how memory works for a travel assistant.` | Same scripted flow; the caller's wording does not alter the sample fact. | Same transcript structure, not a personalized answer based on the caller's message. |
+| `My name is Alex and I prefer aisle seats. Remember this.` | Caller details are not passed to the inner agent or written to memory. | Demonstration still stores and recalls only its synthetic Sam/window-seat fact. |
+| ` ` (empty or whitespace-only message) | Request validation rejects the missing input. | No memory run is started. |
 
-Use the existing Foundry project configured in `dotnet/azure.yaml`. Both the developer identity and hosted runtime identity need memory-store and model permissions. No API key is packaged.
+## Run locally
 
-| Variable | Purpose |
-|---|---|
-| `Foundry__ProjectEndpoint` | Full project endpoint, resolved from `AZURE_AI_PROJECT_ENDPOINT` in the azd environment |
-| `FOUNDRY_PROJECT_ENDPOINT` | Platform-provided fallback endpoint |
-| `AZURE_AI_MODEL_DEPLOYMENT_NAME` | Existing chat deployment |
-| `AZURE_AI_EMBEDDING_DEPLOYMENT_NAME` | Existing embedding deployment |
-| `AZURE_AI_MEMORY_STORE_ID` | Dedicated Chapter 08 memory-store name |
+Prerequisites: .NET 10 SDK, azd with the `azure.ai.agents` extension, a Foundry project, a chat-model deployment, an embedding-model deployment, and developer access to the Foundry memory capability. Configure the shared [Foundry user-secrets](../../README.md#configure-foundry-user-secrets); the memory demo uses `DefaultAzureCredential` for the project client, so sign in with an identity authorized for the required memory operations. Keep the local endpoint private.
 
-The provider creates the store if absent. Store processing and model calls incur Azure charges. Memory and its MAF provider are preview/experimental features.
-
-## Run and deploy
-
-From `dotnet`, configure an azd environment for your existing project as described in the [hosted deployment guide](../../README.md#configure-and-deploy-hosted-agents), then:
-
-```powershell
-azd ai agent run chapter08-memory --no-client
-azd ai agent invoke chapter08-memory --local "Run the memory demo"
-```
-
-Stop the local process before deploying:
+From the repository root:
 
 ```powershell
-azd deploy chapter08-memory --no-prompt
-azd ai agent show chapter08-memory --output json
+Set-Location .\dotnet\src\Chapter08.Memory.Hosted
+azd ai agent run chapter08-memory
+# or run the host directly:
+dotnet run
 ```
 
-On the first deployment, grant the returned `instance_identity.principal_id` the **Foundry User** role at the containing Foundry account ARM resource scope, following the [memory authorization guidance](https://learn.microsoft.com/azure/foundry/agents/how-to/memory-usage#authorization-and-permissions). The runtime identity is separate from the developer identity; deploying does not automatically give it memory-store permissions. This role grants account-wide Foundry data access, so use an account appropriate for the demo:
+In a second terminal, from the same folder:
 
 ```powershell
-az role assignment create --assignee-object-id '<instance-principal-id>' --assignee-principal-type ServicePrincipal --role '53ca6127-db72-4b80-b1b0-d745d6d5456d' --scope '<foundry-account-arm-id>'
+azd ai agent invoke chapter08-memory --local --protocol responses 'Run the memory demo'
+azd ai agent invoke chapter08-memory --local --protocol responses 'My name is Alex and I prefer aisle seats. Remember this.'
 ```
 
-Allow RBAC propagation before invoking:
+For direct local execution, configure the project endpoint, chat deployment, embedding deployment, and memory-store name as `Foundry:ProjectEndpoint` (or `FOUNDRY_PROJECT_ENDPOINT`), `Foundry:ModelDeployment` (or `AZURE_AI_MODEL_DEPLOYMENT_NAME`), `Foundry:ModelDeployments:embedding` (or `AZURE_AI_EMBEDDING_DEPLOYMENT_NAME`), and `Foundry:MemoryStoreName` (or `AZURE_AI_MEMORY_STORE_ID`). The azd local service maps `AZURE_AI_PROJECT_ENDPOINT`, the chat model, embedding model, and store ID from this folder's environment into the host. Stop the local process with Ctrl+C.
 
-```powershell
-azd ai agent invoke chapter08-memory "Run the memory demo"
-```
+## Deploy to Foundry
 
-The response transcript distinguishes storing facts, waiting for updates, recalling in a new session, and cleanup. Remote invocations can take longer than ordinary chat because memory extraction is asynchronous.
+Follow the [shared hosted-agent guide](../../README.md#configure-and-deploy-hosted-agents). This service needs both a chat-model deployment and an embedding-model deployment, plus an appropriately scoped memory store. Run all azd commands from this project folder.
+
+1. **Sign in and create an azd environment:**
+
+   ```powershell
+   Set-Location .\dotnet\src\Chapter08.Memory.Hosted
+   az login --tenant '<tenant-id>'
+   azd auth login --tenant-id '<tenant-id>'
+   azd env new '<environment>' --subscription '<subscription-id>' --location '<project-region>' --no-prompt
+   azd env set AZURE_TENANT_ID '<tenant-id>'
+   azd env set AZURE_AI_PROJECT_ID '<project-arm-id>'
+   azd env set AZURE_AI_PROJECT_ENDPOINT 'https://<account>.services.ai.azure.com/api/projects/<project>'
+   azd env set AZURE_AI_MODEL_DEPLOYMENT_NAME '<chat-model-deployment>'
+   azd env set AZURE_AI_EMBEDDING_DEPLOYMENT_NAME '<embedding-model-deployment>'
+   azd env set AZURE_AI_MEMORY_STORE_ID '<reader-owned-memory-store-name>'
+   ```
+
+2. **Edit [`azure.yaml`](azure.yaml).** For more about this configuration, see [point the manifest at your project and model](../../README.md#point-the-manifest-at-your-project-and-model). Replace the sample `mvp-playground-foundry-proj` project key and endpoint with your project and update `uses`. Change the service's chat, embedding, and memory-store `env` values to `${AZURE_AI_MODEL_DEPLOYMENT_NAME}`, `${AZURE_AI_EMBEDDING_DEPLOYMENT_NAME}`, and `${AZURE_AI_MEMORY_STORE_ID}` respectively. The azd environment values set in step 1 then supply your chat deployment, embedding deployment, and memory-store name; keep the project endpoint aligned as well.
+
+3. **Deploy:**
+
+   ```powershell
+   azd deploy chapter08-memory --no-prompt
+   ```
+
+4. **Grant runtime permissions.** Run `azd ai agent show chapter08-memory --output json` and resolve the current `instance_identity.principal_id`. Check effective assignments, including inherited grants. The runtime needs **Cognitive Services OpenAI User** at the actual model-hosting Foundry account scope for inference and **Foundry User** at the containing Foundry account ARM scope for memory-store operations, following the [memory authorization guidance](https://learn.microsoft.com/azure/foundry/agents/how-to/memory-usage#authorization-and-permissions). The Foundry User role grants account-wide Foundry data access; use an account appropriate for this demo. Obtain approval before RBAC writes, allow propagation, and recheck the identity and assignments after redeployment.
+
+   ```powershell
+   azd ai agent show chapter08-memory --output json
+   az role assignment create --assignee-object-id '<runtime-principal-id>' --assignee-principal-type ServicePrincipal --role 'Cognitive Services OpenAI User' --scope '<model-hosting-account-arm-id>'
+   az role assignment create --assignee-object-id '<runtime-principal-id>' --assignee-principal-type ServicePrincipal --role '53ca6127-db72-4b80-b1b0-d745d6d5456d' --scope '<foundry-account-arm-id>'
+   ```
+
+5. **Invoke after RBAC propagation:**
+
+   ```powershell
+   azd ai agent invoke chapter08-memory --protocol responses 'Run the memory demo'
+   ```
+
+Bundled .NET 10 code deployment publishes the hosted project with its referenced Chapter 08 and Shared projects; no Docker image or container registry is required.
+
+## Memory scope and permissions
+
+The provider creates the configured memory store if it does not exist. Foundry memory and its MAF provider are preview/experimental features. The hosted service intentionally ignores a configured reusable `Foundry:MemoryScope` and creates an isolated generated scope for each invocation. Only its two internal sessions share that scope. Failed or cancelled runs may require administrative cleanup of the generated scope; do not treat it as a durable caller profile. The local developer identity must also have inference access at the model-hosting account and authorization to create/use the memory store when running locally.
+
+## Telemetry and sensitive data
+
+The hosted source does not declare a named Chapter 08 activity source; Foundry/MAF memory or model instrumentation may emit spans for the run. **Treat prompts, extracted memory facts, and responses as sensitive data.** Restrict telemetry access and retention, and disable sensitive-data capture before processing confidential information. To view local spans, follow [View local traces with Aspire Dashboard](../../README.md#view-local-traces-with-aspire-dashboard) with `<service>` set to `chapter08-memory`.
+
+## Costs and cleanup
+
+Memory-store processing, embedding and chat-model calls, and hosted compute incur Azure charges. Delete only memory stores and hosted agents/versions you own using agent- and resource-scoped controls. Do not run `azd down` against a shared project or remove shared model deployments or account resources.
+
+## Pattern tradeoffs
+
+Managed memory can make information available across agent sessions without putting it into the prompt history, but requires identity-aware scope ownership and explicit retention and deletion policies. This demo's temporary synthetic scope avoids cross-request personalization; it is deliberately not a substitute for an authorized, durable user-memory design. Memory extraction and retrieval add latency and service dependencies.

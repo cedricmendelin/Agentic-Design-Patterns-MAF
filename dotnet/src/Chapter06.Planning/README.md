@@ -83,7 +83,7 @@ flowchart LR
 ## Hosted Deployment Companion
 
 - Suitability: the MAF plan-and-write workflow is a bounded request/response operation. Each Responses request creates fresh agents and has no persisted conversation state. Deep Research is excluded from the host because its background operation needs a durable job, polling, and timeout design.
-- Project and deployment guide: [Chapter 06 hosted companion](../Chapter06.Planning.Hosted/README.md). The `chapter06-planning` service can be deployed independently through the multi-service `azure.yaml`.
+- Project and deployment guide: [Chapter 06 hosted companion](../Chapter06.Planning.Hosted/README.md). The `chapter06-planning` service is deployed from the hosted project folder with its own `azure.yaml`.
 - Authentication: local runs can use shared user-secrets. Hosted Azure execution uses managed identity. Before any remote invocation, check that the deployed runtime `instance_identity.principal_id` has **Cognitive Services OpenAI User** at the actual model-hosting Foundry account scope; obtain approval before any role assignment and allow propagation.
 - Packaging: azd's bundled .NET 10 deployment publishes the host and referenced chapter/shared projects together. The host `.agentignore` excludes `.azure`, environment files, secrets, and build outputs.
 - Request contract: the protocol returns a completed plan and summary and stores no conversation history.

@@ -1,72 +1,49 @@
-# Hosted Agent Harness - Enterprise Extension 01
+# Enterprise Extension 01 - Hosted Agent Harness
 
-Deploy the [Agent Harness pattern](../Extension01.AgentHarness/README.md) as a Microsoft Foundry hosted agent. This project uses the official MAF `AgentHost` / `AddFoundryResponses` integration and references the console project's reusable `HarnessRunner`; it does not duplicate prompts or capture console output.
+Expose the reusable [Agent Harness pattern](../Extension01.AgentHarness/README.md) through Microsoft Foundry Agent Service's **Responses protocol**. The host references the console project's `HarnessRunner` instead of duplicating its prompts or capturing console output. This folder is self-contained for deployment: its own [`azure.yaml`](azure.yaml) defines the `extension01-agent-harness` service.
 
-## Request Contract
+## What it does
 
-Send plain-text input about the synthetic `checkout` or `identity` services to the **Responses protocol, version 2.0.0**. Input must be non-empty and at most 4,000 characters.
+Send one non-empty plain-text request of at most 4,000 characters. The request should name `checkout` or `identity` as a whole word. The runner creates a fresh harness, todo provider, evidence list, tools, and call budget, then uses read-only tools to inspect synthetic service health and the matching runbook. It returns JSON with `status` (`completed` or `incomplete`), the actual final model `answer`, request-wide `modelCalls`, todo snapshots, evidence receipts, and `incompleteReason`. The caller's latest user message supplies the task; prior assistant messages and caller-supplied instructions do not become system authority.
 
-```json
-{
-  "model": "extension01-agent-harness",
-  "input": "Investigate checkout latency. Inspect health and the runbook, then recommend next steps.",
-  "stream": false,
-  "store": false
-}
-```
+Completion requires a recorded work plan with no unfinished todos, at least one supported named target, and both status and runbook evidence for every supported service named in the request. The deterministic status reports missing plan, unfinished todos, missing supported target, or missing required evidence. The answer remains recommendations only; the tools read fixed synthetic data and never query production or execute changes. Budget exhaustion, cancellation, empty model output, and provider failures use the host error path rather than becoming successful synthetic answers.
 
-The assistant's `output_text` is a JSON-serialized `HarnessResult`, with:
+Each request is isolated with a fresh session and request-scoped tools, evidence, todo state, call budget, and three-minute deadline; the isolation key uses the Responses request ID even when the caller provides no user header. No conversation state is persisted or resumed. The outer Responses status describes protocol processing; inspect the JSON result's inner `status` before treating the investigation as complete. Model calls are non-streaming; a streaming Responses request buffers the completed result and emits one final update, not intermediate tool arguments or progress. The harness allows at most 12 model-client calls and two outer todo-loop passes. `store: false` is recommended.
 
-| Field | Meaning |
-|---|---|
-| `status` | `completed` or `incomplete`, determined by code |
-| `answer` | Actual final model response; recommendations only |
-| `modelCalls` | Model-client calls across the entire request |
-| `todos` | `{ id, title, isComplete }` snapshots from MAF's session-backed provider |
-| `evidence` | `{ service, kind, content }` receipts recorded by successful domain tools |
-| `incompleteReason` | Missing work plan, unfinished todos, no named supported target, or missing health/runbook evidence for each named supported service; otherwise null |
+## Try it: example prompts
 
-The outer Responses status describes protocol completion; always inspect the **inner `status`** before treating an investigation as complete. Budget exhaustion, cancellation, empty model output, and provider failures propagate through the host error path rather than becoming successful synthetic answers.
+| Prompt | What happens | Expected result |
+|---|---|---|
+| `Investigate checkout latency. Inspect service health and the runbook, then recommend next steps.` | Reads synthetic checkout status and `CHECKOUT-01`, and records todos and evidence. | A JSON result with checkout status/runbook receipts and a recommendation; it is `completed` only if all todo and evidence checks pass. The synthetic runbook recommends database on-call review above 90% pool saturation; no escalation is performed. |
+| `Investigate identity authentication latency. Check health and the approved runbook, then summarize next steps.` | Reads synthetic identity status and `IDENTITY-01`. | Result includes evidence for both checks; the runbook requests timestamps and correlation IDs if the service is healthy, not passwords or tokens. Completion still depends on the deterministic work/evidence checks. |
+| `Compare the synthetic checkout and identity service health and runbooks.` | Names two supported targets, so completion requires both status and runbook evidence for each. | Evidence must contain four service/kind combinations; a single pair is insufficient and yields `incomplete`. |
+| `Investigate the payments service and recommend a fix.` | Names no supported target (`checkout` or `identity`). | The result is `incomplete`; if the work plan and todo checks complete, its reason is `The request must name a supported target service: checkout or identity.` Otherwise the earlier plan/todo check reports the missing work. The agent is instructed not to invent evidence for payments. |
 
-## State, Interaction, and Streaming
+## Run locally
 
-Each request creates a fresh harness, session, todo provider, tools, evidence list, and global call budget. The adapter uses only the latest user message, so the caller must supply a self-contained task each time. Prior assistant messages and caller-supplied instructions are not treated as system authority.
-
-The host's explicit isolation provider uses the response ID, including when Foundry does not supply a user header. Session serialization contains no application state. There is no cross-request memory, approval wait, background recovery, or conversation resume. This deliberately stateless application contract is narrower than the platform's conversation/storage capabilities; `store: false` is recommended.
-
-Model calls are non-streaming. For a streaming Responses request, the adapter buffers the finished result and emits one final text update; it does not stream intermediate tool arguments or progress. Caller cancellation flows into the entire harness. Each request has a three-minute cooperative deadline, at most 12 model-client calls, and at most two outer todo-loop passes.
-
-## Prerequisites
-
-- .NET 10 SDK, PowerShell 7, Azure CLI, azd, and the versions/extensions declared in [`dotnet\azure.yaml`](../../azure.yaml).
-- An existing Foundry project with hosted-agent support and a tool-capable chat-model deployment.
-- Local developer inference permission for local model calls.
-- Azure agent deployment permission, plus authorization to assign runtime inference access when missing.
-
-See the [shared hosted setup](../../README.md#configure-and-deploy-hosted-agents). Do not reinitialize the existing multi-service manifest or deploy unrelated chapter services.
-
-## Configuration and Authentication
-
-For local runs, the host reads endpoint/model values from shared user-secrets, overridden by environment variables:
-
-```powershell
-$env:Foundry__ProjectEndpoint = 'https://<account>.services.ai.azure.com/api/projects/<project>'
-$env:Foundry__ModelDeployment = '<existing-model-deployment>'
-```
-
-`FOUNDRY_PROJECT_ENDPOINT` and `AZURE_AI_MODEL_DEPLOYMENT_NAME` are fallback runtime names. Canonical `Foundry__*` values win, so keep any local overrides aligned with the intended target.
-
-The host **never reads or uses the API key**, even when one is configured in shared user-secrets for console demos. Locally it uses `DefaultAzureCredential`; in the Foundry hosting environment it uses system-assigned `ManagedIdentityCredential`. Keep the console API-key path unchanged. Azure CLI and azd sign-in are separate from model-client configuration.
-
-## Run and Invoke Locally
+Prerequisites: .NET 10 SDK, PowerShell 7, Azure CLI, azd with the `azure.ai.agents` extension, a Foundry tool-capable chat deployment, and developer identity access to model inference. This host always uses Entra ID: `DefaultAzureCredential` locally and managed identity in Azure. It never reads or uses an API key, even if one exists in shared user-secrets. Configure the endpoint/model through shared user-secrets or environment variables as below; see [Foundry user-secrets](../../README.md#configure-foundry-user-secrets).
 
 From the repository root:
 
 ```powershell
-dotnet run --project .\dotnet\src\Extension01.AgentHarness.Hosted
+Set-Location .\dotnet\src\Extension01.AgentHarness.Hosted
+$env:FOUNDRY_PROJECT_ENDPOINT = 'https://<account>.services.ai.azure.com/api/projects/<project>'
+$env:AZURE_AI_MODEL_DEPLOYMENT_NAME = '<chat-model-deployment>'
+$env:AZURE_TENANT_ID = '<tenant-id>'
+azd ai agent run extension01-agent-harness
+# Or, without azd:
+dotnet run
 ```
 
-The host listens on port 8088 by default. From a second PowerShell terminal:
+`Foundry:ProjectEndpoint` and `Foundry:ModelDeployment` shared user-secrets are fallbacks. The canonical environment variables take precedence. The server listens on port 8088 by default; keep it private. In a second terminal, from the same folder:
+
+```powershell
+azd ai agent invoke extension01-agent-harness --local --protocol responses 'Investigate checkout latency. Check health and the runbook and recommend next steps.'
+azd ai agent invoke extension01-agent-harness --local --protocol responses 'Investigate identity authentication latency.'
+azd ai agent invoke extension01-agent-harness --local --protocol responses 'Investigate the payments service and recommend a fix.'
+```
+
+For a direct local request, the protocol accepts a model, input, and `store` option:
 
 ```powershell
 $body = @{
@@ -78,77 +55,59 @@ $body = @{
 Invoke-RestMethod -Method Post -Uri 'http://localhost:8088/responses' -ContentType 'application/json' -Body $body
 ```
 
-Or invoke through azd from `dotnet`, selecting the service explicitly:
+Stop the server with Ctrl+C. From the repository root, the deterministic hosted HTTP and harness regression tests can be run with `dotnet test .\dotnet\tests\AgentHarness.Tests`; the test model is scripted and does not call Foundry.
 
-```powershell
-$env:AZURE_DEV_USER_AGENT = 'microsoft_foundry_skill'
-azd ai agent invoke extension01-agent-harness --local --protocol responses 'Investigate identity authentication latency.'
-```
+## Deploy to Foundry
 
-Stop the local server with Ctrl+C when finished. Deterministic tests exercise the real harness and the local HTTP Responses endpoint using a scripted model:
+See the [shared hosted-agent guide](../../README.md#configure-and-deploy-hosted-agents) for prerequisites and background. All commands below run from this project folder.
 
-```powershell
-dotnet test .\dotnet\tests\AgentHarness.Tests
-```
+1. **Sign in and create this folder's azd environment:**
 
-## Configure and Deploy to Your Project
+   ```powershell
+   Set-Location .\dotnet\src\Extension01.AgentHarness.Hosted
+   az login --tenant '<tenant-id>'
+   azd auth login --tenant-id '<tenant-id>'
+   azd env new '<environment>' --subscription '<subscription-id>' --location '<project-region>' --no-prompt
+   azd env set AZURE_TENANT_ID '<tenant-id>'
+   azd env set AZURE_AI_PROJECT_ID '<project-arm-id>'
+   azd env set AZURE_AI_PROJECT_ENDPOINT 'https://<account>.services.ai.azure.com/api/projects/<project>'
+   azd env set AZURE_AI_MODEL_DEPLOYMENT_NAME '<chat-model-deployment>'
+   azd env set HARNESS_ENABLE_SENSITIVE_TELEMETRY false
+   ```
 
-Follow the shared setup to select your own azd environment and existing Foundry project. Replace the manifest's sample `azure.ai.project` service reference and this service's `uses` entry with your project; do not assume the sample project is yours.
+2. **Point [`azure.yaml`](azure.yaml) at your project and model.** Replace the sample `mvp-playground-foundry-proj` project key, its endpoint, and the service's `uses` reference with your Foundry project. The service maps `AZURE_AI_PROJECT_ENDPOINT` to `FOUNDRY_PROJECT_ENDPOINT` and `AZURE_AI_MODEL_DEPLOYMENT_NAME` into the hosted process; the azd values above must match your project and chat deployment. To turn off sensitive capture, map the manifest value to `${HARNESS_ENABLE_SENSITIVE_TELEMETRY}`; the azd environment command in step 1 then applies. The sample manifest enables sensitive capture by default.
 
-From `dotnet`, set reader-owned deployment values:
+3. **Deploy only this service:**
 
-```powershell
-$env:AZURE_DEV_USER_AGENT = 'microsoft_foundry_skill'
-azd env select '<your-environment>'
-azd env set AZURE_AI_PROJECT_ENDPOINT 'https://<account>.services.ai.azure.com/api/projects/<project>'
-azd env set AZURE_AI_MODEL_DEPLOYMENT_NAME '<existing-model-deployment>'
-azd deploy extension01-agent-harness --no-prompt
-azd ai agent show extension01-agent-harness --output json
-```
+   ```powershell
+   azd deploy extension01-agent-harness --no-prompt
+   ```
 
-The service uses environment substitution for endpoint/model values. It does not provision a Foundry project or model. Deployment incurs charges and creates an immutable agent version; perform it only in a project you have selected and are authorized to change.
+4. **Verify runtime model access.** Run `azd ai agent show extension01-agent-harness --output json` and read the current `instance_identity.principal_id`. Check effective role assignments, including inherited grants, on the actual model-hosting Foundry account. If inference access is missing and the RBAC change is authorized, assign **Cognitive Services OpenAI User** (`5e0bd9bd-7b93-4f28-af87-19fc36ad61bd`) to that runtime principal at the account scope:
 
-### Required Runtime Inference Access
+   ```powershell
+   az role assignment create --assignee-object-id '<runtime-principal-id>' --assignee-principal-type ServicePrincipal --role '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd' --scope '<model-hosting-account-arm-id>'
+   ```
 
-Before remote invocation, read **`instance_identity.principal_id`** from the current agent's `show` output and discover the actual model-hosting Foundry account ARM ID. Do not use the deploying user, project identity, or blueprint identity.
+   Allow time for RBAC propagation and recheck after redeployments, which can change the runtime identity.
 
-```powershell
-az role assignment list --assignee-object-id '<runtime-principal-id>' --scope '<model-hosting-account-arm-id>' --include-inherited --fill-principal-name false --output table
-# Only when inference access is missing and the role assignment is authorized:
-az role assignment create --assignee-object-id '<runtime-principal-id>' --assignee-principal-type ServicePrincipal --role '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd' --scope '<model-hosting-account-arm-id>'
-```
+5. **Invoke the deployed agent after access is effective:**
 
-That role is **Cognitive Services OpenAI User**. Equivalent existing inference access can be reused. Keep scope at the actual model-hosting account, allow for RBAC propagation, and repeat the check after redeployment because runtime identities can change. Do not bypass missing access with an API key or broader subscription roles.
+   ```powershell
+   azd ai agent invoke extension01-agent-harness --protocol responses 'Investigate checkout latency. Check health and the runbook and recommend next steps.'
+   ```
 
-After access is effective, invoke a representative request:
+Bundled .NET 10 code deployment publishes this host with the referenced Extension01.AgentHarness and Shared projects; `.agentignore` excludes secrets and build artifacts, and no container registry is required.
 
-```powershell
-azd ai agent invoke extension01-agent-harness --protocol responses 'Investigate checkout latency. Check health and the runbook and recommend next steps.'
-```
+## Telemetry and sensitive data
 
-An active agent version alone does not establish readiness; verify a remote response and its inner completion/evidence contract.
+The `Extension01.AgentHarness` activity source records harness activity. The deployment manifest enables `Harness__EnableSensitiveTelemetry`, so prompts, tool results, and model responses may be captured in traces; local sensitive capture is off by default. **This sample uses synthetic incidents; set sensitive capture to false before processing confidential requests, and restrict telemetry access and retention.** To view spans locally, follow [View local traces with Aspire Dashboard](../../README.md#view-local-traces-with-aspire-dashboard) with `<service>` set to `extension01-agent-harness`.
 
-## Packaging
+## Costs and cleanup
 
-The multi-service manifest selects `.NET 10` code deployment with `dependencyResolution: bundled`. azd publishes the host and its referenced `Extension01.AgentHarness` and `Shared` assemblies before upload, using the central build/package settings. Keep `project` pointing to the source project, not to an already published folder.
+The request is limited to 12 model-client calls and a three-minute deadline, but this is not a token or currency cap; provider retries may occur within a counted call. Hosting, model calls, context compaction, and enabled telemetry may incur charges. Remove only the `extension01-agent-harness` agent and versions you own with Foundry's agent-scoped controls. Never run `azd down` against a shared project.
 
-`.agentignore` excludes environment files, `.azure`, user-secrets, and source build output. Do not copy local secrets into publish output. To inspect a package independently:
-
-```powershell
-dotnet publish .\dotnet\src\Extension01.AgentHarness.Hosted -c Release -o '<scratch-publish-directory>'
-```
-
-The output should include `Extension01.AgentHarness.Hosted.dll`, `Extension01.AgentHarness.dll`, `AgenticDesignPatterns.Shared.dll`, `Microsoft.Agents.AI.Harness.dll`, and the host's `.deps.json` and `.runtimeconfig.json`. It must not contain `.azure`, `.env`, or `secrets.json`.
-
-## Telemetry, Cost, and Ownership
-
-The deployment manifest enables `Harness__EnableSensitiveTelemetry` for this synthetic teaching scenario. With an exporter configured, prompts/responses can appear in traces. Restrict access and retention; set this value to `false` before handling confidential requests. Local sensitive capture is off by default. The registered source is `Extension01.AgentHarness`; attach your chosen exporter to retain traces.
-
-Hosting, model calls, context compaction, and retries have costs. A model-call cap is not a billing cap, and provider retries occur within a counted client call.
-
-Remove only agent versions/resources you own using Foundry's agent-scoped controls. Never use `azd down` to clean up an experiment in a shared project, and do not delete shared models or unrelated chapter agents.
-
-## Pattern Tradeoffs
+## Pattern tradeoffs
 
 The harness makes operational boundaries explicit but does not make model judgments deterministic. A recorded plan can be poor, or completed todos can accompany an inaccurate recommendation. Add independent evaluation for semantic correctness, and explicit authorization/idempotency before introducing write tools. Durable state requires a separate storage and resume design.
 

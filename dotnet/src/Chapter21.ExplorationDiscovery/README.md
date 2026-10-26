@@ -91,7 +91,7 @@ flowchart LR
 ## Hosted Deployment Companion
 
 - Suitability: the MAF proposal/review flow is a bounded request/response operation. Deep Research is intentionally not hosted here because its long-running background work needs a durable job and polling design.
-- Project and deployment guide: [Chapter 21 hosted companion](../Chapter21.ExplorationDiscovery.Hosted/README.md); the `chapter21-exploration-discovery` service is independently selectable in `dotnet/azure.yaml`.
+- Project and deployment guide: [Chapter 21 hosted companion](../Chapter21.ExplorationDiscovery.Hosted/README.md); the `chapter21-exploration-discovery` service is deployed from the hosted project folder with its own `azure.yaml`.
 - Authentication: local hosted runs use developer credentials when the API key is unset; Azure uses managed identity. Before remote invocation, verify `instance_identity.principal_id` has **Cognitive Services OpenAI User** at the actual model-hosting Foundry account scope, after approval for any role assignment; allow time for RBAC propagation.
 - Packaging: bundled .NET 10 deployment publishes the host and referenced Chapter 21 and Shared projects. `.agentignore` excludes secrets, `.azure`, and build outputs.
 - Request contract: one user topic produces one completed proposal and reviewer report. Each request has a fresh isolated session; no conversation history is persisted.

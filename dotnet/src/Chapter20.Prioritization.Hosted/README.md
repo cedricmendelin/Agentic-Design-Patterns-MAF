@@ -1,59 +1,93 @@
-# Chapter 20 — Hosted Prioritization
+# Chapter 20 - Hosted Prioritization
 
-Expose the [Chapter 20 MAF prioritization workflow](../Chapter20.Prioritization/README.md) through Microsoft Foundry Agent Service's **Responses protocol**. Each request contains one or more task descriptions and returns a validated priority queue.
+Expose the [Chapter 20 MAF prioritization workflow](../Chapter20.Prioritization/README.md) through Microsoft Foundry Agent Service's **Responses protocol**. Each request contains one or more task descriptions and returns a validated priority queue. This folder is self-contained for deployment: its own [`azure.yaml`](azure.yaml) defines the `chapter20-prioritization` service.
 
-## Request and response
+## What it does
 
-Send one task description as plain text, or send a JSON object such as `{"tasks":["Urgent: restore sign-in","Review the release notes"]}` for a batch of up to 20 tasks. The agent assigns request-local IDs, asks the MAF priority proposer for one priority and assignee per task, validates each response, and returns the queue sorted by P0, P1, then P2. Tasks with equal priority retain arrival order. Available workers are `Worker A`, `Worker B`, and `Review Team`; the proposer recommends `Worker A` when no assignee is specified.
+Send task descriptions as plain text (one task per line) or as a JSON object with a `tasks` array, for example `{"tasks":["Urgent: restore sign-in","Review release notes"]}`. A request must contain 1-20 non-empty tasks. The agent assigns request-local IDs, asks the MAF priority proposer for a priority and assignee per task, validates each proposal, then returns numbered lines in `TASK-### | P0/P1/P2 | assignee | description` form. Tasks sort by P0, then P1, then P2; equal-priority tasks retain arrival order. The proposer is instructed to treat urgent/ASAP/critical work as P0, use P1 when no urgency is stated, and recommend `Worker A` when no available worker is specified. Available workers are `Worker A`, `Worker B`, and `Review Team`.
 
-Requests are isolated: prior conversation messages and task state are not reused, and IDs restart for each request. The completed schedule is buffered into a single response after one structured model call per task. A malformed proposal is retried once, then returned as an explicit error. The service processes caller input rather than replaying the console's sample tasks.
+Each request is isolated: IDs restart for the request, no prior task state or conversation history is reused, and the complete schedule is buffered before it is returned. The service processes caller input rather than replaying the console's sample tasks. An invalid structured proposal is retried once; a second invalid proposal returns an error. Invalid task counts, blank tasks, and malformed JSON are rejected.
 
-## Prerequisites and configuration
+## Try it: example prompts
 
-Follow the [shared hosted-agent setup](../../README.md#configure-and-deploy-hosted-agents) to select an existing Foundry project and model, configure `dotnet/azure.yaml`, and install azd agent tooling. The deploying identity needs permission to deploy hosted agents to the selected project. Model calls locally use shared user-secrets or a developer identity with model-inference access; Azure execution uses managed identity. Do not package API keys or local secrets.
-
-The hosted runtime needs **Cognitive Services OpenAI User** (or verified equivalent inference access) on the model-hosting Foundry account. After deployment, resolve `instance_identity.principal_id`, check effective assignments including inherited grants, and assign the role at the model-hosting account scope only when authorized. Allow time for RBAC propagation and recheck the principal after redeployment.
+| Prompt | What happens | Expected result |
+|---|---|---|
+| `Urgent: restore sign-in for affected customers.` | Treats the plain-text message as one task; the proposer assesses urgency. | One numbered task with a request-local ID and validated priority/assignee. The prompt directs urgent work to P0; model proposals are not guaranteed. |
+| `Urgent: restore sign-in for affected customers.`<br>`Review the marketing website content.` | Splits non-JSON input into two tasks, proposes each separately, and schedules the validated results. | Two numbered lines, sorted by the returned priorities, with FIFO order for any tie. |
+| `{"tasks":["Fix checkout outage","Review the release notes"]}` | Parses a JSON `tasks` array and uses the same proposer, validation, and scheduler. | A complete schedule with one result per task; IDs begin at `TASK-001` for each request. |
+| `{"tasks":[]}` or `{"items":["Review release notes"]}` | Exercises invalid task count or wrong JSON shape. | The request is rejected with an input error; it does not return a success-shaped empty queue. |
 
 ## Run locally
 
-From the repository root, start the Responses server:
+Prerequisites: .NET 10 SDK, Azure CLI, azd with the `azure.ai.agents` extension, a Foundry chat deployment, and either shared Foundry user-secrets or developer identity access. Local configuration can use shared secrets (`Foundry:ProjectEndpoint`, `Foundry:ModelDeployment`, optional `Foundry:ApiKey`) or their environment overrides. With no API key, local inference uses `DefaultAzureCredential`; Azure uses the hosted runtime identity. See [Foundry user-secrets](../../README.md#configure-foundry-user-secrets).
+
+From the repository root:
 
 ```powershell
-dotnet run --project .\dotnet\src\Chapter20.Prioritization.Hosted
+Set-Location .\dotnet\src\Chapter20.Prioritization.Hosted
+azd ai agent run chapter20-prioritization
+# Or, without azd:
+dotnet run
 ```
 
-In another terminal, from `dotnet`, send a caller-provided task batch:
+The service uses the configured default model deployment; `--deployment <alias>` can select an optional configured model alias when running the host directly. In a second terminal, from the same folder:
 
 ```powershell
-azd ai agent invoke chapter20-prioritization --local --protocol responses '{"tasks":["Urgent: restore sign-in for affected customers.","Review the marketing website content."]}'
+azd ai agent invoke chapter20-prioritization --local --protocol responses 'Urgent: restore sign-in for affected customers.'
+azd ai agent invoke chapter20-prioritization --local --protocol responses '{"tasks":["Urgent: restore sign-in","Review release notes"]}'
+azd ai agent invoke chapter20-prioritization --local --protocol responses 'Investigate the database-pool saturation issue.'
 ```
 
-Stop the local server with Ctrl+C after the invocation.
+Stop the server with Ctrl+C.
 
-## Deploy and invoke
+## Deploy to Foundry
 
-After completing shared project and model setup, run from `dotnet`:
+See the [shared hosted-agent guide](../../README.md#configure-and-deploy-hosted-agents) for prerequisites and background. All commands below run from this project folder.
 
-```powershell
-azd deploy chapter20-prioritization --no-prompt
-azd ai agent show chapter20-prioritization --output json
-```
+1. **Sign in and create this folder's azd environment:**
 
-Use the current agent's `instance_identity.principal_id` to verify or assign model inference access as described in the shared guide. Allow for role propagation, then invoke the Responses endpoint:
+   ```powershell
+   Set-Location .\dotnet\src\Chapter20.Prioritization.Hosted
+   az login --tenant '<tenant-id>'
+   azd auth login --tenant-id '<tenant-id>'
+   azd env new '<environment>' --subscription '<subscription-id>' --location '<project-region>' --no-prompt
+   azd env set AZURE_TENANT_ID '<tenant-id>'
+   azd env set AZURE_AI_PROJECT_ID '<project-arm-id>'
+   azd env set AZURE_AI_PROJECT_ENDPOINT 'https://<account>.services.ai.azure.com/api/projects/<project>'
+   azd env set AZURE_AI_MODEL_DEPLOYMENT_NAME '<chat-model-deployment>'
+   ```
 
-```powershell
-azd ai agent invoke chapter20-prioritization --protocol responses '{"tasks":["Urgent: restore sign-in for affected customers.","Review the marketing website content."]}'
-```
+2. **Point [`azure.yaml`](azure.yaml) at your project and model.** Replace the sample `mvp-playground-foundry-proj` project key, its endpoint, and the service's `uses` reference with your Foundry project. Replace the sample model value with `${AZURE_AI_MODEL_DEPLOYMENT_NAME}` so the environment value above selects your chat deployment.
 
-The service uses bundled .NET 10 code deployment, publishing the host and referenced Chapter 20 and Shared projects together. No Docker image or container registry is needed. Deploy only this service with the service-scoped command.
+3. **Deploy only this service:**
+
+   ```powershell
+   azd deploy chapter20-prioritization --no-prompt
+   ```
+
+4. **Verify runtime model access.** Run `azd ai agent show chapter20-prioritization --output json` and read the current `instance_identity.principal_id`. Check effective assignments, including inherited grants, on the actual model-hosting Foundry account. If inference access is missing and the RBAC change is authorized, assign **Cognitive Services OpenAI User** (`5e0bd9bd-7b93-4f28-af87-19fc36ad61bd`) to that runtime principal at the account scope:
+
+   ```powershell
+   az role assignment create --assignee-object-id '<runtime-principal-id>' --assignee-principal-type ServicePrincipal --role '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd' --scope '<model-hosting-account-arm-id>'
+   ```
+
+   Allow time for RBAC propagation and recheck after redeployments, which can change the runtime identity.
+
+5. **Invoke the deployed agent after access is effective:**
+
+   ```powershell
+   azd ai agent invoke chapter20-prioritization --protocol responses '{"tasks":["Urgent: restore sign-in for affected customers.","Review the marketing website content."]}'
+   ```
+
+Bundled .NET 10 code deployment publishes this host with the referenced Chapter 20 and Shared projects; no Docker image or container registry is required.
 
 ## Telemetry and sensitive data
 
-The hosted agent enables sensitive-data capture for traces of the model request and response. Task descriptions, priority proposals, and assignee details may be present in exported telemetry. Use non-sensitive inputs, restrict telemetry access and retention, and disable sensitive capture before processing confidential tasks.
+The `Chapter20.Prioritization` activity source records schedule activity and task-count/priority-count metadata. The proposer enables sensitive-data capture, so task descriptions, proposals, and assignees may appear in exported traces. **Use non-sensitive task examples and restrict telemetry access and retention; disable sensitive capture before processing confidential tasks.** To view spans locally, follow [View local traces with Aspire Dashboard](../../README.md#view-local-traces-with-aspire-dashboard) with `<service>` set to `chapter20-prioritization`.
 
-## Costs and resource ownership
+## Costs and cleanup
 
-Each request uses one model call per task, with at most one retry for a malformed proposal, and is limited to 20 tasks. Hosted compute and model inference incur Azure charges. Remove only the hosted agent and versions you own using Foundry's agent-scoped management controls. Do not run `azd down` against a shared project or delete shared project infrastructure or model deployments.
+There is one structured proposal per task, with at most one retry for an invalid proposal; up to 20 tasks therefore make up to 40 model calls. Hosted compute, model inference, and enabled telemetry may incur charges. Remove only the `chapter20-prioritization` agent and versions you own with Foundry's agent-scoped controls. Do not run `azd down` against a shared project or delete its shared models.
 
 ## Pattern tradeoffs
 

@@ -99,7 +99,7 @@ The deterministic evaluator passes a case only when every required phrase is pre
 - Suitability: bounded request/response processing is supported. Every request has fresh state and a single adaptation attempt; no console input, durable memory, or local-only dependency is required.
 - Project and deployment guide: [Chapter 09 hosted companion](../Chapter09.LearningAdaptation.Hosted/README.md).
 - Authentication: console model calls use shared API-key user-secrets or `Foundry__*`; hosted Azure execution uses the developer identity locally and managed identity in Azure. Deployment permissions and runtime inference access are separate.
-- Packaging: `azure.yaml` uses bundled .NET 10 deployment and includes the host, chapter, and Shared references. The host `.agentignore` excludes `.azure`, environment files, and build artifacts.
+- Packaging: the hosted project's own `azure.yaml` uses bundled .NET 10 deployment and includes the host, chapter, and Shared references. The host `.agentignore` excludes `.azure`, environment files, and build artifacts.
 - Request contract: the last user message is the initial prompt (up to 4,000 characters); the response returns scores and the best prompt proposal. One iteration is run per hosted request. No prompt is promoted or retained in session state.
 - Deployment instructions, required runtime role, costs, and safe agent-scoped cleanup are in the [hosted companion guide](../Chapter09.LearningAdaptation.Hosted/README.md).
 

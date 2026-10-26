@@ -115,7 +115,7 @@ Completion yields exactly one result containing `Accepted` or `MaxRoundsReached`
 - Suitability: the interaction is a bounded, stateless request/response operation with no human approval, durable memory, or local-only dependency.
 - Project and deployment guide: [Chapter 04 hosted companion](../Chapter04.Reflection.Hosted/README.md).
 - Authentication: console calls use shared API-key user-secrets or `Foundry__*`; hosted Azure calls use developer identity locally and managed identity in Azure. Deployment permissions and runtime inference access are separate.
-- Packaging: `azure.yaml` uses bundled .NET 10 deployment. The host references the chapter project, which references Shared; the extension publishes these dependencies into the deployment package. `.agentignore` excludes environment files, `.azure`, secrets, and build artifacts.
+- Packaging: the hosted project's own `azure.yaml` uses bundled .NET 10 deployment. The host references the chapter project, which references Shared; the extension publishes these dependencies into the deployment package. `.agentignore` excludes environment files, `.azure`, secrets, and build artifacts.
 - Request contract: every mode makes two calls per round, up to six by default. Responses contain the final result and outcome; sessions do not retain conversation state.
 - Evaluation examples: see [adapting evaluation examples](../Chapter04.Reflection.Hosted/README.md#adapting-evaluation-examples) for aligning sample datasets and rubrics with your task.
 

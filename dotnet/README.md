@@ -121,40 +121,42 @@ Agent Harness demonstrates the packaged MAF runtime with todos, bounded tool use
 
 ## Hosted-agent companions
 
-Most hosted projects expose the same MAF chapter logic through Microsoft Foundry Agent Service protocols. Chapter 15 exposes its MAF agent through Foundry's **A2A protocol** and publishes an agent card. Use these companions as starting points for deploying the patterns to your own Foundry project.
+Each hosted project exposes the matching MAF chapter logic through a Microsoft Foundry Agent Service protocol (Responses, Invocations for Chapter 13, A2A for Chapter 15). **Every hosted project is self-contained for deployment:** it has its own `azure.yaml`, so you can `cd` into the project folder and run, deploy, and invoke it without touching any other chapter. Each guide includes example prompts with the expected results.
 
-| Chapter | Hosted guide | Request |
-|---|---|---|
-| 02 | [Routing](src/Chapter02.Routing.Hosted/README.md) | Booking, information, or clarification |
-| 03 | [Parallelization](src/Chapter03.Parallelization.Hosted/README.md) | `topic:` or `research:` |
-| 04 | [Reflection](src/Chapter04.Reflection.Hosted/README.md) | `fact-check:`, `product:`, or `code-review:` |
-| 05 | [Tool Use](src/Chapter05.ToolUse.Hosted/README.md) | `search:`, `calculate:`, or `stock:` |
-| 06 | [Planning](src/Chapter06.Planning.Hosted/README.md) | Topic to plan and summarize |
-| 07 | [Multi-Agent Collaboration](src/Chapter07.MultiAgent.Hosted/README.md) | `<scenario>: <task>` or a task for the default `crew` scenario |
-| 07 | [Distributed crew](src/Chapter07.MultiAgent.Distributed/README.md) | Topic sent to an orchestrator that calls separately hosted researcher and writer agents |
-| 08 | [Memory](src/Chapter08.Memory.Hosted/README.md) | Scripted managed-memory demo; synthetic facts and a fresh scope per request |
-| 09 | [Learning & Adaptation](src/Chapter09.LearningAdaptation.Hosted/README.md) | Starting prompt instructions to evaluate and revise |
-| 10 | [MCP](src/Chapter10.MCP.Hosted/README.md) | Request to the configured remote MCP server |
-| 11 | [Goal Setting & Monitoring](src/Chapter11.GoalSettingMonitoring.Hosted/README.md) | Use case and optional JSON goals/iteration budget |
-| 12 | [Exception Handling and Recovery](src/Chapter12.ExceptionHandling.Hosted/README.md) | Location address; bounded retry and area fallback |
-| 13 | [Human-in-the-Loop](src/Chapter13.HumanInTheLoop.Hosted/README.md) | Customer-support task followed by an approval decision in the same Invocations session |
-| 14 | [Retrieval-Augmented Generation](src/Chapter14.RAG.Hosted/README.md) | Plain-text question grounded in the sample corpus |
-| 15 | [Inter-Agent Communication (A2A)](src/Chapter15.A2A.Hosted/README.md) | Text request through A2A agent-card discovery, JSON-RPC, or HTTP+JSON streaming |
-| 16 | [Resource Optimization](src/Chapter16.ResourceOptimization.Hosted/README.md) | Request routed by intent; current-information requests use Foundry's Bing-backed `web_search` tool |
-| 17 | [Reasoning](src/Chapter17.Reasoning.Hosted/README.md) | `cot:`, `self-correction:`, `react:`, or `deep-search:` request |
-| 20 | [Prioritization](src/Chapter20.Prioritization.Hosted/README.md) | One task message or a JSON `tasks` array |
-| 21 | [Exploration & Discovery](src/Chapter21.ExplorationDiscovery.Hosted/README.md) | Research topic for a bounded proposal and reviewer panel |
-| 18 | [Guardrails](src/Chapter18.Guardrails.Hosted/README.md) | Request screened before the guarded assistant responds |
-| E01 | [Agent Harness](src/Extension01.AgentHarness.Hosted/README.md) | Self-contained question about synthetic checkout or identity service health; read-only recommendations and completion/evidence JSON |
-| 19 | [Evaluation](src/Chapter19.Evaluation.Hosted/README.md) | Legal survey question for a structured five-criterion review |
-| Supplement | [Decision Models](src/DecisionModels.Hosted/README.md) | Text support request; typed decisions, deterministic review gates, and an optional specialist draft |
+| Chapter | Hosted guide | Deploy from | Request |
+|---|---|---|---|
+| 02 | [Routing](src/Chapter02.Routing.Hosted/README.md) | `src/Chapter02.Routing.Hosted` | Booking, information, or clarification |
+| 03 | [Parallelization](src/Chapter03.Parallelization.Hosted/README.md) | `src/Chapter03.Parallelization.Hosted` | `topic:` or `research:` |
+| 04 | [Reflection](src/Chapter04.Reflection.Hosted/README.md) | `src/Chapter04.Reflection.Hosted` | `fact-check:`, `product:`, or `code-review:` |
+| 05 | [Tool Use](src/Chapter05.ToolUse.Hosted/README.md) | `src/Chapter05.ToolUse.Hosted` | `search:`, `calculate:`, or `stock:` |
+| 06 | [Planning](src/Chapter06.Planning.Hosted/README.md) | `src/Chapter06.Planning.Hosted` | Topic to plan and summarize |
+| 07 | [Multi-Agent Collaboration](src/Chapter07.MultiAgent.Hosted/README.md) | `src/Chapter07.MultiAgent.Hosted` | `<scenario>: <task>` or a task for the default `crew` scenario |
+| 07 | [Distributed crew](src/Chapter07.MultiAgent.Distributed/README.md) | `src/Chapter07.MultiAgent.Distributed` (three services) | Topic sent to an orchestrator that calls separately hosted researcher and writer agents |
+| 08 | [Memory](src/Chapter08.Memory.Hosted/README.md) | `src/Chapter08.Memory.Hosted` | Scripted managed-memory demo; synthetic facts and a fresh scope per request |
+| 09 | [Learning & Adaptation](src/Chapter09.LearningAdaptation.Hosted/README.md) | `src/Chapter09.LearningAdaptation.Hosted` | Starting prompt instructions to evaluate and revise |
+| 10 | [MCP](src/Chapter10.MCP.Hosted/README.md) | `src/Chapter10.MCP.Hosted` | Request to the configured remote MCP server |
+| 11 | [Goal Setting & Monitoring](src/Chapter11.GoalSettingMonitoring.Hosted/README.md) | `src/Chapter11.GoalSettingMonitoring.Hosted` | Use case and optional JSON goals/iteration budget |
+| 12 | [Exception Handling and Recovery](src/Chapter12.ExceptionHandling.Hosted/README.md) | `src/Chapter12.ExceptionHandling.Hosted` | Location address; bounded retry and area fallback |
+| 13 | [Human-in-the-Loop](src/Chapter13.HumanInTheLoop.Hosted/README.md) | `src/Chapter13.HumanInTheLoop.Hosted` | Customer-support task followed by an approval decision in the same Invocations session |
+| 14 | [Retrieval-Augmented Generation](src/Chapter14.RAG.Hosted/README.md) | `src/Chapter14.RAG.Hosted` | Plain-text question grounded in the sample corpus |
+| 15 | [Inter-Agent Communication (A2A)](src/Chapter15.A2A.Hosted/README.md) | `src/Chapter15.A2A.Hosted` | Text request through A2A agent-card discovery, JSON-RPC, or HTTP+JSON streaming |
+| 16 | [Resource Optimization](src/Chapter16.ResourceOptimization.Hosted/README.md) | `src/Chapter16.ResourceOptimization.Hosted` | Request routed by intent; current-information requests use Foundry's Bing-backed `web_search` tool |
+| 17 | [Reasoning](src/Chapter17.Reasoning.Hosted/README.md) | `src/Chapter17.Reasoning.Hosted` | `cot:`, `self-correction:`, `react:`, or `deep-search:` request |
+| 18 | [Guardrails](src/Chapter18.Guardrails.Hosted/README.md) | `src/Chapter18.Guardrails.Hosted` | Request screened before the guarded assistant responds |
+| 19 | [Evaluation](src/Chapter19.Evaluation.Hosted/README.md) | `src/Chapter19.Evaluation.Hosted` | Legal survey question for a structured five-criterion review |
+| 20 | [Prioritization](src/Chapter20.Prioritization.Hosted/README.md) | `src/Chapter20.Prioritization.Hosted` | One task message or a JSON `tasks` array |
+| 21 | [Exploration & Discovery](src/Chapter21.ExplorationDiscovery.Hosted/README.md) | `src/Chapter21.ExplorationDiscovery.Hosted` | Research topic for a bounded proposal and reviewer panel |
+| E01 | [Agent Harness](src/Extension01.AgentHarness.Hosted/README.md) | `src/Extension01.AgentHarness.Hosted` | Self-contained question about synthetic checkout or identity service health; read-only recommendations and completion/evidence JSON |
+| Supplement | [Decision Models](src/DecisionModels.Hosted/README.md) | `src/DecisionModels.Hosted` | Text support request; typed decisions, deterministic review gates, and an optional specialist draft |
 
 ### Configure and deploy hosted agents
+
+Each chapter guide contains a quick-deploy section. This section explains the shared details behind it.
 
 #### Tooling and Azure prerequisites
 
 - .NET 10 SDK, PowerShell 7, Azure CLI, and Azure Developer CLI (azd).
-- azd version 1.35.1 or later and the `azure.ai.agents` extension version 1.0.0-beta.19 or later, as declared in `azure.yaml`.
+- azd version 1.35.1 or later and the `azure.ai.agents` extension version 1.0.0-beta.19 or later, as declared in each project's `azure.yaml`.
 - An existing Foundry project in a region that supports hosted agents, with hosting configured and a compatible chat-model deployment.
 - Permission to deploy agents to the project and model-inference access for both your local developer identity and the hosted runtime identity.
 
@@ -164,12 +166,12 @@ Install the agent extension if needed:
 azd extension install azure.ai.agents
 ```
 
-#### Select your project and model
+#### Per-project manifests and environments
 
-All commands in this section run from `dotnet`. Sign in to your target tenant and create an azd environment, or select an existing one with `azd env select <environment>`:
+Every hosted project folder contains an `azure.yaml` with exactly the service(s) for that project (`project: .`), a `host: azure.ai.project` reference, and `infra.provider: microsoft.foundry`. Run all `azd` commands from that project folder. azd stores its environment in the project's own `.azure` folder (ignored by Git), so every project has its own azd environment. Environments created in other folders are not reused automatically.
 
 ```powershell
-Set-Location .\dotnet
+Set-Location .\dotnet\src\Chapter02.Routing.Hosted
 az login --tenant '<tenant-id>'
 azd auth login --tenant-id '<tenant-id>'
 azd env new '<environment>' --subscription '<subscription-id>' --location '<project-region>' --no-prompt
@@ -179,12 +181,14 @@ azd env set AZURE_AI_PROJECT_ENDPOINT 'https://<account>.services.ai.azure.com/a
 azd env set AZURE_AI_MODEL_DEPLOYMENT_NAME '<existing-model-deployment>'
 ```
 
-Use the actual ARM ID and endpoint of your project. The committed `azure.yaml` contains a concrete sample project reference: **replace it with your own project before deploying**. Rename the `host: azure.ai.project` service key, set its `endpoint` to your project endpoint, and update the chapter services' `uses` entries to that same key. For example:
+#### Point the manifest at your project and model
+
+Each committed `azure.yaml` contains a concrete **sample** project reference (`mvp-playground-foundry-proj`) and a sample model (`gpt-5-mini`). **Replace both with your own values before deploying.** Rename the `host: azure.ai.project` service key, set its `endpoint` to your project endpoint, update the agent service's `uses` entry to the same key, and set the model deployment in the agent's `env` block:
 
 ```yaml
 services:
     chapter02-routing:
-        # Keep the other chapter service settings.
+        # Keep the other service settings unchanged.
         uses:
             - my-foundry-project
         env:
@@ -194,9 +198,7 @@ services:
         endpoint: https://<account>.services.ai.azure.com/api/projects/<project>
 ```
 
-This is a configuration excerpt, not a replacement for the complete manifest. Each chapter service explicitly selects `gpt-5-mini` in its `env` block; replace that value with your existing model deployment name for every service you intend to use. Setting an azd environment variable alone does not replace a literal service setting. Keep the project reference and environment values consistent.
-
-The manifest already includes the hosted services, so do not reinitialize or overwrite it for a normal deployment. Keep each service's project path, startup command, protocol, runtime, and bundled packaging settings. Do not use this directory's own `azure.yaml` as an initialization template into the same directory.
+Setting an azd environment variable alone does not replace a literal value in `azure.yaml`. Keep the project path, startup command, protocol, runtime, and bundled packaging settings. Do not run `azd init` over an existing manifest. Some projects need extra values (model aliases, MCP server URL, memory store, remote agent endpoints); their guides list them.
 
 These guides target an existing project and model; they do not provision either. If hosting, regional availability, or permissions need setup, resolve those prerequisites with your Azure administrator.
 
@@ -206,7 +208,7 @@ Hosted startup reads the shared `Foundry` user-secrets and corresponding `Foundr
 
 For local Entra ID authentication, leave `Foundry:ApiKey` blank or unset it, and remove any nonempty `Foundry__ApiKey` override. The console demos require an API key; if you remove a shared key for a hosted run, configure it again before running a console demo. Azure execution should use managed identity, not an API key. Azure CLI and azd sign-in are separate from model-client configuration.
 
-Deploy the selected service using its chapter guide, then inspect it with `azd ai agent show <service> --output json`. Use **`instance_identity.principal_id`**, not the deploying user, project identity, or agent blueprint, when configuring runtime inference access:
+Deploy the service from its project folder, then inspect it with `azd ai agent show <service> --output json`. Use **`instance_identity.principal_id`**, not the deploying user, project identity, or agent blueprint, when configuring runtime inference access:
 
 1. Identify the actual model-hosting Foundry account ARM ID.
 2. Check effective role assignments, including inherited grants, for the runtime principal.
@@ -225,6 +227,27 @@ If invocation returns `401 PermissionDenied`, check the runtime principal, accou
 
 #### Packaging, costs, and resource ownership
 
-`dependencyResolution: bundled` makes the azd extension publish the .NET 10 host and its referenced chapter/Shared projects locally before uploading. This includes central build/package settings and sibling dependencies without requiring Docker or a container registry. Keep `.azure`, environment files, user-secrets, and connection strings out of published content and source control.
+`dependencyResolution: bundled` makes the azd extension run `dotnet publish` on the hosted project locally before uploading. Publishing follows the project references, so the referenced chapter and Shared projects and the central `Directory.*.props` settings are included even though `azure.yaml` lives in the project folder. No Docker or container registry is required. Each project's `.agentignore` keeps `azure.yaml`, `.azure`, environment files, and build folders out of the upload. Keep user-secrets and connection strings out of published content and source control.
 
-Deploy only the selected chapter with `azd deploy <service> --no-prompt`; a service-scoped command avoids redeploying other chapters. Hosting and model calls incur Azure charges, and each deployment creates an immutable agent version. When removing an experiment, use Foundry's agent-scoped management controls for the resources you own. Do not run `azd down` against a shared project or delete shared models, project infrastructure, or unrelated agents.
+Hosting and model calls incur Azure charges, and each deployment creates an immutable agent version. When removing an experiment, use Foundry's agent-scoped management controls for the resources you own. Do not run `azd down` against a shared project or delete shared models, project infrastructure, or unrelated agents.
+
+#### View local traces with Aspire Dashboard
+
+Hosted companions register their chapter activity sources with the host's OpenTelemetry provider. `OTEL_EXPORTER_OTLP_ENDPOINT` selects an OTLP collector; `APPLICATIONINSIGHTS_CONNECTION_STRING` enables Azure Monitor export. To view local spans, start a standalone Aspire dashboard (requires the Aspire CLI):
+
+```powershell
+aspire dashboard run --frontend-url http://127.0.0.1:18888 --otlp-grpc-url http://127.0.0.1:4317 --otlp-http-url http://127.0.0.1:4318
+```
+
+Open the login URL printed by Aspire and keep authentication enabled. See the [standalone dashboard guide](https://aspire.dev/dashboard/standalone/). In a second terminal, from the hosted project folder, set the exporter before starting the agent:
+
+```powershell
+$env:OTEL_EXPORTER_OTLP_ENDPOINT = 'http://127.0.0.1:4317'
+$env:OTEL_EXPORTER_OTLP_PROTOCOL = 'grpc'
+$env:OTEL_SERVICE_NAME = '<service>-local'
+azd ai agent run <service>
+```
+
+Send a request, then open **Traces** at `http://127.0.0.1:18888`. Allow a few seconds for batched export. Keep these loopback settings local rather than adding them to `azure.yaml` or azd environment state. The dashboard's default in-memory history is lost when it stops.
+
+**Sensitive-data capture is enabled in these demos.** Prompts and responses may appear in traces. Use non-sensitive sample data, restrict telemetry access and retention, and disable sensitive capture before handling confidential data.
