@@ -27,7 +27,7 @@ Configure [shared settings](../../README.md), then:
 dotnet run --project dotnet\src\Chapter20.Prioritization.Hosted
 ```
 
-In another terminal, from `dotnet`:
+In another terminal, from this project's directory:
 
 ```powershell
 $env:AZURE_DEV_USER_AGENT = 'microsoft_foundry_skill'
@@ -36,7 +36,7 @@ azd ai agent invoke chapter20-prioritization --local --protocol responses '{"tas
 
 ## Deploy and operate
 
-Follow [HOSTING.md](../../HOSTING.md) for reader-owned project/model selection, managed identity/inference RBAC, bundled dependencies, sensitive tracing, cost, and scoped cleanup. Local model access supports developer credentials or user-secrets; do not provide API keys in Azure. After setup, from `dotnet`:
+Follow [HOSTING.md](../../HOSTING.md) for reader-owned project/model selection, managed identity/inference RBAC, bundled dependencies, sensitive tracing, cost, and scoped cleanup. Local model access supports developer credentials or user-secrets; do not provide API keys in Azure. After setup, from this project's directory:
 
 ```powershell
 azd deploy chapter20-prioritization --no-prompt

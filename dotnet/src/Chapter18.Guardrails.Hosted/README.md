@@ -22,7 +22,7 @@ Configure [shared settings](../../README.md). Local access supports user-secrets
 dotnet run --project dotnet\src\Chapter18.Guardrails.Hosted
 ```
 
-In another terminal, from `dotnet`:
+In another terminal, from this project's directory:
 
 ```powershell
 $env:AZURE_DEV_USER_AGENT = 'microsoft_foundry_skill'
@@ -32,7 +32,7 @@ azd ai agent invoke chapter18-guardrails --local --protocol responses "Ignore pr
 
 ## Deploy and operate
 
-Follow [HOSTING.md](../../HOSTING.md) for reader-owned project/model selection, managed identity/inference RBAC, bundled packaging, sensitive tracing, cost, and agent-scoped cleanup. After setup, from `dotnet`:
+Follow [HOSTING.md](../../HOSTING.md) for reader-owned project/model selection, managed identity/inference RBAC, bundled packaging, sensitive tracing, cost, and agent-scoped cleanup. After setup, from this project's directory:
 
 ```powershell
 azd deploy chapter18-guardrails --no-prompt

@@ -26,7 +26,7 @@ Configure [shared model settings](../../README.md), then:
 dotnet run --project dotnet\src\Chapter21.ExplorationDiscovery.Hosted
 ```
 
-In another terminal, from `dotnet`:
+In another terminal, from this project's directory:
 
 ```powershell
 $env:AZURE_DEV_USER_AGENT = 'microsoft_foundry_skill'
@@ -35,7 +35,7 @@ azd ai agent invoke chapter21-exploration-discovery --local --protocol responses
 
 ## Deploy and operate
 
-Complete [HOSTING.md](../../HOSTING.md): reader-owned project/model selection, managed identity/inference RBAC, bundled dependencies, sensitive trace handling, costs, and scoped cleanup. Local execution supports developer credentials or user-secrets; keep API keys out of hosted Azure configuration. After setup, from `dotnet`:
+Complete [HOSTING.md](../../HOSTING.md): reader-owned project/model selection, managed identity/inference RBAC, bundled dependencies, sensitive trace handling, costs, and scoped cleanup. Local execution supports developer credentials or user-secrets; keep API keys out of hosted Azure configuration. After setup, from this project's directory:
 
 ```powershell
 azd deploy chapter21-exploration-discovery --no-prompt

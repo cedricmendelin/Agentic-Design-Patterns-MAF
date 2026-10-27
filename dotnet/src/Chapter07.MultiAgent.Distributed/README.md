@@ -22,7 +22,7 @@ The distributed hosts explicitly partition MAF session state by the server-gener
 
 ## Configuration
 
-The services are already registered in `dotnet/azure.yaml`; do not initialize or overwrite the manifest.
+The three services are defined in this directory's `azure.yaml`; deploy only the selected service.
 
 | Service | Role | Configuration |
 |---|---|---|
@@ -83,7 +83,7 @@ Stop all three processes with Ctrl+C. Keep local listeners private.
 
 Follow the [common hosting guide](../../HOSTING.md) first for configuration, project/model selection, bundled packaging, deployment identity, inference RBAC, and safe cleanup. Do not deploy against an unreviewed sample target. The orchestration-specific configuration and permissions below remain additional requirements.
 
-From `dotnet`, set the existing model deployment in your selected azd environment, then deploy only the specialists:
+From this directory, set the model deployment in its azd environment, then deploy only the selected service:
 
 ```powershell
 $env:AZURE_DEV_USER_AGENT = 'microsoft_foundry_skill'

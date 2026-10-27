@@ -25,7 +25,7 @@ Configure [shared settings](../../README.md). A local Development environment ca
 dotnet run --project dotnet\src\Chapter17.Reasoning.Hosted
 ```
 
-In another terminal, from `dotnet`:
+In another terminal, from this project's directory:
 
 ```powershell
 $env:AZURE_DEV_USER_AGENT = 'microsoft_foundry_skill'
@@ -37,7 +37,7 @@ azd ai agent invoke chapter17-reasoning --local --protocol responses "deep-searc
 
 ## Deploy and operate
 
-Follow [HOSTING.md](../../HOSTING.md) for reader-owned project/model selection, bundled .NET packaging, managed identity/inference RBAC, sensitive tracing, cost, and scoped cleanup. After setup, from `dotnet`:
+Follow [HOSTING.md](../../HOSTING.md) for reader-owned project/model selection, bundled .NET packaging, managed identity/inference RBAC, sensitive tracing, cost, and scoped cleanup. After setup, from this project's directory:
 
 ```powershell
 azd deploy chapter17-reasoning --no-prompt

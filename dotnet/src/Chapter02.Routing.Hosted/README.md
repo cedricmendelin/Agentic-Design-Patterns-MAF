@@ -25,7 +25,7 @@ dotnet run --project .\dotnet\src\Chapter02.Routing.Hosted -- --deployment reaso
 dotnet test .\dotnet\tests\Routing.Tests
 ```
 
-`--deployment` is optional. While the private local host is running, invoke from `dotnet`:
+`--deployment` is optional. Run azd commands from this project's directory, which contains its `azure.yaml`.
 
 ```powershell
 azd ai agent invoke chapter02-routing --local --protocol responses 'Book me a hotel in Paris.'

@@ -6,8 +6,8 @@ use its hosted README for the exact input, output, state, and protocol contract.
 
 ## Local setup
 
-Use .NET 10, PowerShell 7, Azure CLI and azd with the versions/extensions declared in
-[`azure.yaml`](azure.yaml). Install the `azure.ai.agents` extension if missing.
+Use .NET 10, PowerShell 7, Azure CLI, and azd. Each hosted project has its own
+`azure.yaml`, which declares the required azd and `azure.ai.agents` extension versions.
 Use an existing project with hosted-agent support and a compatible deployed model.
 Sign in to your intended tenant yourself; Azure CLI and azd authentication are separate.
 
@@ -37,14 +37,16 @@ protocols; do not assume every project exposes `/responses`.
 
 ## Select the deployment target
 
-Run azd commands from `dotnet`. Reuse the existing multi-service manifest; do not
-reinitialize it or overwrite unrelated services. Replace its sample Foundry project
-reference with your own `azure.ai.project` service and update the selected host's
-`uses` entry. Replace literal model names/aliases in that service's `env` block:
-setting an azd environment variable does not override a literal manifest value.
+Each hosted project owns a self-contained `azure.yaml`; the distributed Chapter 07
+companion defines three related services in its manifest. Run azd commands from the
+directory containing the manifest for the selected project. Each project has its own
+azd environment, so select or create that environment from the same directory. Replace
+sample project references, endpoints, and literal model settings in that manifest with
+reader-owned values. An azd environment variable does not override a literal manifest
+value.
 
 ```powershell
-Set-Location .\dotnet
+Set-Location .\dotnet\src\Chapter04.Reflection.Hosted
 azd env select '<environment>'
 azd env set AZURE_TENANT_ID '<tenant-id>'
 azd env set AZURE_AI_PROJECT_ID '<project-arm-id>'

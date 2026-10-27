@@ -28,7 +28,7 @@ $env:AZURE_TENANT_ID = '<tenant-id>'
 dotnet run --project dotnet\src\Chapter19.Evaluation.Hosted
 ```
 
-In another terminal, from `dotnet`:
+In another terminal, from this project's directory:
 
 ```powershell
 $env:AZURE_DEV_USER_AGENT = 'microsoft_foundry_skill'
@@ -37,7 +37,7 @@ azd ai agent invoke chapter19-evaluation --local --protocol responses "How clear
 
 ## Deploy and operate
 
-Complete [HOSTING.md](../../HOSTING.md): reader-owned project/model, bundled .NET dependencies, managed identity/inference RBAC, sensitive traces/data retention, charges, and scoped cleanup. After setup, from `dotnet`:
+Complete [HOSTING.md](../../HOSTING.md): reader-owned project/model, bundled .NET dependencies, managed identity/inference RBAC, sensitive traces/data retention, charges, and scoped cleanup. After setup, from this project's directory:
 
 ```powershell
 azd deploy chapter19-evaluation --no-prompt

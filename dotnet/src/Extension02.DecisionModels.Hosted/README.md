@@ -48,11 +48,11 @@ Invoke-RestMethod -Method Post -Uri 'http://localhost:8088/responses' -ContentTy
 ## Deployment and packaging
 
 Follow [shared hosting setup, runtime RBAC and cleanup](../../HOSTING.md). Replace
-sample project/model settings in `dotnet\azure.yaml` with reader-owned values, keeping
+sample project/model settings in this directory's `azure.yaml` with reader-owned values, keeping
 the service key `decision-models`. Deploy only that service:
 
 ```powershell
-Set-Location dotnet
+Set-Location .\dotnet\src\Extension02.DecisionModels.Hosted
 azd deploy decision-models --no-prompt
 azd ai agent show decision-models --output json
 azd ai agent invoke decision-models 'Checkout is down for every customer.'

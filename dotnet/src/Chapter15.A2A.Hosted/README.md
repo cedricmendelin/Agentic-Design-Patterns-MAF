@@ -36,7 +36,7 @@ dotnet run --project dotnet\src\Chapter15.A2A -- all http://localhost:5090/
 
 Follow [HOSTING.md](../../HOSTING.md) for reader-owned project/model selection, bundled .NET publishing, permissions, runtime inference RBAC, sensitive telemetry, cost, and agent-scoped cleanup. Local credentials can use an API key; a Foundry-hosted runtime explicitly uses managed identity and ignores keys.
 
-After that setup, from `dotnet`:
+After that setup, run azd commands from this project's directory, which contains its `azure.yaml`:
 
 ```powershell
 $env:AZURE_DEV_USER_AGENT = 'microsoft_foundry_skill'

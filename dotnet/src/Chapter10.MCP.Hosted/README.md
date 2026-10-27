@@ -13,7 +13,7 @@ Exposes the [Chapter 10 MCP agent](../Chapter10.MCP/README.md) through the Found
 
 ```powershell
 $env:CHAPTER10_MCP_SERVER_URL = "https://<trusted-mcp-server>/mcp"   # local run
-azd env set CHAPTER10_MCP_SERVER_URL "https://<trusted-mcp-server>/mcp"  # deployment (keep azure.yaml env entry in sync)
+azd env set CHAPTER10_MCP_SERVER_URL "https://<trusted-mcp-server>/mcp"  # deployment (run from this directory)
 ```
 
 The server must be reachable from the deployed host — Foundry cannot reach a developer's `localhost`. Configure server credentials through an approved identity or secret store; never commit tokens.

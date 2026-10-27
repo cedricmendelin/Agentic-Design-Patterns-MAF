@@ -25,7 +25,7 @@ dotnet run --project .\dotnet\src\Chapter07.MultiAgent.Hosted
 dotnet test .\dotnet\tests\MultiAgent.Tests
 ```
 
-Optional host argument: `-- --deployment <alias>`. Alternatively run from `dotnet` with `azd ai agent run chapter07-multi-agent --no-client`, supplying aligned `FOUNDRY_PROJECT_ENDPOINT` and `AZURE_AI_MODEL_DEPLOYMENT_NAME` in the selected azd environment.
+Optional host argument: `-- --deployment <alias>`. Alternatively run `azd ai agent run chapter07-multi-agent --no-client` from this project's directory, supplying aligned `FOUNDRY_PROJECT_ENDPOINT` and `AZURE_AI_MODEL_DEPLOYMENT_NAME` in the selected azd environment.
 
 From `dotnet`:
 

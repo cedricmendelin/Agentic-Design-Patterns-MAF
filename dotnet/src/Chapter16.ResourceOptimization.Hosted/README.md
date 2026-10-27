@@ -32,7 +32,7 @@ From the repository root:
 dotnet run --project dotnet\src\Chapter16.ResourceOptimization.Hosted
 ```
 
-In another terminal, from `dotnet`:
+In another terminal, from this project's directory:
 
 ```powershell
 $env:AZURE_DEV_USER_AGENT = 'microsoft_foundry_skill'
@@ -42,7 +42,7 @@ azd ai agent invoke chapter16-resource-optimization --local --protocol responses
 
 ## Deploy and operate
 
-Complete [HOSTING.md](../../HOSTING.md) first: reader-owned project/model, managed identity, bundled dependencies, runtime inference RBAC, sensitive trace controls, charges, and scoped cleanup. Keep keys out of Azure configuration. Then, from `dotnet`:
+Complete [HOSTING.md](../../HOSTING.md) first: reader-owned project/model, managed identity, bundled dependencies, runtime inference RBAC, sensitive trace controls, charges, and scoped cleanup. Keep keys out of Azure configuration. Then, from this project's directory:
 
 ```powershell
 azd deploy chapter16-resource-optimization --no-prompt

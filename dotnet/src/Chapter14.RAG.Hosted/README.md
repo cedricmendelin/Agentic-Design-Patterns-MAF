@@ -20,7 +20,7 @@ azd deploy chapter14-rag --no-prompt
 azd ai agent invoke chapter14-rag --protocol responses "What did the president say about Justice Breyer?"
 ```
 
-Run `azd` commands from `dotnet`. Grant the runtime identity inference access before remote invocation (see the hosting guide).
+Run `azd` commands from this project's directory, which contains its `azure.yaml`. Grant the runtime identity inference access before remote invocation (see the hosting guide).
 
 ## Telemetry
 
