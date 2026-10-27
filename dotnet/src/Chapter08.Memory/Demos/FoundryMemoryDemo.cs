@@ -38,20 +38,18 @@ public static class FoundryMemoryDemo
             projectClient,
             settings.MemoryStoreName,
             stateInitializer: _ => new(memoryScope));
-        var agent = projectClient.AsAIAgent(
-            new ChatClientAgentOptions
+        var recallMemoryProvider = new FoundryMemoryProvider(
+            projectClient,
+            settings.MemoryStoreName,
+            stateInitializer: _ => new(memoryScope),
+            // Recall is read-only: exclude both the caller's question and its response from memory extraction.
+            options: new()
             {
-                Name = "Chapter08FoundryMemory",
-                ChatOptions = new()
-                {
-                    ModelId = settings.ModelDeployment,
-                    Instructions = """
-                        You are a friendly travel assistant. Use memories about the user when they are relevant.
-                        Do not invent details or claim a memory exists when it is not provided.
-                        """
-                },
-                AIContextProviders = [memoryProvider]
+                StorageInputRequestMessageFilter = _ => [],
+                StorageInputResponseMessageFilter = _ => []
             });
+        var agent = CreateAgent(projectClient, settings, memoryProvider);
+        var recallAgent = CreateAgent(projectClient, settings, recallMemoryProvider);
 
         writeOutput?.Invoke("--- Foundry-managed memory ---");
         writeOutput?.Invoke($"Model deployment: {settings.ModelDeployment}");
@@ -67,22 +65,52 @@ public static class FoundryMemoryDemo
             cancellationToken);
 
         AgentSession firstSession = await agent.CreateSessionAsync(cancellationToken);
-        await RunTurnAsync(agent, firstSession, SampleFact, "Store personal context", writeOutput, cancellationToken);
-
-        writeOutput?.Invoke("\nWaiting for Foundry memory updates...");
-        await memoryProvider.WhenUpdatesCompletedAsync(cancellationToken: cancellationToken);
-
-        // A new session has no conversation history; recall can only come from the managed memory store.
-        AgentSession nextSession = await agent.CreateSessionAsync(cancellationToken);
-        await RunTurnAsync(agent, nextSession, recallQuestion, "Recall in a new session", writeOutput, cancellationToken);
-
-        if (configuredMemoryScope is null)
+        try
         {
-            writeOutput?.Invoke("\nCleaning up the temporary demo memory scope.");
+            await RunTurnAsync(agent, firstSession, SampleFact, "Store personal context", writeOutput, cancellationToken);
+
+            writeOutput?.Invoke("\nWaiting for Foundry memory updates...");
             await memoryProvider.WhenUpdatesCompletedAsync(cancellationToken: cancellationToken);
-            await memoryProvider.EnsureStoredMemoriesDeletedAsync(nextSession, cancellationToken);
+
+            // A new session has no conversation history; recall can only come from the managed memory store.
+            AgentSession nextSession = await recallAgent.CreateSessionAsync(cancellationToken);
+            await RunTurnAsync(recallAgent, nextSession, recallQuestion, "Recall in a new session", writeOutput, cancellationToken);
+        }
+        finally
+        {
+            if (configuredMemoryScope is null)
+            {
+                writeOutput?.Invoke("\nCleaning up the temporary demo memory scope.");
+                try
+                {
+                    await memoryProvider.WhenUpdatesCompletedAsync(cancellationToken: CancellationToken.None);
+                }
+                finally
+                {
+                    await memoryProvider.EnsureStoredMemoriesDeletedAsync(firstSession, CancellationToken.None);
+                }
+            }
         }
     }
+
+    private static AIAgent CreateAgent(
+        AIProjectClient projectClient,
+        FoundryMemorySettings settings,
+        FoundryMemoryProvider memoryProvider) =>
+        projectClient.AsAIAgent(
+            new ChatClientAgentOptions
+            {
+                Name = "Chapter08FoundryMemory",
+                ChatOptions = new()
+                {
+                    ModelId = settings.ModelDeployment,
+                    Instructions = """
+                        You are a friendly travel assistant. Use memories about the user when they are relevant.
+                        Do not invent details or claim a memory exists when it is not provided.
+                        """
+                },
+                AIContextProviders = [memoryProvider]
+            });
 
     private static async Task RunTurnAsync(
         AIAgent agent,

@@ -92,6 +92,22 @@ public sealed class EvaluationTests
         Assert.Equal("Caller-owned survey question", Assert.Single(model.Questions));
     }
 
+    [Fact]
+    public async Task Responses_endpoint_streams_a_completed_judgment()
+    {
+        using var model = new JudgeClient(4);
+        await using var host = await HostedResponses.StartAsync(new SurveyEvaluationAgent(model));
+        using var response = await host.InvokeStreamingAsync("Caller-owned survey question", "chapter19-evaluation");
+        response.EnsureSuccessStatusCode();
+        Assert.Equal("text/event-stream", response.Content.Headers.ContentType?.MediaType);
+
+        var events = await response.Content.ReadAsStringAsync();
+        Assert.Contains("event: response.completed", events);
+        Assert.Contains("\"status\":\"completed\"", events);
+        Assert.Contains("\"text\":\"{", events);
+        Assert.Equal("Caller-owned survey question", Assert.Single(model.Questions));
+    }
+
     [Theory]
     [InlineData(0, "completed", 4)]
     [InlineData(1, "error", 4)]

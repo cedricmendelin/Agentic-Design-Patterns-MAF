@@ -47,6 +47,12 @@ public sealed class HostedResponses : IAsyncDisposable
         return JsonDocument.Parse(await response.Content.ReadAsStringAsync());
     }
 
+    public Task<HttpResponseMessage> InvokeStreamingAsync(string input, string model) =>
+        Client.PostAsJsonAsync("/responses", new
+        {
+            model, input, stream = true, store = false
+        });
+
     public static string OutputText(JsonElement body) => string.Concat(
         body.GetProperty("output").EnumerateArray()
             .SelectMany(item => item.GetProperty("content").EnumerateArray())

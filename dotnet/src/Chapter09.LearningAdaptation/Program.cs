@@ -22,7 +22,7 @@ for (var index = 0; index < args.Length && valid; index++)
             index++;
             break;
         case "maf" or "foundry" or "all" when !selectionSeen:
-            selection = args[index];
+            selection = args[index].ToLowerInvariant();
             selectionSeen = true;
             break;
         default:
