@@ -5,6 +5,7 @@
     <UserSecretsId>d07d9c4e-f603-4f5d-9004-d58597ab151e</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Shared.Hosting\Shared.Hosting.csproj" />
     <ProjectReference Include="..\Chapter03.Parallelization\Chapter03.Parallelization.csproj" />
     <PackageReference Include="Azure.AI.OpenAI" />
     <PackageReference Include="Azure.Identity" />
