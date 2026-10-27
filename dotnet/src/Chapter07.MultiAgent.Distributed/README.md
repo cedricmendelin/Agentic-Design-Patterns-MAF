@@ -1,6 +1,14 @@
-# Chapter 07 - Distributed Foundry Crew
+# Chapter 07 — Distributed Foundry Crew (advanced/optional)
 
 This second [multi-agent demo](../Chapter07.MultiAgent/README.md) deploys **three independently hosted Foundry agents**: a researcher, a writer, and an orchestrator. It uses the same crew prompts and task handoff as the single-host demo, but the specialists run across real HTTP boundaries. This is the Responses protocol, not A2A.
+
+## Where to look in code
+
+- [`Program`](Program.cs): role selection, model-free orchestrator, managed-identity specialists, and isolated Responses registration.
+- [`RemoteSpecialist.InvokeAsync`](RemoteSpecialist.cs): endpoint allowlist, remote authentication, completion validation, and cancellation.
+- [`StatelessRequestAgent`](StatelessRequestAgent.cs): thin shared `StatelessWorkflowAgent` adapter.
+- [`MultiAgentWorkflow.RunCrewAsync`](../Chapter07.MultiAgent/CrewScenario.cs): the same explicit research → writing task handoff used locally; maps `Chapter_07_Multi_Agent_(CrewAI_Gemini).ipynb` into MAF responsibilities.
+- [`RequestIsolationKeyProvider`](../Chapter07.MultiAgent.Hosted/RequestIsolationKeyProvider.cs): per-response partitioning, retained in both hosts.
 
 ## Request flow
 
@@ -31,7 +39,8 @@ Specialists read the same Foundry configuration as the single-host companion. Lo
 Configure the [shared Foundry credentials](../../README.md#configure-foundry-user-secrets), then build:
 
 ```powershell
-dotnet build .\dotnet\AgenticDesignPatterns.slnx
+dotnet build .\dotnet\src\Chapter07.MultiAgent.Distributed
+dotnet test .\dotnet\tests\MultiAgent.Tests
 ```
 
 In the first terminal, from the repository root:
@@ -72,7 +81,7 @@ Stop all three processes with Ctrl+C. Keep local listeners private.
 
 ## Deploy to an existing Foundry project
 
-Follow the [shared hosted setup](../../README.md#configure-and-deploy-hosted-agents) first. Select the actual subscription, tenant, project, and existing model; verify that the project reference in `azure.yaml` matches. Do not deploy against an unreviewed sample target.
+Follow the [common hosting guide](../../HOSTING.md) first for configuration, project/model selection, bundled packaging, deployment identity, inference RBAC, and safe cleanup. Do not deploy against an unreviewed sample target. The orchestration-specific configuration and permissions below remain additional requirements.
 
 From `dotnet`, set the existing model deployment in your selected azd environment, then deploy only the specialists:
 
@@ -94,7 +103,7 @@ azd deploy chapter07-orchestrator --no-prompt
 azd ai agent show chapter07-orchestrator --output json
 ```
 
-No Docker or registry is required. Bundled deployment publishes the distributed host, Chapter 07, Shared, and the single-host companion assembly containing shared configuration and request-isolation support. Referencing that assembly does not start another host. The `.agentignore` excludes environment files, azd state, secrets, and unnecessary source build artifacts.
+Bundled deployment includes the distributed host, Chapter 07, Shared/Shared.Hosting, and the single-host companion assembly containing request-isolation support. Referencing that assembly does not start another host.
 
 ## Runtime permissions
 
@@ -117,6 +126,8 @@ azd ai agent invoke chapter07-orchestrator --protocol responses --new-session --
 
 Sensitive-data capture is enabled under `Chapter07.MultiAgent` for the demo. Prompts, research notes, and article text may appear in traces. Restrict telemetry access and retention; disable sensitive capture before handling confidential inputs.
 
-This design runs three independently billed hosts and two model calls per successful crew request. Remote boundaries add authentication, cold-start/network latency, timeout, and partial-failure concerns compared with one host. Independent identities and deployment lifecycles are useful only when that separation is needed.
+Use this design when specialists need independent identities, deployment lifecycles, or ownership. Example scenarios include a centrally operated research service feeding a separately owned publishing service, independently updated analysis specialists, and least-privilege departmental assistants. Prefer the single-host crew when those boundaries are unnecessary or latency/cost dominates.
+
+This design runs three independently billed hosts and two model calls per successful crew request. Remote boundaries add authentication, cold-start/network latency, timeout, and partial-failure concerns compared with one host.
 
 Delete only reader-owned experimental agents through Foundry's agent-scoped controls. Do not run `azd down` or delete shared projects, models, or unrelated agents. Evaluation-suite generation and evaluation execution are separate, optional operations requiring an explicit choice after deployment.

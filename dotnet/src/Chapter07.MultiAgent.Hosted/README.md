@@ -1,64 +1,42 @@
-# Chapter 07 - Hosted Multi-Agent Agent
+# Chapter 07 — Hosted Multi-Agent Collaboration
 
-Expose the [Chapter 07 multi-agent scenarios](../Chapter07.MultiAgent/README.md) through Microsoft Foundry Agent Service's **Responses protocol**. The host reuses the MAF orchestration and accepts one caller-provided scenario per request.
+The [six collaboration scenarios](../Chapter07.MultiAgent/README.md) behind Foundry's **Responses protocol**, in one hosted process. The [distributed crew](../Chapter07.MultiAgent.Distributed/README.md) is the advanced alternative with independently hosted specialists.
 
-This companion is one hosted process with in-process MAF agents. For independent specialist services and an orchestrator making remote calls, see the [distributed crew companion](../Chapter07.MultiAgent.Distributed/README.md).
+## Request contract
 
-## Request and response
+Send `<scenario>: <task>` with `sequential`, `parallel`, `loop`, `coordinator`, `agent-tool` (also `agenttool`), or `crew`. Prefixes are case-insensitive. Unrecognized or absent prefixes preserve the whole input and default to `crew`; a recognized prefix without a task fails.
 
-Send a user message containing `<scenario>: <task>` where the scenario is `sequential`, `parallel`, `loop`, `coordinator`, `agent-tool`, or `crew`. A message without a recognized scenario prefix runs `crew`. The response is the final result from that scenario.
+Each request creates a fresh run and returns the selected scenario's actual final result. Streaming emits one buffered result, not intermediate tokens. There is no persisted agent conversation history; provider failures, empty output, cancellation, and loop-budget exhaustion fail explicitly. The loop is limited to three iterations.
 
-Each request constructs a fresh run and does not persist conversation history. The final result is buffered until the selected workflow completes. Agent spans use the `Chapter07.MultiAgent` telemetry source, with sensitive-data capture enabled; caller text and intermediate results can appear in exported traces.
+`RequestIsolationKeyProvider` partitions MAF session state by the **server-generated response ID**, including managed-identity callers without a user header. It does not bypass Foundry authorization or impersonate a user. Cross-response state resumption is intentionally unsupported: send fresh requests rather than `previous_response_id`.
 
-Both Chapter 07 hosts use the same `RequestIsolationKeyProvider` to partition MAF session state by the server-generated response ID. Authenticated service-principal and managed-identity callers do not need a platform user header. This policy does not bypass Foundry authorization or impersonate a user. Resuming MAF state across responses is intentionally unsupported; send a fresh request instead of `previous_response_id`.
+## Where to look
 
-## Prerequisites and configuration
+- [`MultiAgentHostedAgent.ParseRequest`](MultiAgentHostedAgent.cs): preserved request syntax and shared stateless adapter.
+- [`RequestIsolationKeyProvider`](RequestIsolationKeyProvider.cs): explicit per-response partitioning.
+- [`MultiAgentWorkflow.RunAsync`](../Chapter07.MultiAgent/MultiAgentWorkflow.cs): dispatch; the chapter guide maps scenarios to their small implementation files.
 
-Follow the [shared hosted-agent setup](../../README.md#configure-and-deploy-hosted-agents) to install tooling, select your Foundry project and model, configure `azure.yaml`, and set up authentication and permissions.
+## Run and deploy
 
-The host reads shared `Foundry` user-secrets and `Foundry__*` environment overrides. A blank or absent API key selects `DefaultAzureCredential`: your developer identity locally and managed identity in Azure. Keep API keys out of hosted configuration.
+See [common hosting guidance](../../HOSTING.md) for configuration, identity, inference RBAC, packaging, telemetry, and safe cleanup. From the repository root:
 
-For `azd ai agent run`, make sure the local azd environment or the service's untracked `.env` file supplies `FOUNDRY_PROJECT_ENDPOINT` and `AZURE_AI_MODEL_DEPLOYMENT_NAME`. Keep those values aligned with the Foundry settings read by the host.
+```powershell
+dotnet run --project .\dotnet\src\Chapter07.MultiAgent.Hosted
+dotnet test .\dotnet\tests\MultiAgent.Tests
+```
 
-## Run locally
+Optional host argument: `-- --deployment <alias>`. Alternatively run from `dotnet` with `azd ai agent run chapter07-multi-agent --no-client`, supplying aligned `FOUNDRY_PROJECT_ENDPOINT` and `AZURE_AI_MODEL_DEPLOYMENT_NAME` in the selected azd environment.
 
 From `dotnet`:
 
 ```powershell
-$env:AZURE_DEV_USER_AGENT = 'microsoft_foundry_skill'
-azd ai agent run chapter07-multi-agent --no-client
-```
-
-The local server listens on port 8088 by default; keep it private. In a second terminal, from `dotnet`:
-
-```powershell
-$env:AZURE_DEV_USER_AGENT = 'microsoft_foundry_skill'
-azd ai agent invoke chapter07-multi-agent --local --protocol responses 'parallel: Analyze the impact of an extreme heat event.'
-```
-
-Stop the server with Ctrl+C when finished.
-
-## Deploy and invoke
-
-After completing the shared setup, run from `dotnet`:
-
-```powershell
+azd ai agent invoke chapter07-multi-agent --local --protocol responses 'parallel: Analyze an extreme heat event.'
 azd deploy chapter07-multi-agent --no-prompt
 azd ai agent show chapter07-multi-agent --output json
 ```
 
-Use the returned `instance_identity.principal_id` to verify model-inference access as described in the shared guide. The hosted runtime needs **Cognitive Services OpenAI User** (or equivalent verified inference access) at the actual model-hosting Foundry account scope. Allow time for RBAC propagation, then invoke a representative request:
+Verify current runtime inference access before remote calls; omit `--local` for the deployed service. Keep the local listener private and stop it with Ctrl+C. Sensitive tracing under `Chapter07.MultiAgent` may export tasks and handoffs.
 
-```powershell
-azd ai agent invoke chapter07-multi-agent --protocol responses 'crew: Explain how teams can use AI agents to analyze a product launch.'
-```
+## Tradeoffs
 
-The service uses bundled .NET 10 code deployment, publishing the host and referenced Chapter 07 and Shared projects together. No Docker image or container registry is required. Deploy only the selected service, and remove only agent resources that you own; do not tear down shared project infrastructure.
-
-## Telemetry and sensitive data
-
-Agents emit spans under `Chapter07.MultiAgent`. **Sensitive-data capture is enabled for this demo:** caller tasks, specialist outputs, and final responses may appear in exported traces. Use non-sensitive inputs, restrict telemetry access and retention, and disable sensitive capture before handling confidential data.
-
-## Pattern tradeoffs
-
-Multi-agent orchestration can improve decomposition when responsibilities are distinct, but increases latency, token consumption, and the number of handoffs that can lose context or propagate errors. Parallel specialist agreement is not evidence of correctness. Keep loops bounded and use deterministic checks for mandatory policy and completion rules.
+Multiple agents add cost, latency, context loss, and inconsistent conclusions. Separate personas and parallel agreement do not prove correctness. Keep authorization deterministic and use remote boundaries only when independent capability/lifecycle isolation is needed.

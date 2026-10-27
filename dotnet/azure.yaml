@@ -7,10 +7,10 @@ requiredVersions:
 name: agentic-design-patterns
 services:
     decision-models:
-        project: ./src/DecisionModels.Hosted
+        project: ./src/Extension02.DecisionModels.Hosted
         host: azure.ai.agent
         language: csharp
-        startupCommand: dotnet run --project DecisionModels.Hosted.csproj
+        startupCommand: dotnet run --project Extension02.DecisionModels.Hosted.csproj
         displayName: Decision Models
         description: Typed support decisions and deterministic review gates before specialist generation.
         uses:
@@ -22,7 +22,7 @@ services:
             Decisions__Provider: microsoft
         codeConfiguration:
             dependencyResolution: bundled
-            entryPoint: DecisionModels.Hosted.dll
+            entryPoint: Extension02.DecisionModels.Hosted.dll
             runtime: dotnet_10
         container:
             resources:

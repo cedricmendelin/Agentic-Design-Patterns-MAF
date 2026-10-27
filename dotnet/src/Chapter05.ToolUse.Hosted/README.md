@@ -1,68 +1,47 @@
-# Chapter 05 - Hosted Tool Use Agent
+# Chapter 05 — Hosted Tool Use
 
-Expose the [Chapter 05 function-tool agent](../Chapter05.ToolUse/README.md) through Microsoft Foundry Agent Service's **Responses protocol**. MAF selects and invokes application-defined tools; Foundry hosts the agent and model.
+The [function-tool pattern](../Chapter05.ToolUse/README.md) behind the Foundry **Responses protocol**. The host exposes local typed functions, not the console's separate native web-search, File Search, or Code Interpreter modes.
 
-## Request and response
+## Request contract
 
-The host accepts caller input with optional mode prefixes:
-
-| Input | Tool |
+| Latest user input | Available tools |
 |---|---|
-| `search: <query>` | Deterministic sample information lookup |
-| `calculate: <expression>` | Bounded arithmetic parser with factorial support |
-| `stock: <ticker>` | Simulated stock lookup |
+| `search: <query>` | Sample information lookup |
+| `calculate: <arithmetic request>` | Typed decimal calculator |
+| `stock: <ticker>` | Simulated AAPL/GOOGL/MSFT lookup |
+| Unprefixed text | All three tools; the model selects |
 
-Search results and stock prices are sample data, not live information. The calculator evaluates supported arithmetic rather than executing generated code. The console chapter also offers separate Foundry-native web search, code interpreter, and file-search examples.
+Prefixes are case-insensitive. Empty inputs fail. Arithmetic text remains accepted: `(5 + 7) * 3` becomes two typed calls (`Add`, then `Multiply`); `10!` uses `Factorial`. The calculator supports add/subtract/multiply/divide and integer factorial 0–27, with explicit arithmetic errors. It never evaluates arbitrary code or parses an expression in application code.
 
-Each request creates a fresh tool-enabled agent without persisted conversation history and returns a buffered final response. Tool errors, provider failures, and cancellation propagate rather than producing successful-looking placeholders.
+Search and prices are static samples, never live information. Each request creates a fresh agent without persisted conversation history. Streaming returns one buffered completed answer; cancellation/provider failures propagate. Tool failures are returned through MAF's function-call error mechanism, not invented successful tool data.
 
-## Prerequisites and configuration
+## Where to look
 
-Follow the [shared hosted-agent setup](../../README.md#configure-and-deploy-hosted-agents) to install tooling, select your Foundry project and model, configure `azure.yaml`, and set up authentication and permissions.
+- [`ToolUseHostedAgent`](ToolUseHostedAgent.cs): shared stateless adapter.
+- [`ToolUseAgent.Create`](../Chapter05.ToolUse/ToolUseAgent.cs): tool registration and selected capabilities.
+- [`ToolUseFunctions`](../Chapter05.ToolUse/ToolUseFunctions.cs): typed arithmetic and sample lookups.
 
-The host reads shared `Foundry` user-secrets and `Foundry__*` environment overrides. A blank or absent API key selects `DefaultAzureCredential`: your developer identity locally and managed identity in Azure. Keep API keys out of hosted configuration.
+## Run and deploy
 
-## Run locally
-
-From the repository root:
+See [common hosting guidance](../../HOSTING.md) for settings, managed identity, inference RBAC, packaging, sensitive tracing, and agent-scoped cleanup. From the repository root:
 
 ```powershell
 dotnet run --project .\dotnet\src\Chapter05.ToolUse.Hosted
+dotnet test .\dotnet\tests\ToolUse.Tests
 ```
 
-The local server listens on port 8088 by default; keep it private. In a second terminal, from `dotnet`:
+Optional host argument: `-- --deployment <alias>`. From `dotnet`:
 
 ```powershell
 azd ai agent invoke chapter05-tool-use --local --protocol responses 'search: capital of France'
 azd ai agent invoke chapter05-tool-use --local --protocol responses 'calculate: (5 + 7) * 3'
 azd ai agent invoke chapter05-tool-use --local --protocol responses 'stock: AAPL'
-```
-
-Stop the server with Ctrl+C when finished.
-
-## Deploy and invoke
-
-After completing the shared setup, run from `dotnet`:
-
-```powershell
 azd deploy chapter05-tool-use --no-prompt
 azd ai agent show chapter05-tool-use --output json
 ```
 
-Use the returned `instance_identity.principal_id` to configure runtime model-inference access as described in the shared guide. Allow time for role propagation, then send a request:
+Verify current runtime inference access before remote calls; omit `--local` for the deployed service. Keep the local listener private and stop it with Ctrl+C. `Chapter05.ToolUse` tracing can include sensitive tool arguments/results.
 
-```powershell
-azd ai agent invoke chapter05-tool-use --protocol responses 'calculate: 10 factorial'
-```
+## Tradeoffs
 
-The service uses bundled .NET 10 code deployment, publishing the host and referenced Chapter 05 and Shared projects together. No Docker image or container registry is required.
-
-## Telemetry and sensitive data
-
-Agents emit spans under `Chapter05.ToolUse`. **Sensitive-data capture is enabled for this demo:** prompts, tool arguments, and responses may appear in configured traces. Use non-sensitive inputs, restrict telemetry access and retention, and disable sensitive capture before handling confidential data.
-
-## Pattern tradeoffs
-
-Model-selected tool names and arguments are untrusted input. Validate them at the tool boundary, scope credentials narrowly, and require deterministic authorization and approval for consequential writes.
-
-Tool results are only as reliable and current as their data source. When replacing sample lookups with external services, define freshness, timeouts, error handling, and attribution explicitly. Treat retrieved content as data, not instructions that can authorize further actions.
+Narrow typed contracts are easier to audit but compound math needs extra tool round trips. Treat arguments and retrieved content as untrusted. External replacements need freshness, timeouts, attribution, and deterministic authorization before any writes.

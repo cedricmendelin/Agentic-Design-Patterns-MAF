@@ -101,11 +101,10 @@ dotnet build dotnet/AgenticDesignPatterns.slnx
 | 15 | Inter-Agent Communication (A2A) | `src/Chapter15.A2A` | [Chapter 15 guide](src/Chapter15.A2A/README.md) |
 | 16 | Resource Optimization | `src/Chapter16.ResourceOptimization` | [Chapter 16 guide](src/Chapter16.ResourceOptimization/README.md) |
 | 17 | Reasoning | `src/Chapter17.Reasoning` | [Chapter 17 guide](src/Chapter17.Reasoning/README.md) |
-| 20 | Prioritization | `src/Chapter20.Prioritization` | [Chapter 20 guide](src/Chapter20.Prioritization/README.md) |
-| 21 | Exploration & Discovery | `src/Chapter21.ExplorationDiscovery` | [Chapter 21 guide](src/Chapter21.ExplorationDiscovery/README.md) |
 | 18 | Guardrails | `src/Chapter18.Guardrails` | [Chapter 18 guide](src/Chapter18.Guardrails/README.md) |
 | 19 | Evaluation & Monitoring | `src/Chapter19.Evaluation` | [Chapter 19 guide and evaluation-tool comparison](src/Chapter19.Evaluation/README.md) |
-| Supplement | Decision Models | `src/DecisionModels` | [Microsoft-Decision-1, OpenAI Decisions, and MAF guide](src/DecisionModels/README.md) |
+| 20 | Prioritization | `src/Chapter20.Prioritization` | [Chapter 20 guide](src/Chapter20.Prioritization/README.md) |
+| 21 | Exploration & Discovery | `src/Chapter21.ExplorationDiscovery` | [Chapter 21 guide](src/Chapter21.ExplorationDiscovery/README.md) |
 
 The decision-model supplement uses `ElBruno.AI.Decisions.Foundry` for both native decision APIs and composes typed judgments with MAF/MEAI specialists. It needs separate `Foundry:ModelDeployments:decision` (Microsoft-Decision-1) and `Foundry:ModelDeployments:openaiDecision` (gpt-6-luna) aliases; keep `Foundry:ModelDeployment` set to a generative chat model. See its guide for contracts, confidence/probability semantics, policy thresholds, and mapping to Routing, Prioritization, Guardrails, and Evaluation.
 
@@ -116,6 +115,7 @@ These are original additions beyond the book's 21 chapters, not notebook ports o
 | Extension | Pattern | Project | Guide |
 |---|---|---|---|
 | E01 | Agent Harness | `src/Extension01.AgentHarness` | [Pattern, MAF implementation, and combinations](src/Extension01.AgentHarness/README.md) |
+| E02 | Decision Models | `src/Extension02.DecisionModels` | [Bounded judgments, native providers, and MAF routing](src/Extension02.DecisionModels/README.md) |
 
 Agent Harness demonstrates the packaged MAF runtime with todos, bounded tool use, compaction, tracing, and deterministic completion checks. Its [research note](../ai-research/agent-harness-pattern.md) cites primary sources and out-of-the-box examples. Its `AgentHarnessSmokeTests` run through the existing protected live workflow after merge.
 
@@ -132,7 +132,7 @@ Most hosted projects expose the same MAF chapter logic through Microsoft Foundry
 | 06 | [Planning](src/Chapter06.Planning.Hosted/README.md) | Topic to plan and summarize |
 | 07 | [Multi-Agent Collaboration](src/Chapter07.MultiAgent.Hosted/README.md) | `<scenario>: <task>` or a task for the default `crew` scenario |
 | 07 | [Distributed crew](src/Chapter07.MultiAgent.Distributed/README.md) | Topic sent to an orchestrator that calls separately hosted researcher and writer agents |
-| 08 | [Memory](src/Chapter08.Memory.Hosted/README.md) | Scripted managed-memory demo; synthetic facts and a fresh scope per request |
+| 08 | [Memory](src/Chapter08.Memory.Hosted/README.md) | Caller recall question over synthetic facts in a fresh managed-memory scope per request |
 | 09 | [Learning & Adaptation](src/Chapter09.LearningAdaptation.Hosted/README.md) | Starting prompt instructions to evaluate and revise |
 | 10 | [MCP](src/Chapter10.MCP.Hosted/README.md) | Request to the configured remote MCP server |
 | 11 | [Goal Setting & Monitoring](src/Chapter11.GoalSettingMonitoring.Hosted/README.md) | Use case and optional JSON goals/iteration budget |
@@ -142,89 +142,34 @@ Most hosted projects expose the same MAF chapter logic through Microsoft Foundry
 | 15 | [Inter-Agent Communication (A2A)](src/Chapter15.A2A.Hosted/README.md) | Text request through A2A agent-card discovery, JSON-RPC, or HTTP+JSON streaming |
 | 16 | [Resource Optimization](src/Chapter16.ResourceOptimization.Hosted/README.md) | Request routed by intent; current-information requests use Foundry's Bing-backed `web_search` tool |
 | 17 | [Reasoning](src/Chapter17.Reasoning.Hosted/README.md) | `cot:`, `self-correction:`, `react:`, or `deep-search:` request |
+| 18 | [Guardrails](src/Chapter18.Guardrails.Hosted/README.md) | Request screened before the guarded assistant responds |
+| 19 | [Evaluation](src/Chapter19.Evaluation.Hosted/README.md) | Legal survey question for a structured five-criterion review |
 | 20 | [Prioritization](src/Chapter20.Prioritization.Hosted/README.md) | One task message or a JSON `tasks` array |
 | 21 | [Exploration & Discovery](src/Chapter21.ExplorationDiscovery.Hosted/README.md) | Research topic for a bounded proposal and reviewer panel |
-| 18 | [Guardrails](src/Chapter18.Guardrails.Hosted/README.md) | Request screened before the guarded assistant responds |
 | E01 | [Agent Harness](src/Extension01.AgentHarness.Hosted/README.md) | Self-contained question about synthetic checkout or identity service health; read-only recommendations and completion/evidence JSON |
-| 19 | [Evaluation](src/Chapter19.Evaluation.Hosted/README.md) | Legal survey question for a structured five-criterion review |
-| Supplement | [Decision Models](src/DecisionModels.Hosted/README.md) | Text support request; typed decisions, deterministic review gates, and an optional specialist draft |
+| E02 | [Decision Models](src/Extension02.DecisionModels.Hosted/README.md) | Text support request; typed decisions, deterministic review gates, and an optional specialist draft |
 
 ### Configure and deploy hosted agents
 
-#### Tooling and Azure prerequisites
+See the [shared hosting guide](HOSTING.md) for tooling, project/model selection,
+authentication, runtime RBAC, packaging, cost and safe cleanup. Each companion
+README documents its own request/state contract and service-specific commands.
 
-- .NET 10 SDK, PowerShell 7, Azure CLI, and Azure Developer CLI (azd).
-- azd version 1.35.1 or later and the `azure.ai.agents` extension version 1.0.0-beta.19 or later, as declared in `azure.yaml`.
-- An existing Foundry project in a region that supports hosted agents, with hosting configured and a compatible chat-model deployment.
-- Permission to deploy agents to the project and model-inference access for both your local developer identity and the hosted runtime identity.
+## Code and test ownership
 
-Install the agent extension if needed:
-
-```powershell
-azd extension install azure.ai.agents
-```
-
-#### Select your project and model
-
-All commands in this section run from `dotnet`. Sign in to your target tenant and create an azd environment, or select an existing one with `azd env select <environment>`:
+| Surface | Responsibility | Validation |
+|---|---|---|
+| `src/Shared` | Console configuration and optional Deep Research API helper (Ch06/21) | `Shared.Tests`; Deep Research is opt-in |
+| `src/Shared.Hosting` | Hosted configuration and stateless Responses adapter | `Shared.Tests` |
+| Chapter/extension projects | Pattern decisions, tools and bounded orchestration | Corresponding deterministic test project |
+| Hosted projects | Request parsing, state/isolation and protocol wiring | Companion smoke tests; approval/isolation regression tests |
+| `tests/TestSupport` | Scripted models and in-process Responses host | Reused by deterministic suites |
+| `tests/Foundry.SmokeTests` | Real model behavior | Explicit protected live workflow only |
 
 ```powershell
-Set-Location .\dotnet
-az login --tenant '<tenant-id>'
-azd auth login --tenant-id '<tenant-id>'
-azd env new '<environment>' --subscription '<subscription-id>' --location '<project-region>' --no-prompt
-azd env set AZURE_TENANT_ID '<tenant-id>'
-azd env set AZURE_AI_PROJECT_ID '<project-arm-id>'
-azd env set AZURE_AI_PROJECT_ENDPOINT 'https://<account>.services.ai.azure.com/api/projects/<project>'
-azd env set AZURE_AI_MODEL_DEPLOYMENT_NAME '<existing-model-deployment>'
+dotnet test dotnet\AgenticDesignPatterns.slnx --filter "Category!=LiveFoundry"
 ```
 
-Use the actual ARM ID and endpoint of your project. The committed `azure.yaml` contains a concrete sample project reference: **replace it with your own project before deploying**. Rename the `host: azure.ai.project` service key, set its `endpoint` to your project endpoint, and update the chapter services' `uses` entries to that same key. For example:
-
-```yaml
-services:
-    chapter02-routing:
-        # Keep the other chapter service settings.
-        uses:
-            - my-foundry-project
-        env:
-            AZURE_AI_MODEL_DEPLOYMENT_NAME: <existing-model-deployment>
-    my-foundry-project:
-        host: azure.ai.project
-        endpoint: https://<account>.services.ai.azure.com/api/projects/<project>
-```
-
-This is a configuration excerpt, not a replacement for the complete manifest. Each chapter service explicitly selects `gpt-5-mini` in its `env` block; replace that value with your existing model deployment name for every service you intend to use. Setting an azd environment variable alone does not replace a literal service setting. Keep the project reference and environment values consistent.
-
-The manifest already includes the hosted services, so do not reinitialize or overwrite it for a normal deployment. Keep each service's project path, startup command, protocol, runtime, and bundled packaging settings. Do not use this directory's own `azure.yaml` as an initialization template into the same directory.
-
-These guides target an existing project and model; they do not provision either. If hosting, regional availability, or permissions need setup, resolve those prerequisites with your Azure administrator.
-
-#### Authentication and runtime permissions
-
-Hosted startup reads the shared `Foundry` user-secrets and corresponding `Foundry__*` environment overrides. When canonical settings are absent, `FOUNDRY_PROJECT_ENDPOINT` and `AZURE_AI_MODEL_DEPLOYMENT_NAME` provide runtime fallbacks. Make sure local secrets or overrides do not point at a different project or model. The Agent Harness companion always uses Entra ID and ignores any shared API key; its Azure runtime explicitly uses managed identity.
-
-For local Entra ID authentication, leave `Foundry:ApiKey` blank or unset it, and remove any nonempty `Foundry__ApiKey` override. The console demos require an API key; if you remove a shared key for a hosted run, configure it again before running a console demo. Azure execution should use managed identity, not an API key. Azure CLI and azd sign-in are separate from model-client configuration.
-
-Deploy the selected service using its chapter guide, then inspect it with `azd ai agent show <service> --output json`. Use **`instance_identity.principal_id`**, not the deploying user, project identity, or agent blueprint, when configuring runtime inference access:
-
-1. Identify the actual model-hosting Foundry account ARM ID.
-2. Check effective role assignments, including inherited grants, for the runtime principal.
-3. If equivalent inference access is missing, have an authorized administrator assign **Cognitive Services OpenAI User** at that account scope.
-4. Allow time for RBAC propagation before sending a remote request. Recheck the principal after redeployment because the runtime identity can change.
-
-Example commands for inspecting and assigning access:
-
-```powershell
-az role assignment list --assignee-object-id '<runtime-principal-id>' --scope '<model-hosting-account-arm-id>' --include-inherited --fill-principal-name false --output table
-# Run only if the role is missing and you are authorized to assign it.
-az role assignment create --assignee-object-id '<runtime-principal-id>' --assignee-principal-type ServicePrincipal --role 'Cognitive Services OpenAI User' --scope '<model-hosting-account-arm-id>'
-```
-
-If invocation returns `401 PermissionDenied`, check the runtime principal, account scope, model endpoint, and role propagation before retrying. Do not broaden access to the subscription or switch to API keys to bypass missing runtime permissions.
-
-#### Packaging, costs, and resource ownership
-
-`dependencyResolution: bundled` makes the azd extension publish the .NET 10 host and its referenced chapter/Shared projects locally before uploading. This includes central build/package settings and sibling dependencies without requiring Docker or a container registry. Keep `.azure`, environment files, user-secrets, and connection strings out of published content and source control.
-
-Deploy only the selected chapter with `azd deploy <service> --no-prompt`; a service-scoped command avoids redeploying other chapters. Hosting and model calls incur Azure charges, and each deployment creates an immutable agent version. When removing an experiment, use Foundry's agent-scoped management controls for the resources you own. Do not run `azd down` against a shared project or delete shared models, project infrastructure, or unrelated agents.
+Default tests must not require credentials or perform Azure writes. Native evaluation,
+Deep Research, managed memory and other Entra-dependent variants are opt-in and may
+incur charges. See the chapter guides before invoking them.

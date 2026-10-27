@@ -3,19 +3,23 @@ using Azure.AI.Projects;
 using Azure.Identity;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Foundry;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 
 namespace Chapter08.Memory.Demos;
 
 public static class FoundryMemoryDemo
 {
+    public const string DefaultRecallQuestion = "What travel preference do you remember about me?";
+    private const string SampleFact = "My name is Sam, and I prefer window seats when I travel.";
+
     public static async Task RunAsync(
         string? deploymentAlias = null,
         Action<string>? writeOutput = null,
         CancellationToken cancellationToken = default,
-        bool useTemporaryScope = false)
+        bool useTemporaryScope = false,
+        string recallQuestion = DefaultRecallQuestion)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(recallQuestion);
         var configuration = new ConfigurationBuilder()
             .AddUserSecrets(typeof(FoundryMemoryDemo).Assembly)
             .AddEnvironmentVariables()
@@ -29,9 +33,7 @@ public static class FoundryMemoryDemo
 
         var memoryScope = new FoundryMemoryProviderScope(
             configuredMemoryScope ?? $"chapter08-demo-{Guid.NewGuid():N}");
-        var projectClient = new AIProjectClient(
-            new Uri(settings.ProjectEndpoint),
-            new DefaultAzureCredential());
+        var projectClient = new AIProjectClient(new Uri(settings.ProjectEndpoint), new DefaultAzureCredential());
         var memoryProvider = new FoundryMemoryProvider(
             projectClient,
             settings.MemoryStoreName,
@@ -65,25 +67,14 @@ public static class FoundryMemoryDemo
             cancellationToken);
 
         AgentSession firstSession = await agent.CreateSessionAsync(cancellationToken);
-        await RunTurnAsync(
-            agent,
-            firstSession,
-            "My name is Sam, and I prefer window seats when I travel.",
-            "Store personal context",
-            writeOutput,
-            cancellationToken);
+        await RunTurnAsync(agent, firstSession, SampleFact, "Store personal context", writeOutput, cancellationToken);
 
         writeOutput?.Invoke("\nWaiting for Foundry memory updates...");
         await memoryProvider.WhenUpdatesCompletedAsync(cancellationToken: cancellationToken);
 
+        // A new session has no conversation history; recall can only come from the managed memory store.
         AgentSession nextSession = await agent.CreateSessionAsync(cancellationToken);
-        await RunTurnAsync(
-            agent,
-            nextSession,
-            "What travel preference do you remember about me?",
-            "Recall in a new session",
-            writeOutput,
-            cancellationToken);
+        await RunTurnAsync(agent, nextSession, recallQuestion, "Recall in a new session", writeOutput, cancellationToken);
 
         if (configuredMemoryScope is null)
         {
@@ -104,7 +95,6 @@ public static class FoundryMemoryDemo
         writeOutput?.Invoke($"\n--- {heading} ---");
         writeOutput?.Invoke($"User: {input}");
         var response = await agent.RunAsync(input, session, cancellationToken: cancellationToken);
-        cancellationToken.ThrowIfCancellationRequested();
         if (string.IsNullOrWhiteSpace(response.Text))
         {
             throw new InvalidOperationException($"The Foundry memory agent returned an empty response during '{heading}'.");
@@ -113,17 +103,15 @@ public static class FoundryMemoryDemo
         writeOutput?.Invoke($"Assistant: {response.Text}");
     }
 
-    private static FoundryMemorySettings LoadSettings(
-        IConfiguration configuration,
-        string? deploymentAlias)
+    private static FoundryMemorySettings LoadSettings(IConfiguration configuration, string? deploymentAlias)
     {
-        var projectEndpoint = configuration["Foundry:ProjectEndpoint"]
-            ?? configuration["FOUNDRY_PROJECT_ENDPOINT"];
-        var modelDeployment = ResolveDeployment(
-            configuration,
-            deploymentAlias,
-            "Foundry:ModelDeployment",
-            "AZURE_AI_MODEL_DEPLOYMENT_NAME");
+        var projectEndpoint = configuration["Foundry:ProjectEndpoint"] ?? configuration["FOUNDRY_PROJECT_ENDPOINT"];
+        var modelDeployment = string.IsNullOrWhiteSpace(deploymentAlias)
+            ? configuration["Foundry:ModelDeployment"] ?? configuration["AZURE_AI_MODEL_DEPLOYMENT_NAME"]
+            : configuration[$"Foundry:ModelDeployments:{deploymentAlias}"]
+                ?? throw new InvalidOperationException(
+                    $"Foundry model deployment alias '{deploymentAlias}' is not configured. " +
+                    $"Set Foundry:ModelDeployments:{deploymentAlias} or Foundry__ModelDeployments__{deploymentAlias}.");
         var embeddingDeployment = configuration["Foundry:ModelDeployments:embedding"]
             ?? configuration["AZURE_AI_EMBEDDING_DEPLOYMENT_NAME"];
         var memoryStoreName = configuration["Foundry:MemoryStoreName"]
@@ -149,33 +137,7 @@ public static class FoundryMemoryDemo
                 "with a deployed embedding model for the Foundry memory variant.");
         }
 
-        return new FoundryMemorySettings(
-            projectEndpoint,
-            modelDeployment,
-            embeddingDeployment,
-            memoryStoreName);
-    }
-
-    private static string? ResolveDeployment(
-        IConfiguration configuration,
-        string? deploymentAlias,
-        string defaultKey,
-        string environmentKey)
-    {
-        if (string.IsNullOrWhiteSpace(deploymentAlias))
-        {
-            return configuration[defaultKey] ?? configuration[environmentKey];
-        }
-
-        var aliasDeployment = configuration[$"Foundry:ModelDeployments:{deploymentAlias}"];
-        if (string.IsNullOrWhiteSpace(aliasDeployment))
-        {
-            throw new InvalidOperationException(
-                $"Foundry model deployment alias '{deploymentAlias}' is not configured. " +
-                $"Set Foundry:ModelDeployments:{deploymentAlias} or Foundry__ModelDeployments__{deploymentAlias}.");
-        }
-
-        return aliasDeployment;
+        return new FoundryMemorySettings(projectEndpoint, modelDeployment, embeddingDeployment, memoryStoreName);
     }
 
     private sealed record FoundryMemorySettings(

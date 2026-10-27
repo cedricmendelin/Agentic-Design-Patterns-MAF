@@ -1,60 +1,47 @@
 # Chapter 21 — Hosted Exploration & Discovery
 
-Expose the [Chapter 21 MAF proposal-and-review workflow](../Chapter21.ExplorationDiscovery/README.md) through Microsoft Foundry Agent Service's **Responses protocol**. Each request is an isolated, bounded research-proposal exercise; the Foundry Deep Research console variant is not hosted.
+Expose the [bounded proposal-and-review pattern](../Chapter21.ExplorationDiscovery/README.md) through Foundry Responses. Long-running Foundry Deep Research remains a separate console variant, not a silently changed hosted capability.
 
-## Request and response
+## Where to look in code
 
-The last user message supplies a research topic of at most 4,000 characters. The host returns a structured exploration proposal and three reviewer assessments. A request runs for at most two review rounds and three minutes. The host buffers the completed result into one response and does not persist conversation history or proposal state across requests.
+[ExplorationHostedAgent.cs](ExplorationHostedAgent.cs), `RunAsync`: thin shared-adapter wrapper. [ExplorationWorkflow.RunAsync](../Chapter21.ExplorationDiscovery/ExplorationWorkflow.cs): budgets, parallel reviewer panel, acceptance/revision. [RequestIsolationKeyProvider.GetKeysAsync](RequestIsolationKeyProvider.cs): response-ID isolation even without a user header.
 
-## Prerequisites and configuration
+## Request contract
 
-Follow the [shared hosted-agent setup](../../README.md#configure-and-deploy-hosted-agents) to install tooling, select an existing Foundry project and model deployment, configure `dotnet/azure.yaml`, and set up authentication.
+The latest nonempty user text supplies a research topic of at most **4,000 characters**. Fresh request state produces one text report containing a structured proposal, evidence needs, risks, and three independent reviewer assessments.
 
-For local execution, leave `Foundry:ApiKey` unset to use `DefaultAzureCredential` with your developer identity, or use the shared user-secrets setup. Azure execution uses managed identity and must not use an API key.
+- At most **two rounds / eight model calls total**: one explorer plus three reviewers in each round.
+- A linked **three-minute** cancellation budget covers the whole proposal/review operation.
+- Every reviewer must explicitly report its ethics flag, return Accept with an overall score ≥ 7, and have **no ethical concern** before code accepts.
+- Otherwise revise once; exhausted rounds return “needs human review,” not false acceptance.
+- Invalid proposals/reviews fail explicitly. Caller cancellation propagates; internal time-budget expiry becomes a timeout.
 
-## Run locally
+No browsing, experiments, or code execution is claimed. Output is an unverified proposal, not a literature review or experimental finding. Response-ID-scoped isolation and fresh agents prevent application history reuse. Responses streaming buffers one complete reviewed report.
 
-From the repository root:
+## Local commands
+
+Configure [shared model settings](../../README.md), then:
 
 ```powershell
-dotnet run --project .\dotnet\src\Chapter21.ExplorationDiscovery.Hosted
+dotnet run --project dotnet\src\Chapter21.ExplorationDiscovery.Hosted
 ```
 
-The local server listens on port 8088 by default; keep it private. In a second terminal, from `dotnet`:
+In another terminal, from `dotnet`:
 
 ```powershell
-azd ai agent invoke chapter21-exploration-discovery --local --protocol responses 'Explore whether adaptive batching can reduce inference cost without harming tail latency.'
+$env:AZURE_DEV_USER_AGENT = 'microsoft_foundry_skill'
+azd ai agent invoke chapter21-exploration-discovery --local --protocol responses "Explore whether batching reduces inference cost without harming tail latency."
 ```
 
-Stop the server with Ctrl+C when finished.
+## Deploy and operate
 
-## Deploy and invoke
-
-After completing the shared setup, run from `dotnet`:
+Complete [HOSTING.md](../../HOSTING.md): reader-owned project/model selection, managed identity/inference RBAC, bundled dependencies, sensitive trace handling, costs, and scoped cleanup. Local execution supports developer credentials or user-secrets; keep API keys out of hosted Azure configuration. After setup, from `dotnet`:
 
 ```powershell
 azd deploy chapter21-exploration-discovery --no-prompt
 azd ai agent show chapter21-exploration-discovery --output json
+# Verify runtime inference access before invoking.
+azd ai agent invoke chapter21-exploration-discovery --protocol responses "Explore adaptive batching and tail latency."
 ```
 
-Use the deployed agent's `instance_identity.principal_id` and the actual model-hosting Foundry account ARM ID to check effective inference permissions, including inherited role assignments. If **Cognitive Services OpenAI User** is missing, obtain authorization before assigning it to that runtime identity at the model-hosting account scope. Allow time for RBAC propagation and recheck access before invoking:
-
-```powershell
-azd ai agent invoke chapter21-exploration-discovery --protocol responses 'Explore whether adaptive batching can reduce inference cost without harming tail latency.'
-```
-
-The service uses bundled .NET 10 code deployment, publishing the host and its Chapter 21 and Shared project references together. It does not require Docker or a container registry. Re-resolve the runtime identity after redeployment because it can change.
-
-## Permissions, costs, and resource ownership
-
-The deploying identity needs permission to deploy hosted agents to the selected Foundry project. The hosted runtime separately needs **Cognitive Services OpenAI User** (or verified equivalent inference access) at the model-hosting account scope. Include a role assignment in deployment authorization if the runtime identity lacks that access; deployment permission alone does not authorize an RBAC change.
-
-Each request uses at most eight model calls across two review rounds and has a three-minute time budget. Model usage, hosting, and telemetry may incur Azure charges. To remove an experiment, delete only the Chapter 21 agent/version you own using Foundry's agent-scoped controls; do not run `azd down` against a shared project or delete shared models or project infrastructure.
-
-## Telemetry and sensitive data
-
-The workflow enables sensitive-data capture in its MAF telemetry. Caller topics, proposals, reviewer prompts, and responses may appear in exported traces. Use non-sensitive inputs and restrict telemetry access and retention.
-
-## Pattern tradeoffs
-
-The generated proposal and its reviewers can share model biases, and agreement is not proof of novelty, feasibility, or truth. Use independent evidence and qualified human review before acting on a proposal. The two-round and three-minute limits bound work but can leave unresolved reviewer concerns.
+Agreement among reviewers is not independent evidence. Keep human review for consequential research decisions. Hosting Deep Research would require an explicit durable-job, persistence, and polling design rather than removing its domain/tool/time safeguards.

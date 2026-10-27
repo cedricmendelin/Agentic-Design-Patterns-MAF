@@ -1,6 +1,6 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/DecisionModels/DecisionModels.csproj" />
+    <Project Path="src/Extension02.DecisionModels/Extension02.DecisionModels.csproj" />
     <Project Path="src/Chapter01.PromptChaining/Chapter01.PromptChaining.csproj" />
     <Project Path="src/Chapter02.Routing/Chapter02.Routing.csproj" />
     <Project Path="src/Chapter03.Parallelization/Chapter03.Parallelization.csproj" />
@@ -25,9 +25,10 @@
     <Project Path="src/Chapter19.Evaluation/Chapter19.Evaluation.csproj" />
     <Project Path="src/Chapter20.Prioritization/Chapter20.Prioritization.csproj" />
     <Project Path="src/Shared/Shared.csproj" />
+    <Project Path="src/Shared.Hosting/Shared.Hosting.csproj" />
   </Folder>
   <Folder Name="/src/Hosting/">
-    <Project Path="src/DecisionModels.Hosted/DecisionModels.Hosted.csproj" />
+    <Project Path="src/Extension02.DecisionModels.Hosted/Extension02.DecisionModels.Hosted.csproj" />
     <Project Path="src/Chapter02.Routing.Hosted/Chapter02.Routing.Hosted.csproj" />
     <Project Path="src/Chapter03.Parallelization.Hosted/Chapter03.Parallelization.Hosted.csproj" />
     <Project Path="src/Chapter04.Reflection.Hosted/Chapter04.Reflection.Hosted.csproj" />
@@ -52,7 +53,8 @@
     <Project Path="src/Chapter20.Prioritization.Hosted/Chapter20.Prioritization.Hosted.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/DecisionModels.Tests/DecisionModels.Tests.csproj" />
+    <Project Path="tests/PromptChaining.Tests/PromptChaining.Tests.csproj" />
+    <Project Path="tests/Extension02.DecisionModels.Tests/Extension02.DecisionModels.Tests.csproj" />
     <Project Path="tests/AgentHarness.Tests/AgentHarness.Tests.csproj" />
     <Project Path="tests/Evaluation.Tests/Evaluation.Tests.csproj" />
     <Project Path="tests/Foundry.SmokeTests/Foundry.SmokeTests.csproj" />
@@ -62,10 +64,11 @@
     <Project Path="tests/Reflection.Tests/Reflection.Tests.csproj" />
     <Project Path="tests/Routing.Tests/Routing.Tests.csproj" />
     <Project Path="tests/Shared.Tests/Shared.Tests.csproj" />
+    <Project Path="tests/TestSupport/TestSupport.csproj" />
     <Project Path="tests/ToolUse.Tests/ToolUse.Tests.csproj" />
     <Project Path="tests/LearningAdaptation.Tests/LearningAdaptation.Tests.csproj" />
     <Project Path="tests/MCP.Tests/MCP.Tests.csproj" />
-    <Project Path="tests/Chapter21.Tests/Chapter21.Tests.csproj" />
+    <Project Path="tests/ExplorationDiscovery.Tests/ExplorationDiscovery.Tests.csproj" />
     <Project Path="tests/HumanInTheLoop.Tests/HumanInTheLoop.Tests.csproj" />
     <Project Path="tests/Reasoning.Tests/Reasoning.Tests.csproj" />
     <Project Path="tests/GoalSettingMonitoring.Tests/GoalSettingMonitoring.Tests.csproj" />
