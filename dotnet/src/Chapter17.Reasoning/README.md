@@ -113,7 +113,7 @@ The console uses fixed sample tasks from the notebooks and prints intermediate s
 - Suitability: each request is an ordinary, bounded request/response operation with no interactive approval, long-running task, local-only dependency, or durable memory.
 - Project and deployment guide: [Chapter 17 hosted companion](../Chapter17.Reasoning.Hosted/README.md).
 - Authentication: console MAF variants use API-key user-secrets or `Foundry__*`; the hosted process uses developer Entra ID locally and managed identity in Azure.
-- Packaging: `azure.yaml` uses bundled .NET 10 publishing for the hosted project and its Chapter 17 and Shared references. `.agentignore` excludes environment files, `.azure`, secrets, and build artifacts.
+- Packaging: the hosted project's own `azure.yaml` uses bundled .NET 10 publishing for the hosted project and its Chapter 17 and Shared references. `.agentignore` excludes environment files, `.azure`, secrets, and build artifacts.
 - Request contract: a single caller-supplied prompt, optionally prefixed with a reasoning mode; fresh state per request and one final text response.
 - Deployment: follow the hosted guide with a reader-owned Foundry project and model. Grant Cognitive Services OpenAI User to the deployed runtime `instance_identity.principal_id` at the model-hosting account scope when effective inference access is absent, and allow time for role propagation before invoking.
 

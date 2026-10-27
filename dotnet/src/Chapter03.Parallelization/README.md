@@ -93,7 +93,7 @@ flowchart LR
 - Suitability: the workflow is a bounded request/response operation with no persistent memory, user approval, or local-only dependency. Each request creates an isolated workflow and waits for the completed result.
 - Project and deployment guide: [Chapter 03 hosted companion](../Chapter03.Parallelization.Hosted/README.md).
 - Authentication: console model calls use shared API-key user-secrets or `Foundry__*`; hosted Azure execution uses `DefaultAzureCredential` / managed identity when the API key is blank. The deployment identity needs Foundry agent deployment permissions, and the runtime identity needs model inference permission.
-- Packaging: `azure.yaml` uses .NET 10 bundled deployment, which publishes the host and referenced Chapter 03 and Shared projects locally. The host `.agentignore` excludes `.azure`, environment files, secrets, and build output.
+- Packaging: the hosted project's own `azure.yaml` uses .NET 10 bundled deployment, which publishes the host and referenced Chapter 03 and Shared projects locally. The host `.agentignore` excludes `.azure`, environment files, secrets, and build output.
 - Request contract: each request runs three parallel model calls plus one synthesis call, returns a completed response, and does not preserve conversation history.
 
 ## Risks & Limitations

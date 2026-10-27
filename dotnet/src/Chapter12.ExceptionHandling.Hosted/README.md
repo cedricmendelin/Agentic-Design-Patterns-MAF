@@ -1,59 +1,94 @@
-# Chapter 12 - Hosted Exception Handling and Recovery
+# Chapter 12 — Hosted Exception Handling and Recovery
 
-Expose the [Chapter 12 recovery workflow](../Chapter12.ExceptionHandling/README.md) through Microsoft Foundry Agent Service's **Responses protocol**. MAF controls bounded retries, request-local checkpoints, fallback selection, and response generation.
+Expose the [Chapter 12 MAF recovery workflow](../Chapter12.ExceptionHandling/README.md) through Microsoft Foundry Agent Service's **Responses protocol**. MAF controls bounded precise-lookup retries, request-local checkpoints, fallback selection, and the final response. This folder is self-contained for deployment: its own [`azure.yaml`](azure.yaml) defines the `chapter12-exception-handling` service.
 
-## Request and response
+## What it does
 
-Submit a location address as the user message. The host uses fresh workflow state for each request and persists no conversation history. It buffers the completed workflow and returns one final response; provider errors and cancellation propagate as request failures.
+Send a sample location address as plain text. The sample index recognizes `1600 Amphitheatre Parkway, Mountain View, CA` and `1 Market Street, San Francisco, CA`. Prefix an address with `transient:` to simulate one transient precise-lookup failure and retry, or with `primary-unavailable:` to simulate an unavailable precise provider and then use the general-area fallback. These prefixes are sample simulation controls, not production flags or a live geocoding service.
 
-The sample index supports `1600 Amphitheatre Parkway, Mountain View, CA` and `1 Market Street, San Francisco, CA`. Prefix an address with `transient:` to simulate one transient precise-lookup failure and retry, or `primary-unavailable:` to retry the unavailable precise provider and then exercise the city-level fallback. These are simulation controls, not production request flags or a live geocoding service.
+Each request starts with fresh workflow state and no persisted conversation history. The precise lookup gets at most two attempts. A successful lookup is described by the primary handler; after retry exhaustion the workflow uses a city-level record when available, then generates one final response. Unknown precise locations also follow the bounded failure/fallback path; an unsupported city has no sample general-area record. The host buffers the completed result, and provider errors and cancellation propagate as request failures.
 
-## Prerequisites and configuration
+## Try it: example prompts
 
-Follow the [shared hosted-agent setup](../../README.md#configure-and-deploy-hosted-agents) to install tooling, select your Foundry project and model, configure `azure.yaml`, and set up authentication and permissions.
-
-The host reads shared `Foundry` user-secrets and `Foundry__*` environment overrides. A blank or absent API key selects `DefaultAzureCredential`: your developer identity locally and managed identity in Azure. Keep API keys out of hosted configuration.
+| Prompt | What happens | Expected result |
+|---|---|---|
+| `1600 Amphitheatre Parkway, Mountain View, CA` | Precise lookup succeeds on the first attempt. | A concise response describes the supplied precise-location record and indicates that precise lookup succeeded. |
+| `transient: 1600 Amphitheatre Parkway, Mountain View, CA` | The first precise attempt simulates a transient failure; the second succeeds. | A response based on the precise record after retry; no general-area fallback is needed. |
+| `primary-unavailable: 1 Market Street, San Francisco, CA` | Both precise attempts simulate provider unavailability, then the San Francisco area record is used. | The final answer states that precise lookup was unavailable and describes the supplied general area. |
+| `primary-unavailable: 9 Example Road, Example City, CA` | The precise lookup is unavailable and no matching general-area sample exists. | The fallback reports that no sample area record is available rather than inventing location facts. |
 
 ## Run locally
+
+Prerequisites: .NET 10 SDK, azd with the `azure.ai.agents` extension, and local Entra ID access or shared Foundry user-secrets; see [Configure Foundry user-secrets](../../README.md#configure-foundry-user-secrets).
 
 From the repository root:
 
 ```powershell
-dotnet run --project .\dotnet\src\Chapter12.ExceptionHandling.Hosted
+Set-Location .\dotnet\src\Chapter12.ExceptionHandling.Hosted
+azd ai agent run chapter12-exception-handling
+# or, without azd:
+dotnet run
 ```
 
-The local server listens on port 8088 by default; keep it private. In another terminal, from `dotnet`:
+The local server listens on port 8088 by default; keep it private. In a second terminal, from the same folder:
 
 ```powershell
 azd ai agent invoke chapter12-exception-handling --local --protocol responses '1600 Amphitheatre Parkway, Mountain View, CA'
+azd ai agent invoke chapter12-exception-handling --local --protocol responses 'transient: 1600 Amphitheatre Parkway, Mountain View, CA'
 azd ai agent invoke chapter12-exception-handling --local --protocol responses 'primary-unavailable: 1 Market Street, San Francisco, CA'
 ```
 
-Stop the server with Ctrl+C when finished.
+The host reads shared `Foundry` user-secrets and `Foundry__*` environment overrides. A blank or absent API key selects the signed-in developer identity locally. Stop the server with Ctrl+C.
 
-## Deploy and invoke
+## Deploy to Foundry
 
-After completing shared hosted setup, run from `dotnet`:
+All commands run from this project folder. See the [shared hosted-agent guide](../../README.md#configure-and-deploy-hosted-agents) and [project/model manifest guidance](../../README.md#point-the-manifest-at-your-project-and-model) for setup details.
 
-```powershell
-azd deploy chapter12-exception-handling --no-prompt
-azd ai agent show chapter12-exception-handling --output json
-```
+1. **Sign in and create an azd environment** (stored in this folder's `.azure`):
 
-Use the returned `instance_identity.principal_id` to verify model-inference access at the actual model-hosting Foundry account scope. If the runtime identity lacks equivalent access, an authorized administrator must assign **Cognitive Services OpenAI User** there. Allow time for role-assignment propagation and recheck the runtime identity after redeployment before invoking:
+   ```powershell
+   Set-Location .\dotnet\src\Chapter12.ExceptionHandling.Hosted
+   az login --tenant '<tenant-id>'
+   azd auth login --tenant-id '<tenant-id>'
+   azd env new '<environment>' --subscription '<subscription-id>' --location '<project-region>' --no-prompt
+   azd env set AZURE_TENANT_ID '<tenant-id>'
+   azd env set AZURE_AI_PROJECT_ID '<project-arm-id>'
+   azd env set AZURE_AI_PROJECT_ENDPOINT 'https://<account>.services.ai.azure.com/api/projects/<project>'
+   azd env set AZURE_AI_MODEL_DEPLOYMENT_NAME '<model-deployment>'
+   ```
 
-```powershell
-azd ai agent invoke chapter12-exception-handling --protocol responses 'transient: 1600 Amphitheatre Parkway, Mountain View, CA'
-```
+2. **Edit [`azure.yaml`](azure.yaml).** Replace the sample project key `mvp-playground-foundry-proj` and endpoint with your Foundry project, and update both the `uses` reference and project-service key. Replace `gpt-5-mini` with `${AZURE_AI_MODEL_DEPLOYMENT_NAME}` so the deployment is supplied by your azd environment.
 
-The service uses bundled .NET 10 code deployment, publishing this host and its referenced Chapter 12 and Shared projects together. No Docker image or container registry is required. Keep `.azure`, environment files, user-secrets, and build output out of published content.
+3. **Deploy:**
 
-Deploying and invoking hosted agents and model inference incur Azure charges. Remove only agents and other resources that you own; do not remove shared project infrastructure or unrelated agents.
+   ```powershell
+   azd deploy chapter12-exception-handling --no-prompt
+   ```
+
+4. **Grant runtime model access.** Run `azd ai agent show chapter12-exception-handling --output json` and read `instance_identity.principal_id`. Check effective role assignments, including inherited grants; if inference access is missing and authorized, assign **Cognitive Services OpenAI User** to that runtime identity at the actual model-hosting Foundry account scope:
+
+   ```powershell
+   az role assignment create --assignee-object-id '<runtime-principal-id>' --assignee-principal-type ServicePrincipal --role 'Cognitive Services OpenAI User' --scope '<model-hosting-account-arm-id>'
+   ```
+
+   Allow time for RBAC propagation and recheck the identity after redeployment.
+
+5. **Invoke:**
+
+   ```powershell
+   azd ai agent invoke chapter12-exception-handling --protocol responses 'transient: 1600 Amphitheatre Parkway, Mountain View, CA'
+   ```
+
+Bundled .NET 10 deployment publishes the host together with its referenced Chapter 12 and Shared projects; no Docker image or container registry is required.
 
 ## Telemetry and sensitive data
 
-Agent spans use `Chapter12.ExceptionHandling`. **Sensitive-data capture is enabled for this demo:** prompts, sample addresses, intermediate results, and responses may appear in traces when an exporter is configured. Use non-sensitive inputs, restrict telemetry access and retention, and disable sensitive capture before handling confidential addresses.
+Agent spans use the `Chapter12.ExceptionHandling` activity source and cover primary lookup, recovery decisions, fallback, and final response. **Sensitive-data capture is enabled:** prompts, sample addresses, intermediate results, and responses may appear in exported traces. Use non-sensitive inputs, restrict trace access and retention, and disable sensitive capture before handling confidential addresses. For local traces, follow [View local traces with Aspire Dashboard](../../README.md#view-local-traces-with-aspire-dashboard) with `<service>` set to `chapter12-exception-handling`.
+
+## Costs and cleanup
+
+A failed precise lookup can make two lookup attempts before fallback; the primary, fallback, and final-response handlers may also call the model. Hosting and inference incur Azure charges. Remove only the `chapter12-exception-handling` agent and versions you own through Foundry's agent-scoped management controls. Do not run `azd down` against a shared project.
 
 ## Pattern tradeoffs
 
-Retries are limited to a side-effect-free lookup activity and a fixed attempt budget. Real operations need explicit transient-error classification, timeouts, idempotency controls, and observability. Area fallback is less precise than an exact lookup and must be labeled as such. Checkpoints in this example are request-local; restart recovery requires a durable store or workflow service.
+Retries are bounded and appropriate here because the simulated lookup has no side effects. Real operations need explicit transient-error classification, timeouts, and idempotency controls. A general-area fallback is less precise than an exact lookup and should be labeled; the sample checkpoints are request-local, so durable restart recovery requires a persistent workflow store.

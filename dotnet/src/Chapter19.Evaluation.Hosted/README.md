@@ -1,36 +1,51 @@
 # Chapter 19 - Hosted Legal Survey Judge
 
-This companion exposes [Chapter 19's shared MAF judge](../Chapter19.Evaluation/README.md) using the official Foundry **Responses protocol** host. It follows the [official .NET hello-world hosting sample](https://github.com/microsoft-foundry/foundry-samples/tree/main/samples/csharp/hosted-agents/agent-framework/hello-world), while keeping the console demos and their API-key configuration separate.
+Expose the [Chapter 19 legal survey judge](../Chapter19.Evaluation/README.md) through Microsoft Foundry Agent Service's **Responses protocol**. This folder is self-contained for deployment: its own [`azure.yaml`](azure.yaml) defines the `chapter19-evaluation` service.
 
-## Request contract
+## What it does
 
-POST a legal survey question as `input` to `/responses`. The final assistant output is JSON containing `overall_score` (integer 1-5), `rationale`, `detailed_feedback` (at least five named-criterion feedback strings), `concerns` (an array), and `recommended_action`.
+Submit one legal survey question as plain-text input. The agent evaluates the latest user message with the shared MAF `LegalSurveyJudge` and returns a JSON judgment containing `overall_score` (1-5), `rationale`, `detailed_feedback`, `concerns`, and `recommended_action`. Feedback must name and address clarity and precision, neutrality and bias, relevance and focus, completeness, and appropriateness for the audience; code validates the structured result.
 
-Each call judges only the **latest user message** with a fresh MAF judge call. No conversation history, prior judgments, notebook batches, cloud evaluation jobs, or caller-supplied system instructions are passed into the judge. Responses infrastructure can retain protocol history, but that history does not influence grading; use `store: false` for independent calls. There is no durable application-level memory.
+Each call is independent and uses a fresh judge call. Earlier messages, prior judgments, notebook batches, cloud evaluation jobs, and caller-supplied system instructions do not affect the evaluation. Protocol history may be retained by the platform, but it does not influence grading; use `store: false` for independent calls. There is no durable application-level memory. `stream: false` returns the completed judgment; SSE buffers it and emits one assistant update so partial JSON is not exposed. Errors, cancellation, and invalid output propagate rather than becoming success-shaped fallbacks.
 
-`stream: false` returns the completed judgment. SSE requests buffer the judgment and then emit one assistant update, preserving complete JSON rather than streaming partial fields. Model errors, cancellation, and invalid output propagate instead of producing a success-shaped fallback.
+This judge reviews survey methodology. It does not certify legal accuracy, approve a survey for use, or implement Foundry's custom endpoint-evaluator payload schema.
 
-This endpoint reviews survey methodology; it does not certify legal accuracy, approve a survey for use, or implement Foundry's custom endpoint-evaluator payload schema.
+## Try it: example prompts
 
-## Local setup and invocation
+| Prompt | What happens | Expected result |
+|---|---|---|
+| `To what extent do you agree or disagree that current intellectual property laws in Switzerland adequately protect emerging AI-generated content? (Strongly Disagree, Disagree, Neutral, Agree, Strongly Agree)` | Runs the five-criterion judge on a survey question. | JSON judgment with a 1-5 score, concise rationale, actionable feedback naming all five criteria, concerns array, and recommended action. No exact score is guaranteed. |
+| `Don't you agree that overly restrictive data privacy laws are hindering essential technological innovation and economic growth? (Yes, No)` | Assesses leading language, loaded terms, and whether the question combines assumptions. | The judgment may identify neutrality/bias and clarity issues; the model's score and wording are not fixed. |
+| `What are your thoughts on legal tech?` | Assesses a deliberately vague question. | Structured feedback can identify undefined scope or audience and suggest making the question more focused. |
+| `Does the Federal Supreme Court's recent ruling prove that every AI-generated work is protected by Swiss copyright law?` | Evaluates wording and is instructed to flag uncertain legal premises, not verify legal doctrine. | A structured methodology review may flag the asserted premise and need for context; it is not legal advice or a legal fact-check. |
 
-Prerequisites: .NET 10, a Foundry project, a structured-output-capable chat deployment, and a developer identity with model-inference access. Sign in manually using `az login --tenant '<tenant-id>'`.
+## Run locally
+
+Prerequisites: .NET 10 SDK, Azure CLI, azd with the `azure.ai.agents` extension, a structured-output-capable Foundry chat deployment, and developer identity access to model inference. The hosted judge always uses Entra ID and never uses the console API key. For local setup context, see [Foundry user-secrets](../../README.md#configure-foundry-user-secrets).
 
 From the repository root:
 
 ```powershell
+Set-Location .\dotnet\src\Chapter19.Evaluation.Hosted
 $env:FOUNDRY_PROJECT_ENDPOINT = 'https://<account>.services.ai.azure.com/api/projects/<project>'
-$env:AZURE_AI_MODEL_DEPLOYMENT_NAME = '<model-deployment>'
+$env:AZURE_AI_MODEL_DEPLOYMENT_NAME = '<chat-model-deployment>'
 $env:AZURE_TENANT_ID = '<tenant-id>'
-dotnet run --project dotnet\src\Chapter19.Evaluation.Hosted
+azd ai agent run chapter19-evaluation
+# Or, without azd:
+dotnet run
 ```
 
-The host always uses `DefaultAzureCredential`: developer credentials locally and managed identity in Azure. It never uses the shared console API key. Shared user-secrets `Foundry:ProjectEndpoint` and `Foundry:ModelDeployment` are local fallbacks; the runtime variables above take precedence.
-
-In another PowerShell terminal:
+`Foundry:ProjectEndpoint` and `Foundry:ModelDeployment` in shared user-secrets are local fallbacks; the environment variables above take precedence. Keep the host private while it listens on port 8088 by default. In a second terminal, from the same folder:
 
 ```powershell
-Invoke-RestMethod 'http://localhost:8088/readiness'
+azd ai agent invoke chapter19-evaluation --local --protocol responses 'What are your thoughts on legal tech?'
+azd ai agent invoke chapter19-evaluation --local --protocol responses 'To what extent do you agree that current intellectual property laws adequately protect emerging AI-generated content?'
+azd ai agent invoke chapter19-evaluation --local --protocol responses 'Does this question make an uncertain legal premise?'
+```
+
+For a direct local request, preserving the Responses options explicitly:
+
+```powershell
 $body = @{
     input = 'How clear are the data-retention requirements in the privacy notice you received? (Very unclear, Unclear, Neither, Clear, Very clear)'
     stream = $false
@@ -40,64 +55,61 @@ $response = Invoke-RestMethod 'http://localhost:8088/responses' -Method Post -Co
 $response.output.content.text
 ```
 
-The official host configures its listening port (8088 by default); `PORT` can override it.
+Stop the server with Ctrl+C.
 
-## Tracing and data handling
+## Deploy to Foundry
 
-The client enables sensitive OpenTelemetry data for the `Chapter19.Evaluation` source so debugging can inspect the rubric, question, and judgment. Foundry injects `APPLICATIONINSIGHTS_CONNECTION_STRING` when telemetry is configured; set your own connection string for local export if needed. Treat exported content as sensitive: use synthetic questions, restrict access and retention, and disable `EnableSensitiveData` in `Program.cs` before sending confidential surveys without an approved logging policy. `store: false` is not a telemetry-redaction switch.
+See the [shared hosted-agent guide](../../README.md#configure-and-deploy-hosted-agents) for prerequisites and background. All commands below run from this project folder.
 
-## Packaging
+1. **Sign in and create this folder's azd environment:**
 
-The existing multi-service [`dotnet/azure.yaml`](../../azure.yaml) includes `chapter19-evaluation` with `.NET 10` code deployment and `dependencyResolution: bundled`. azd publishes the source project and bundles the resulting runtime dependencies, including the chapter and Shared assemblies. Do not upload only the host source folder: sibling project references and central build/package settings are needed during local publish.
+   ```powershell
+   Set-Location .\dotnet\src\Chapter19.Evaluation.Hosted
+   az login --tenant '<tenant-id>'
+   azd auth login --tenant-id '<tenant-id>'
+   azd env new '<environment>' --subscription '<subscription-id>' --location '<project-region>' --no-prompt
+   azd env set AZURE_TENANT_ID '<tenant-id>'
+   azd env set AZURE_AI_PROJECT_ID '<project-arm-id>'
+   azd env set AZURE_AI_PROJECT_ENDPOINT 'https://<account>.services.ai.azure.com/api/projects/<project>'
+   azd env set AZURE_AI_MODEL_DEPLOYMENT_NAME '<chat-model-deployment>'
+   ```
 
-To inspect a package without deploying:
+2. **Point [`azure.yaml`](azure.yaml) at your project and model.** Replace the sample `mvp-playground-foundry-proj` project key, its endpoint, and the service's `uses` reference with your Foundry project. The manifest maps `AZURE_AI_MODEL_DEPLOYMENT_NAME` into the service; set it to the compatible chat-model deployment as above.
 
-```powershell
-dotnet publish dotnet\src\Chapter19.Evaluation.Hosted -c Release -o dotnet\publish\chapter19-evaluation
-Get-ChildItem dotnet\publish\chapter19-evaluation
-```
+3. **Deploy only this service:**
 
-Keep `.azure`, environment files, user-secrets, and source build directories out of source uploads. The repository ignores those paths, and bundled deployment uploads published output rather than local secrets or azd state.
+   ```powershell
+   azd deploy chapter19-evaluation --no-prompt
+   ```
 
-## Deploy and invoke
+4. **Verify runtime model access.** Run `azd ai agent show chapter19-evaluation --output json` and read the current `instance_identity.principal_id`. Check effective role assignments, including inherited grants, on the actual model-hosting Foundry account. If inference access is missing and the RBAC change is authorized, assign **Cognitive Services OpenAI User** (`5e0bd9bd-7b93-4f28-af87-19fc36ad61bd`) to that runtime principal at the account scope:
 
-Use the [shared hosted setup](../../README.md#configure-and-deploy-hosted-agents) for Azure CLI/azd sign-in, extension installation, project selection, deployment permissions, and configuration. Choose **your own** project reference in the existing manifest without replacing unrelated services. Set `AZURE_AI_MODEL_DEPLOYMENT_NAME` in the selected azd environment; this service's manifest uses that variable rather than a literal model name.
+   ```powershell
+   az role assignment create --assignee-object-id '<runtime-principal-id>' --assignee-principal-type ServicePrincipal --role '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd' --scope '<model-hosting-account-arm-id>'
+   ```
 
-From `dotnet`:
+   Allow time for RBAC propagation and recheck after redeployments, which can change the runtime identity.
 
-```powershell
-azd env select '<environment>'
-azd env set AZURE_AI_MODEL_DEPLOYMENT_NAME '<model-deployment>'
-azd deploy chapter19-evaluation --no-prompt
-azd ai agent show chapter19-evaluation --output json
-```
+5. **Invoke the deployed agent after access is effective:**
 
-Deploy only `chapter19-evaluation`. These instructions target an existing project and deployment; they do not provision a model or a new Foundry account. Creating the source and manifest is not permission to deploy them.
+   ```powershell
+   azd ai agent invoke chapter19-evaluation 'What are your thoughts on legal tech?' --new-session
+   ```
 
-### Required runtime inference access
+Bundled .NET 10 code deployment publishes this host with the referenced Chapter 19 and Shared projects; no container registry is required.
 
-Deployment permission is separate from runtime inference permission. Resolve the current hosted version's **`instance_identity.principal_id`** with `azd ai agent show`, and discover the ARM ID of the account actually hosting the model. Check inherited role assignments before making changes. If missing and RBAC writes are approved, grant **Cognitive Services OpenAI User** (`5e0bd9bd-7b93-4f28-af87-19fc36ad61bd`) to that runtime principal at the model-hosting **account** scope:
+## Adapting evaluation examples
 
-```powershell
-az role assignment list --subscription '<subscription-id>' --scope '<model-hosting-account-arm-id>' --include-inherited --fill-principal-name false --query "[?principalId=='<runtime-principal-id>']" --output json
-# Only with explicit RBAC-write authorization and when equivalent inference access is absent:
-az role assignment create --subscription '<subscription-id>' --assignee-object-id '<runtime-principal-id>' --assignee-principal-type ServicePrincipal --role '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd' --scope '<model-hosting-account-arm-id>'
-```
+The hosted service runs only the shared legal survey judge on caller input. It does not replay the console's three-question sample batch, run a Foundry cloud evaluation, or automatically create evaluation resources. A hosted Responses request is not Foundry's custom endpoint-evaluator HTTP contract. The rubric is a methodology aid, and a score is not evidence of legal correctness.
 
-Do not substitute the deploying user, project identity, or agent blueprint. Allow RBAC propagation and re-resolve the principal after redeployment. An active version alone is not proof that the model call works.
+## Telemetry and sensitive data
 
-Once access is effective:
+The `Chapter19.Evaluation` activity source records judge/model work. Sensitive OpenTelemetry capture is enabled for this demo, so survey questions, rubric context, and judgments may appear in traces. **Use synthetic questions and restrict telemetry access and retention; disable sensitive capture before handling confidential surveys without an approved logging policy.** `store: false` does not redact telemetry. To view spans locally, follow [View local traces with Aspire Dashboard](../../README.md#view-local-traces-with-aspire-dashboard) with `<service>` set to `chapter19-evaluation`.
 
-```powershell
-azd ai agent invoke chapter19-evaluation 'What are your thoughts on legal tech?' --new-session
-```
+## Costs and cleanup
 
-Inspect the actual structured judgment. Consult `azd ai agent invoke --help` for the installed extension's session/stream options. Run hosted evaluation suites separately and deliberately; this endpoint does not start a batch eval or optimize prompts as a side effect.
+Each request makes a structured model call; hosted compute and enabled telemetry may also incur charges. Use Foundry's agent-scoped controls to remove only the `chapter19-evaluation` agent and versions you own. Never run `azd down` against a shared project.
 
-## Costs
+## Pattern tradeoffs
 
-Each request makes one structured-output model call. Model tokens, hosted compute, and any enabled telemetry/storage are billable. The separate console Foundry evaluation command incurs its own evaluation/model costs. Keep request volume and telemetry retention bounded; these examples do not supply a pricing estimate.
-
-## Cleanup
-
-Use `azd ai agent delete --help` for your installed extension and target only the `chapter19-evaluation` agent and versions you own. Inspect the selected environment and target before confirming deletion. Do not run broad `azd down` or delete a shared Foundry project, model, account, or another chapter's agent.
+An explicit rubric makes subjective feedback easier to inspect, but an LLM judge can still be biased, inconsistent, or wrong. Validate the rubric against representative questions and human reviewers; treat the score as review evidence, not legal approval or a release gate.
