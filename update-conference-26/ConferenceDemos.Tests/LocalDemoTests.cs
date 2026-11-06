@@ -39,12 +39,11 @@ public sealed class LocalDemoTests
         Assert.Throws<InvalidOperationException>(() => ScheduleCorpus.Parse("not a schedule"));
     }
 
-    [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    public async Task Schedule_provider_injects_complete_markdown_before_one_plain_text_model_call(int day)
+    [Fact]
+    public async Task Schedule_provider_selects_day_from_question_before_one_plain_text_model_call()
     {
         var calls = 0;
+        const string question = "What should I attend on day 2 if I'm interested in AI and .NET?";
         const string expected = "A normal grounded answer without a JSON contract.";
         using var client = new ScriptedChatClient((messages, options) =>
         {
@@ -52,13 +51,11 @@ public sealed class LocalDemoTests
             var request = messages.ToArray();
             AssertScheduleContext(request, options);
             Assert.Contains(request, message => message.Role == ChatRole.User &&
-                message.Text.Contains(ScheduleDemo.DefaultQuestion, StringComparison.Ordinal) &&
-                message.Text.Contains($"Conference day: {day}", StringComparison.Ordinal));
-            Assert.Contains($"Use conference day {day}", options?.Instructions);
+                message.Text.Contains(question, StringComparison.Ordinal));
             return new(new ChatMessage(ChatRole.Assistant, expected));
         });
 
-        var answer = await ScheduleDemo.RunAsync(client, ScheduleDemo.DefaultQuestion, day);
+        var answer = await ScheduleDemo.RunAsync(client, question);
 
         Assert.Equal(1, calls);
         Assert.Equal(expected, answer);
@@ -93,8 +90,6 @@ public sealed class LocalDemoTests
             ScheduleDemo.RunAsync(client, "unicorn", cancellationToken: new CancellationToken(true)));
         await Assert.ThrowsAsync<ArgumentException>(() => ScheduleDemo.RunAsync(client, new string('x', 4001)));
         await Assert.ThrowsAsync<ArgumentException>(() => ScheduleDemo.RunAsync(client, " "));
-        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => ScheduleDemo.RunAsync(client, "AI", 0));
-        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => ScheduleDemo.RunAsync(client, "AI", 3));
     }
 
     [Theory]
@@ -126,57 +121,6 @@ public sealed class LocalDemoTests
         });
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
             ScheduleDemo.RunAsync(client, "Foundry", cancellationToken: cancellation.Token));
-    }
-
-    [Fact]
-    public async Task Shopping_workflow_returns_missing_items_and_goal_status()
-    {
-        using var client = new ScriptedChatClient((_, _) => Json(new MealChoice("chickpea-salad")));
-        var result = await ShoppingDemo.RunAsync(client, ShoppingDemo.Sample("vegan"));
-        Assert.True(result.Passed);
-        Assert.Equal(["tomato", "cucumber"], result.Missing);
-        Assert.DoesNotContain("olive oil", result.Missing);
-        Assert.Contains("PASS", result.Status);
-    }
-
-    [Fact]
-    public async Task Shopping_no_match_and_incomplete_pantry_do_not_return_a_completed_list()
-    {
-        var calls = 0;
-        using var client = new ScriptedChatClient((_, _) =>
-        {
-            calls++;
-            return Json(new MealChoice("chickpea-salad"));
-        });
-        var unmatched = await ShoppingDemo.RunAsync(client, ShoppingDemo.Sample("keto"));
-        Assert.False(unmatched.Passed);
-        Assert.Equal(0, calls);
-        var sample = ShoppingDemo.Sample("vegan");
-        var incomplete = sample with { Pantry = sample.Pantry.Where(p => p.Key != "tomato").ToDictionary() };
-        var result = await ShoppingDemo.RunAsync(client, incomplete);
-        Assert.False(result.Passed);
-        Assert.Empty(result.Missing);
-        Assert.Contains("incomplete", result.Status);
-        var unknown = sample with { Pantry = sample.Pantry.ToDictionary(p => p.Key, p => p.Key == "tomato" ? null : p.Value) };
-        Assert.False((await ShoppingDemo.RunAsync(client, unknown)).Passed);
-    }
-
-    [Fact]
-    public void Shopping_goal_gate_rejects_extra_missing_duplicate_and_wrong_preference_items()
-    {
-        var request = ShoppingDemo.Sample("vegan");
-        var recipe = ShoppingDemo.Recipes[0];
-        Assert.False(ShoppingDemo.Validate(request, recipe, ["tomato"]).Passed);
-        Assert.False(ShoppingDemo.Validate(request, recipe, ["tomato", "cucumber", "olive oil"]).Passed);
-        Assert.False(ShoppingDemo.Validate(request, recipe, ["tomato", "cucumber", "tomato"]).Passed);
-        Assert.False(ShoppingDemo.Validate(request, ShoppingDemo.Recipes[1], ["cheese", "tomato"]).Passed);
-    }
-
-    [Fact]
-    public async Task Shopping_model_failure_propagates()
-    {
-        using var client = new ScriptedChatClient((_, _) => throw new HttpRequestException("Inference failed."));
-        await Assert.ThrowsAsync<InvalidOperationException>(() => ShoppingDemo.RunAsync(client, ShoppingDemo.Sample()));
     }
 
     [Fact]
@@ -214,8 +158,7 @@ public sealed class LocalDemoTests
         onCall?.Invoke();
         var request = messages.ToArray();
         AssertScheduleContext(request, options);
-        var question = Assert.Single(request, message => message.Role == ChatRole.User &&
-            message.Text.StartsWith("Conference day:", StringComparison.Ordinal)).Text;
+        var question = Assert.Single(request, message => message.Role == ChatRole.User).Text;
         if (question.Contains("unicorn astrophysics", StringComparison.Ordinal))
         {
             Assert.DoesNotContain(ScheduleDemo.DefaultQuestion, question);
@@ -230,9 +173,7 @@ public sealed class LocalDemoTests
 
     private static void AssertScheduleContext(IReadOnlyList<ChatMessage> messages, ChatOptions? options)
     {
-        Assert.Contains(messages, message =>
-            message.Text.Contains(ScheduleCorpus.LoadMarkdown(), StringComparison.Ordinal));
-        Assert.Empty(options?.Tools ?? []);
+        Assert.Contains(options?.Tools ?? [], tool => tool.Name == "SearchConferenceSchedule");
         Assert.Null(options?.ResponseFormat);
         Assert.DoesNotContain(messages.SelectMany(message => message.Contents),
             content => content is FunctionCallContent or FunctionResultContent);

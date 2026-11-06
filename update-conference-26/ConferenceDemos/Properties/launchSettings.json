@@ -1,56 +1,44 @@
 {
   "profiles": {
-    "Schedule - plain": {
+    "1. Prague weather": {
       "commandName": "Project",
-      "commandLineArgs": "plain"
+      "commandLineArgs": "agent"
     },
-    "Schedule - RAG day 1": {
+    "2. Simple MAF workflow": {
+      "commandName": "Project",
+      "commandLineArgs": "workflow Alex"
+    },
+    "3. Schedule RAG (TextSearchProvider)": {
       "commandName": "Project",
       "commandLineArgs": "rag"
     },
-    "Schedule - RAG day 2": {
+    "4. Planning and goal monitoring": {
       "commandName": "Project",
-      "commandLineArgs": "rag --day 2 \"AI and .NET\""
+      "commandLineArgs": "plan"
     },
-    "Schedule - no match": {
-      "commandName": "Project",
-      "commandLineArgs": "rag \"unicorn astrophysics\""
-    },
-    "Shopping - vegetarian": {
-      "commandName": "Project",
-      "commandLineArgs": "shopping vegetarian"
-    },
-    "Shopping - vegan": {
-      "commandName": "Project",
-      "commandLineArgs": "shopping vegan"
-    },
-    "Shopping - unsupported preference": {
-      "commandName": "Project",
-      "commandLineArgs": "shopping keto"
-    },
-    "Shopping - incomplete pantry": {
-      "commandName": "Project",
-      "commandLineArgs": "shopping vegetarian --incomplete"
-    },
-    "Decisions - compare": {
+    "5.1 Decision Model - compare sample": {
       "commandName": "Project",
       "commandLineArgs": "decisions"
     },
-    "Decisions - compare recorded OpenAI": {
+    "5.2 Decision Model - compare recorded OpenAI": {
       "commandName": "Project",
       "commandLineArgs": "decisions captures\\openai-decisions.json"
     },
-    "Decisions - record OpenAI": {
+    "5.3 Decision Model - record OpenAI": {
       "commandName": "Project",
       "commandLineArgs": "decisions-record-openai captures\\openai-decisions.json"
     },
-    "Speaker - research": {
+    "6. Harness": {
       "commandName": "Project",
-      "commandLineArgs": "research"
+      "commandLineArgs": "speaker-page --open"
     },
-    "Check data": {
+    "6.1 Harness + web search": {
       "commandName": "Project",
-      "commandLineArgs": "check-data"
+      "commandLineArgs": "speaker-page --web --open"
+    },
+    "Planning - one round (escalation path)": {
+      "commandName": "Project",
+      "commandLineArgs": "plan --rounds 1"
     }
   }
 }
