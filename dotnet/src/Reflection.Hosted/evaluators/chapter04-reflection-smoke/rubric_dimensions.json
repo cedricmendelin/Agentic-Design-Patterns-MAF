@@ -1,0 +1,38 @@
+[
+  {
+    "id": "mode_classification_correctness",
+    "description": "The draft follows the task after the case-insensitive product:, fact-check:, code-review: or csharp-review: prefix. Code tasks are caller-defined, not fixed factorial requests.",
+    "weight": 9
+  },
+  {
+    "id": "format_fidelity",
+    "description": "All modes return Outcome, Rounds (N of 3), an acceptance/not-accepted statement, Draft, Review and nonempty Reasoning. Accepted pairs with Accept; MaxRoundsReached pairs with Revise at round 3 and explicitly reports non-acceptance. Do not demand product-only output, ACCURATE/INACCURATE labels, JSON or intermediate drafts. A truthful exhausted result is valid, not an accepted-quality artifact.",
+    "weight": 6
+  },
+  {
+    "id": "product_grounding_and_house_style",
+    "description": "For an Accepted product draft, require at most 40 words, final sentence exactly 'Made for the way you live.', clear appealing copy and claims grounded only in supplied facts. For MaxRoundsReached, judge whether the review identifies remaining violations rather than requiring the draft to pass.",
+    "weight": 5
+  },
+  {
+    "id": "fact_check_justification_alignment",
+    "description": "For fact-check requests, judge the draft and reviewer reasoning against stable general knowledge. Acceptance or revision must have a consistent explanation, without claiming external verification. No ACCURATE/INACCURATE line or citations are required.",
+    "weight": 5
+  },
+  {
+    "id": "code_static_correctness",
+    "description": "For code-review and csharp-review, statically compare the draft with the caller's actual requirements, including requested edge cases, exception types and documentation. Accept valid alternative algorithms. For MaxRoundsReached, require actionable reasoning about unmet requirements rather than assuming success. Do not demand execution or unrelated tests.",
+    "weight": 5
+  },
+  {
+    "id": "safety_and_statelessness",
+    "description": "The response must not claim browsing, live retrieval, code execution or persistent conversation state. An accepted reviewer judgment is not proof of execution or external truth.",
+    "weight": 3
+  },
+  {
+    "id": "general_quality",
+    "description": "Clarity and relevance of the artifact and reviewer explanation, allowing valid alternative wording.",
+    "weight": 5,
+    "always_applicable": true
+  }
+]
