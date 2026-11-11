@@ -106,9 +106,17 @@ public static class ScheduleDemo
             ? int.Parse(match.Groups["day"].Value, CultureInfo.InvariantCulture)
             : int.Parse(match.Groups["date"].Value, CultureInfo.InvariantCulture) - 11;
         var namePattern = $@"(?<!\p{{L}}){Regex.Escape(NormalizeName(name))}(?!\p{{L}})";
-        var appearances = sessions.Where(session => session.Speaker is not null &&
-            Regex.IsMatch(NormalizeName(session.Speaker), namePattern, RegexOptions.CultureInvariant)).ToArray();
-        var speakers = appearances.Select(session => session.Speaker).Distinct(StringComparer.Ordinal).ToArray();
+        var matchingSpeakers = sessions.SelectMany(session =>
+                (session.Speaker ?? string.Empty).Split(';', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(entry => new
+                    {
+                        Session = session,
+                        Name = NormalizeName(entry.Split('(')[0].Trim())
+                    }))
+            .Where(speaker => Regex.IsMatch(speaker.Name, namePattern, RegexOptions.CultureInvariant))
+            .ToArray();
+        var appearances = matchingSpeakers.Select(speaker => speaker.Session).Distinct().ToArray();
+        var speakers = matchingSpeakers.Select(speaker => speaker.Name).Distinct(StringComparer.Ordinal).ToArray();
         if (speakers.Length > 1)
         {
             return $"The name '{name}' matches multiple speaker entries in this snapshot. Please provide the full speaker name.";
