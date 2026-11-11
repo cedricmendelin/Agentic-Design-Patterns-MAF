@@ -17,11 +17,17 @@ The `maf-pattern-demo` skill supplied repository conventions. The actual agent a
 
 ## Request, credentials, and state
 
-Send a plain-text question, up to 4,000 characters, such as `What should I attend today if I'm interested in AI and .NET?`. Each request gets fresh agent/context-provider state and a two-minute deadline. MAF's built-in `TextSearchProvider` injects the complete embedded schedule before one text-generation call; there is no keyword search, retrieval tool loop, or JSON answer contract. The host always uses **conference day 1 (November 12, CET)**; the local console additionally supports `--day 2`. Both days are in context, with the selected day specified in instructions. Recommendations, citations, and absence-of-evidence answers are model-generated, not deterministically validated.
+Send a plain-text question, up to 4,000 characters, such as `What should I attend today if I'm interested in AI and .NET?`. Each request gets fresh state and a two-minute deadline. Direct questions shaped like `Is <speaker> speaking on [conference] day 1/2?` or `Is <speaker> speaking on November 12/13[, 2026]?` use deterministic lookup over the embedded session records, with case/accent-insensitive, whole-name-token matching. Ambiguous names request the full speaker name. This path makes no model call and reports only appearances listed in the snapshot.
+
+For other questions, MAF's built-in `TextSearchProvider` injects the complete embedded schedule plus a compact speaker/day index derived from all session records before one text-generation call; there is no keyword search, retrieval tool loop, or JSON answer contract.
+
+Both days are available locally and in Foundry. Specify the day in the question, for example `Is Cédric speaking on day 2?`; there is no separate hosted day parameter or local RAG `--day` option. Only **"today" defaults to day 1 (November 12, CET)**; an explicit day/date takes precedence, and questions without a day constraint search both days. Instructions require speaker and day to match the same session: a Day 1 appearance cannot justify "yes" for Day 2. In this snapshot Cédric's session is **#s13 on Day 1**, so the Day 2 question should receive a negative answer, optionally followed by the clearly labeled Day 1 correction.
+
+Direct speaker/day lookup answers and their citations are constructed from session records. Other factual answers, recommendations, citations, and absence-of-evidence answers remain model-generated, not deterministically validated. Tests verify direct speaker/day answers without a model, and verify that broader questions and the complete speaker/day evidence reach the model; scripted replies do not prove live semantic accuracy.
 
 The latest user message is the request; prior conversation messages do not provide business memory. The adapter buffers the completed answer for protocol streaming. No durable conversation store is part of the demo's business logic; the protocol server may retain response artifacts independently.
 
-The host reads environment/command-line configuration, not local user-secrets, and explicitly ignores `Foundry:ApiKey`. Local host inference uses `DefaultAzureCredential` (for example Azure CLI login); Azure execution uses its runtime managed identity. Console demos retain their existing shared API-key path.
+The host reads shared local user-secrets, then this project's user-secrets, then environment variables and command-line configuration (later sources take precedence). It explicitly ignores `Foundry:ApiKey`, including keys loaded from user-secrets. Inference uses the Foundry project's `/openai/v1/` endpoint with the `https://ai.azure.com/.default` token scope, rather than bypassing the project via the account-level OpenAI endpoint. Local inference uses `DefaultAzureCredential` (for example Azure CLI login); Azure execution uses its runtime agent identity. Verify that identity's chat-completions access as described below; do not assume project access alone covers this operation. `azure.yaml` passes the full project endpoint explicitly. Console demos retain their existing shared API-key path. Missing or empty `EnableSensitiveTelemetry` defaults to `false`; invalid nonempty values fail explicitly.
 
 ## 1. Prepare tools and an existing Foundry project
 
@@ -38,7 +44,7 @@ azd ai agent --help
 
 Choose a reader-owned existing Foundry project with hosted-agent availability/capacity in its region and a deployed chat model with enough context for the complete schedule (about 75 KB). This agent does not require tools or structured output. Prepare these before presenting; do not provision projects/models live. Hosted execution, inference, and telemetry can incur charges.
 
-You need permission to deploy agents to that project, local model-inference access, and an authorized administrator able to grant runtime inference access at the **actual model-hosting account**. Deployment access is not inference access; do not solve missing rights with broader subscription roles.
+You need permission to deploy agents to that project and local project model-inference access. Hosted execution uses the agent's built-in project access; the project identity must be able to access its model-hosting account. Deployment access is not inference access; do not solve missing rights with broader subscription roles.
 
 From the repository root:
 
@@ -56,7 +62,7 @@ az cognitiveservices account show --resource-group '<resource-group>' --name '<a
 az resource list --resource-type Microsoft.CognitiveServices/accounts/projects --query "[].{name:name,id:id}" --output table
 ```
 
-Select the exact project ARM ID and endpoint from your target's resource details/portal. If inference uses another account, discover that account's ARM ID separately for the RBAC step.
+Select the exact project ARM ID and full endpoint (`https://<account>.services.ai.azure.com/api/projects/<project>`) from your target's resource details/portal.
 
 ## 2. Verify local host and bundled data
 
@@ -89,6 +95,8 @@ dotnet publish ScheduleAgent.Hosted.csproj -c Release -o publish
 
 The tests cover the embedded canonical fixture and hosted request behavior. Check that `publish` contains `ScheduleAgent.Hosted.dll`, `ConferenceDemos.dll`, `AgenticDesignPatterns.Shared.dll`, `AgenticDesignPatterns.Shared.Hosting.dll`, the host `.deps.json`, and `.runtimeconfig.json`. Keep the repository checkout intact: source project references cross back into `dotnet/`. Do not upload just this source folder or point azd's `project` at `publish`.
 
+If direct local startup reports missing Foundry settings, configure the endpoint and model in shared user-secrets as described in the [shared setup](../../dotnet/README.md), or supply the environment variables above. `azd env` values are loaded by `azd ai agent run --no-client`, not by a direct `dotnet run`. If remote invocation reports `session_not_ready`, inspect the session logs: an empty `ENABLE_SENSITIVE_TELEMETRY` previously caused a Boolean-conversion exception before readiness. Keep the explicit `false` setting below even though an empty value is now handled safely.
+
 ## 3. Configure an azd environment here
 
 ```powershell
@@ -115,24 +123,26 @@ azd ai agent show update-schedule --output json
 
 This command creates/updates the selected agent code deployment in the existing project. Do not run `azd up` or provision unrelated infrastructure for this demo. Read errors rather than falling back to another project or region. Use the installed extension's help if a newer version changes flags.
 
-## 5. Verify the current runtime identity's inference access
+## 5. Verify project-scoped inference access
 
-From the show output, take **`instance_identity.principal_id`**, not `blueprint.principal_id`, the project identity, or your user identity. Also note the deployed version/state. Resolve the real model-hosting account scope from step 1.
+From the show output, note the deployed version/state and **`instance_identity.principal_id`**, not `blueprint.principal_id` or your user identity. Confirm that `Foundry__ProjectEndpoint` contains the complete selected project endpoint and that `AZURE_AI_MODEL_DEPLOYMENT_NAME` names a deployment available to that project.
+
+The host calls the project's OpenAI-compatible **chat-completions** endpoint using an `ai.azure.com` token. Do not assume the documented implicit project inference access covers every operation: this route can explicitly require `Microsoft.CognitiveServices/accounts/OpenAI/deployments/chat/completions/action` for the runtime agent identity.
+
+If that exact action is denied, discover the actual model-hosting account's ARM ID and check the runtime principal's effective roles there. With administrator authorization, assign **Cognitive Services OpenAI User** at that account scope:
 
 ```powershell
 $runtimePrincipalId = '<instance_identity.principal_id>'
 $modelAccountId = '<discovered-model-hosting-account-arm-id>'
 $modelSubscriptionId = '<model-hosting-subscription-id>'
-az role assignment list --subscription $modelSubscriptionId --scope $modelAccountId --include-inherited --fill-principal-name false --query "[?principalId=='$runtimePrincipalId'].{role:roleDefinitionName,id:roleDefinitionId,scope:scope}" --output table
-```
-
-If existing effective access already permits inference, reuse it. **Only when missing and authorized**, have an administrator run:
-
-```powershell
+az role assignment list --subscription $modelSubscriptionId --scope $modelAccountId --include-inherited --fill-principal-name false --query "[?principalId=='$runtimePrincipalId'].{role:roleDefinitionName,scope:scope}" --output table
+# Only when missing and authorized:
 az role assignment create --subscription $modelSubscriptionId --assignee-object-id $runtimePrincipalId --assignee-principal-type ServicePrincipal --role '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd' --scope $modelAccountId
 ```
 
-That role is **Cognitive Services OpenAI User**, scoped to the model-hosting account. Re-run the check, allow RBAC propagation, then invoke. A `401 PermissionDenied` can mean missing runtime access even when deployment is active. Check principal and endpoint, wait, and retry a bounded number of times; do not repeatedly redeploy, broaden roles, or insert API keys. Re-resolve the runtime principal after every redeployment because it may change.
+Allow RBAC propagation, then invoke from a fresh session and from the portal. Retain the required grant while the agent uses this operation: a successful call immediately after removing a role can reflect cached authorization and does not prove that the role is unnecessary. Recheck the runtime identity after redeployment.
+
+For other `401 PermissionDenied` errors, check the endpoint, token audience, runtime identity, and model access against Microsoft's [hosted-agent permissions reference](https://learn.microsoft.com/azure/foundry/agents/concepts/hosted-agent-permissions). Additional RBAC changes require administrator authorization. Never substitute an API key, broaden subscription permissions, or silently change the target project.
 
 ## 6. Invoke remotely, then verify in the portal
 
@@ -153,7 +163,7 @@ azd env set ENABLE_SENSITIVE_TELEMETRY 'true'
 azd deploy update-schedule --no-prompt
 ```
 
-Sensitive traces can include questions, injected schedule context, and responses. Restrict access/retention and set the flag back to `false` before handling private input. Recheck the new runtime identity's inference access after redeploying. Trace export requires the host/environment's configured telemetry destination; console final-answer filtering does not redact telemetry.
+Sensitive traces can include questions, injected schedule context, and responses. Restrict access/retention and set the flag back to `false` before handling private input. Recheck project-scoped inference after redeploying. Trace export requires the host/environment's configured telemetry destination; console final-answer filtering does not redact telemetry.
 
 Timebox onstage deployment/invocation; switch to a prepared capture and the previously deployed version instead of changing permissions or provisioning infrastructure live. Do not automatically start evaluation suites; they are separate, billable work requiring a dataset and an explicit decision.
 
