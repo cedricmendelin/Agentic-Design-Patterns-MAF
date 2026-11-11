@@ -16,6 +16,7 @@ services:
             - conference-project
         env:
             Foundry__ProjectEndpoint: ${AZURE_AI_PROJECT_ENDPOINT}
+            Foundry__ModelDeployment: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
             AZURE_AI_MODEL_DEPLOYMENT_NAME: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
             EnableSensitiveTelemetry: ${ENABLE_SENSITIVE_TELEMETRY}
         codeConfiguration:
