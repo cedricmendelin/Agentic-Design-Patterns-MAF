@@ -65,10 +65,16 @@ Scribe, Ralph, Rai and Fact Checker are fixed support agents, not domain special
 
 Research and plans do not authorize implementation issue creation, paid calls, cloud operations, secret access or merges. Keep automatic implementation off and retain independent human review.
 
-## Rollout decisions still pending
+## Rollout and approval gates
 
-- **Bootstrap:** The upstream onboarding workflow proposes a Cast PR and an initial proposals issue when the installation lands on the default branch. A pre-existing team does not suppress that proposal, but no team is replaced without merging the Cast PR. Our seven-member team is already prepared, so automatic casting is redundant. With the current PR-permission toggle, bootstrap uses a branch and tracking-issue fallback rather than opening the PR directly.
-- **Retro (chosen):** Keep the original pinned workflow unchanged and disabled in GitHub Actions during normal operation. Removing its schedules would break exact source/lock verification. Once registered on the default branch, verify its disabled state as part of rollout; this flag is stored on GitHub, not in these files. For an explicitly approved manual test, enable it briefly, run it from Actions, then disable it again. Enabling also restores the six-hourly and weekly schedules, so this is not a truly manual-only workflow. Automatic implementation remains off by default. No remote disable or test has been performed yet.
-- **Publishing:** The installation requires PR review and explicit human merge. Resolve bootstrap behavior and the Retro disable procedure before merging, then explicitly approve a scoped `/squad research` followed by `/squad plan` pilot. No Squad cloud run has been started during local preparation.
+- **Bootstrap (chosen):** Keep the upstream onboarding workflow enabled and review its generated proposal. It proposes a Cast PR and an initial proposals issue when the installation lands on the default branch. A pre-existing team does not suppress that proposal, but no team is replaced without merging the Cast PR. Our seven-member team is already prepared, so review any proposed recasting against the approved identities and ownership rather than accepting it automatically. With the current PR-permission toggle, bootstrap uses a branch and tracking-issue fallback rather than opening the PR directly. Bootstrap is registered and active.
+- **Retro (chosen):** Keep the original pinned workflow unchanged and disabled in GitHub Actions during normal operation. Removing its schedules would break exact source/lock verification. Retro is not yet registered, so its disabled state cannot be established before merge. Immediately after an explicitly approved merge registers it on the default branch, run the commands below and confirm `disabled_manually` before considering rollout complete. This flag is stored on GitHub, not in these files; until it is confirmed, automatic scheduled runs remain possible. For an explicitly approved manual test, enable it briefly, run it from Actions, then disable it again and recheck the state. Enabling also restores the six-hourly and weekly schedules, so this is not a truly manual-only workflow. Automatic implementation remains off by default. No remote disable or test has been performed yet.
+
+  ```powershell
+  gh workflow disable squad-retro.lock.yml --repo cedricmendelin/Agentic-Design-Patterns-MAF
+  gh api repos/cedricmendelin/Agentic-Design-Patterns-MAF/actions/workflows/squad-retro.lock.yml --jq .state
+  ```
+
+- **Publishing:** The installation requires PR review and explicit human merge. Keep Bootstrap's proposal review separate from approval of implementation work. Complete the post-merge Retro disable step before an explicitly approved, scoped `/squad research` followed by `/squad plan` pilot. No Squad cloud run has been started during local preparation.
 
 See [Meet the Squad](../meet-the-squad.md) for everyday usage and the [upstream enlistment guide](https://github.github.com/squad/docs/guide/gh-aw/) for the standard package contract.
