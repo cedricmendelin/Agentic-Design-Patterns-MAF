@@ -1,0 +1,100 @@
+{
+  "assignment_cast_snapshots": {
+    "cli-cast-r2-2026-11-12T19:26:34.293Z": {
+      "created_at": "2026-11-12T19:26:34.293Z",
+      "agents": [
+        "architect"
+      ],
+      "universe": "cli-cast"
+    },
+    "cli-cast-r3-2026-11-12T19:26:37.696Z": {
+      "created_at": "2026-11-12T19:26:37.696Z",
+      "agents": [
+        "coder"
+      ],
+      "universe": "cli-cast"
+    },
+    "cli-cast-r4-2026-11-12T19:26:41.116Z": {
+      "created_at": "2026-11-12T19:26:41.116Z",
+      "agents": [
+        "foundry"
+      ],
+      "universe": "cli-cast"
+    },
+    "cli-cast-r5-2026-11-12T19:26:43.961Z": {
+      "created_at": "2026-11-12T19:26:43.961Z",
+      "agents": [
+        "verifier"
+      ],
+      "universe": "cli-cast"
+    },
+    "cli-cast-r6-2026-11-12T19:26:46.704Z": {
+      "created_at": "2026-11-12T19:26:46.704Z",
+      "agents": [
+        "devrel"
+      ],
+      "universe": "cli-cast"
+    },
+    "cli-cast-r7-2026-11-12T19:26:49.448Z": {
+      "created_at": "2026-11-12T19:26:49.448Z",
+      "agents": [
+        "devops"
+      ],
+      "universe": "cli-cast"
+    },
+    "cli-cast-r8-2026-11-12T19:26:52.603Z": {
+      "created_at": "2026-11-12T19:26:52.603Z",
+      "agents": [
+        "researcher"
+      ],
+      "universe": "cli-cast"
+    },
+    "descriptive-r9-2026-11-12T20:25:49.166Z": {
+      "created_at": "2026-11-12T20:25:49.166Z",
+      "agents": [
+        "architect",
+        "coder",
+        "foundry",
+        "verifier",
+        "devrel",
+        "devops",
+        "researcher"
+      ],
+      "universe": "descriptive"
+    }
+  },
+  "universe_usage_history": [
+    {
+      "universe": "cli-cast",
+      "used_at": "2026-11-12T19:26:34.293Z"
+    },
+    {
+      "universe": "cli-cast",
+      "used_at": "2026-11-12T19:26:37.696Z"
+    },
+    {
+      "universe": "cli-cast",
+      "used_at": "2026-11-12T19:26:41.116Z"
+    },
+    {
+      "universe": "cli-cast",
+      "used_at": "2026-11-12T19:26:43.961Z"
+    },
+    {
+      "universe": "cli-cast",
+      "used_at": "2026-11-12T19:26:46.704Z"
+    },
+    {
+      "universe": "cli-cast",
+      "used_at": "2026-11-12T19:26:49.448Z"
+    },
+    {
+      "universe": "cli-cast",
+      "used_at": "2026-11-12T19:26:52.603Z"
+    },
+    {
+      "universe": "descriptive",
+      "used_at": "2026-11-12T20:25:49.166Z"
+    }
+  ]
+}
