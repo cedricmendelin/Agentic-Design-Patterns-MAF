@@ -38,14 +38,14 @@ outer todo-loop passes. Provider retries inside a call are not separately counte
 
 ## Local configuration and invocation
 
-Use [.NET 10 and shared hosting prerequisites](../../HOSTING.md). The host **never uses
+Use [.NET 11 and shared hosting prerequisites](../../HOSTING.md). The host **never uses
 an API key**: local inference uses `DefaultAzureCredential`; Foundry runtime inference
 uses system-assigned managed identity. Your developer identity needs inference access.
 
 ```powershell
 $env:Foundry__ProjectEndpoint = 'https://<account>.services.ai.azure.com/api/projects/<project>'
 $env:Foundry__ModelDeployment = '<tool-capable-chat-deployment>'
-dotnet run --project dotnet\src\AgentHarness.Hosted
+dotnet run --framework net10.0 --project dotnet\src\AgentHarness.Hosted
 ```
 
 Runtime fallbacks are `FOUNDRY_PROJECT_ENDPOINT` and `AZURE_AI_MODEL_DEPLOYMENT_NAME`;

@@ -4,7 +4,7 @@ The six demos are presented in this order: **1. Prague weather**, **2. Simple MA
 
 ## Setup
 
-Use the .NET 10 SDK policy in the repository's [global.json](../global.json). Package versions come from [the central .NET manifest](../dotnet/Directory.Packages.props), imported rather than copied: MAF/Workflows/Harness 1.22.0 and Decisions.Foundry 0.7.0. The host also uses the repository's pinned preview Foundry hosting package.
+Use the .NET 11 SDK (11.0.100) policy in the repository's [global.json](../global.json), and keep the .NET 10 runtime installed for both-target test execution and the hosted companion. Conference console projects target both `net10.0` and `net11.0`; select `--framework net11.0` for local demos. The Foundry hosted companion is single-target `net10.0` and must be published with that framework to match its unchanged `runtime: dotnet_10` declaration. Package versions come from [the central .NET manifest](../dotnet/Directory.Packages.props), imported rather than copied: MAF/Workflows/Harness 1.22.0 and Decisions.Foundry 0.7.0. The host also uses the repository's pinned preview Foundry hosting package.
 
 From the repository root, configure the [shared local credentials](../dotnet/README.md) once:
 
@@ -47,8 +47,8 @@ The [flow diagrams](demo-flows.md) cover demos **2**, **4**, **6**, and **6.1**.
 Select a profile in your IDE, or run one by name from this folder:
 
 ```powershell
-dotnet run --project ConferenceDemos --launch-profile "3. Schedule RAG (TextSearchProvider)"
-dotnet run --project ConferenceDemos --launch-profile "6.1 Harness + web search"
+dotnet run --framework net11.0 --project ConferenceDemos --launch-profile "3. Schedule RAG (TextSearchProvider)"
+dotnet run --framework net11.0 --project ConferenceDemos --launch-profile "6.1 Harness + web search"
 ```
 
 The **5.1 Decision Model - Microsoft live** profile calls Microsoft only. **5.2 Decision Model - live comparison** calls both configured decision deployments sequentially for each question. Profiles contain no credentials.
@@ -83,9 +83,9 @@ at their existing paths so runtime content loading remains unchanged.
 Run these first three commands **from this folder**, in order:
 
 ```powershell
-dotnet run --project ConferenceDemos -- agent
-dotnet run --project ConferenceDemos -- workflow Alex
-dotnet run --project ConferenceDemos -- rag
+dotnet run --framework net11.0 --project ConferenceDemos -- agent
+dotnet run --framework net11.0 --project ConferenceDemos -- workflow Alex
+dotnet run --framework net11.0 --project ConferenceDemos -- rag
 ```
 
 ### 1. Prague weather: agent + tool
@@ -106,7 +106,7 @@ Expect two question/answer pairs, with `Tool call: GetPragueWeather -> Fixed dem
 [WelcomeWorkflowDemo.cs](ConferenceDemos/Demos/02-SimpleMafWorkflow/WelcomeWorkflowDemo.cs) builds `GetAttendeeProfile -> RecommendSession -> CreateRecommendation`. Three delegate executors construct a .NET/AI attendee profile, select a session with a string check, and format the recommendation. This demo makes **no model calls** and works without Foundry credentials. See the [demo 2 flow](demo-flows.md#demo-2-simple-maf-workflow).
 
 ```powershell
-dotnet run --project ConferenceDemos -- workflow Alex
+dotnet run --framework net11.0 --project ConferenceDemos -- workflow Alex
 ```
 
 ```text
@@ -128,7 +128,7 @@ Omitting the CLI name uses `Alex`. A workflow controls application execution and
 Ask "What should I attend today if I'm interested in AI and .NET?" with schedule grounding:
 
 ```powershell
-dotnet run --project ConferenceDemos -- rag "What should I attend today if I'm interested in AI and .NET?"
+dotnet run --framework net11.0 --project ConferenceDemos -- rag "What should I attend today if I'm interested in AI and .NET?"
 ```
 
 `rag` runs the explicit workflow in [ScheduleWorkflowDemo.cs](ConferenceDemos/Demos/03-ScheduleRag/ScheduleWorkflowDemo.cs): **PrepareQuestion -> AnswerFromSchedule**. The first executor validates and passes along the question; the second calls the existing grounded agent. The console shows the question, executor sequence, executor-completion labels, and one final answer, never the injected document.
@@ -148,9 +148,9 @@ After demo 3, **an agent chooses a tool, a workflow controls steps, and a ground
 Getting started showed linear edges. This workflow combines **Planning + Reflection + Goal Monitoring + Parallelization**, with routing as the supporting control mechanism. A task planner interprets a brief and produces an actionable strategy; a separate builder executes that strategy to produce an agenda. The task plan is how to do the work, not the agenda itself. Review and feedback drive replanning until all goals pass or the budget is spent.
 
 ```powershell
-dotnet run --project ConferenceDemos -- plan              # live run (max 3 rounds)
-dotnet run --project ConferenceDemos -- plan --rounds 1   # may escalate if goals remain unmet
-dotnet run --project ConferenceDemos -- plan --verbose   # full task instructions, checks and final rationales
+dotnet run --framework net11.0 --project ConferenceDemos -- plan              # live run (max 3 rounds)
+dotnet run --framework net11.0 --project ConferenceDemos -- plan --rounds 1   # may escalate if goals remain unmet
+dotnet run --framework net11.0 --project ConferenceDemos -- plan --verbose   # full task instructions, checks and final rationales
 ```
 
 The [demo 4 flow diagram](demo-flows.md#demo-4-planning-and-goal-monitoring) documents the graph in [AgendaPlanningDemo.cs](ConferenceDemos/Demos/04-PlanningAndGoalMonitoring/AgendaPlanningDemo.cs); the CLI runs the workflow without printing Mermaid.
@@ -184,13 +184,13 @@ Or use `Foundry__ModelDeployments__decision` and `Foundry__ModelDeployments__ope
 From this folder, run Microsoft live (six API calls):
 
 ```powershell
-dotnet run --project ConferenceDemos -- decisions
+dotnet run --framework net11.0 --project ConferenceDemos -- decisions
 ```
 
 For demo **5.2**, compare both providers live (twelve API calls):
 
 ```powershell
-dotnet run --project ConferenceDemos -- decisions --compare-openai
+dotnet run --framework net11.0 --project ConferenceDemos -- decisions --compare-openai
 ```
 
 For each question, Microsoft is called first and its result printed, then OpenAI is called with the exact same state, question, options or rubric. Both results appear in the same question block before moving to the next task. Both clients are configured before inference begins. All displayed results come from the APIs; there is no recording, fixture, replay, or file-path argument.
@@ -220,8 +220,8 @@ Missing configuration, provider errors, cancellation, and malformed distribution
 One MAF `HarnessAgent` turns the schedule into a personal web page: Cédric's photo, his own talk, a day timeline of fitting sessions, and (with `--web`, demo **6.1**) further reading found by live web search. The layout may differ between runs; the console ends with a short success summary. See the [demo 6 / 6.1 flow](demo-flows.md#demos-6-and-61-harness-agent) for the tool loop and final verification.
 
 ```powershell
-dotnet run --project ConferenceDemos -- speaker-page --open        # out\speaker-page\agenda.html
-dotnet run --project ConferenceDemos -- speaker-page --web --open  # + hosted web search
+dotnet run --framework net11.0 --project ConferenceDemos -- speaker-page --open        # out\speaker-page\agenda.html
+dotnet run --framework net11.0 --project ConferenceDemos -- speaker-page --web --open  # + hosted web search
 ```
 
 The whole agent is one options object in [SpeakerPageDemo.cs](ConferenceDemos/Demos/06-Harness/SpeakerPageDemo.cs). The harness already brings the agent loop, todos, skills, file tools, and web search; the demo only adds four small tools, a skill, and a sandbox folder:

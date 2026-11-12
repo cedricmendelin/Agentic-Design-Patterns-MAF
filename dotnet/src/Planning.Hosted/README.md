@@ -21,7 +21,7 @@ Deep Research remains a separate console mode. Exposing its long-running backgro
 See [common hosting guidance](../../HOSTING.md) for configuration, managed identity, inference RBAC, packaging, telemetry, and agent-scoped cleanup. From the repository root:
 
 ```powershell
-dotnet run --project .\dotnet\src\Planning.Hosted
+dotnet run --framework net10.0 --project .\dotnet\src\Planning.Hosted
 dotnet test .\dotnet\tests\Planning.Tests
 ```
 

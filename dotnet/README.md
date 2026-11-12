@@ -4,13 +4,13 @@ The [root quickstart](../README.md#get-started) runs locally against one Microso
 
 ## Shared setup
 
-Install the .NET 10 SDK and configure the three settings once from the repository root:
+Install the .NET 11 SDK (11.0.100, pinned in the repository's [global.json](../global.json)) and keep the .NET 10 and ASP.NET Core 10 runtimes installed alongside it for `net10.0` tests and local hosted runs (installing the .NET 10 SDK supplies both). Configure the three settings once from the repository root. Console demos, reusable pattern projects, shared libraries, and test projects target both `net10.0` and `net11.0`; choose `--framework net11.0` for local demos. Foundry `.Hosted` and distributed entry points are single-target `net10.0` to match their unchanged `azure.yaml` runtime and startup commands. Unqualified builds and tests cover both frameworks where projects multi-target.
 
 ```powershell
 dotnet user-secrets set "Foundry:ProjectEndpoint" "https://<resource>.services.ai.azure.com/api/projects/<project>" --project .\dotnet\src\Shared
 dotnet user-secrets set "Foundry:ApiKey" "<resource-api-key>" --project .\dotnet\src\Shared
 dotnet user-secrets set "Foundry:ModelDeployment" "<deployment-name>" --project .\dotnet\src\Shared
-dotnet run --project .\dotnet\src\PromptChaining -- specs
+dotnet run --framework net11.0 --project .\dotnet\src\PromptChaining -- specs
 ```
 
 Required infrastructure: a Microsoft Foundry account/resource and project, an accessible compatible generative chat deployment and its **resource API key**. Structured-output examples require JSON-schema support; tools require function calling. The shared client derives `<resource>.openai.azure.com/openai/v1/` from `<resource>.services.ai.azure.com/api/projects/<project>`; other project-host shapes are rejected rather than guessed. `ModelDeployment` is your deployment's name, not a model-family label. The API key must authorize the actual model-hosting resource.
@@ -28,7 +28,7 @@ Optional aliases allow explicit selection without changing the default:
 
 ```powershell
 dotnet user-secrets set "Foundry:ModelDeployments:fast" "<fast-deployment-name>" --project .\dotnet\src\Shared
-dotnet run --project .\dotnet\src\PromptChaining -- specs --deployment fast
+dotnet run --framework net11.0 --project .\dotnet\src\PromptChaining -- specs --deployment fast
 ```
 
 `fast`, `reasoning` and `quality` are useful aliases, not provisioned models. ResourceOptimization documents its fallback to the default when an alias is absent. DecisionModels has separate decision deployment requirements; do not substitute them for the general chat default.
@@ -73,6 +73,13 @@ Sensitive prompt/response capture is off by default. Enable it only for syntheti
 
 ## Build and deterministic tests
 
+Non-host demos, shared libraries, and test projects target both .NET 10 and .NET 11;
+Foundry host projects remain `net10.0` only. These solution commands therefore build
+and test both frameworks overall. Local console examples use `net11.0`; run or publish
+a hosted project with `net10.0` explicitly (for example,
+`dotnet publish .\dotnet\src\Reflection.Hosted -c Release -f net10.0`). The
+`azure.yaml` manifests continue to declare `runtime: dotnet_10`.
+
 ```powershell
 dotnet build .\dotnet\AgenticDesignPatterns.slnx
 dotnet test .\dotnet\AgenticDesignPatterns.slnx --filter "Category!=LiveFoundry"
@@ -95,4 +102,4 @@ Default CI builds/tests both solutions without secrets and checks diagram drift.
 | `FOUNDRY_MODEL_DEPLOYMENT_REASONING` (optional) | `Foundry__ModelDeployments__reasoning` |
 | `FOUNDRY_MODEL_DEPLOYMENT_QUALITY` (optional) | `Foundry__ModelDeployments__quality` |
 
-Select **Actions → Live Foundry smoke tests** and an optional deployment alias. The workflow runs deterministic checks before the narrower [Foundry.SmokeTests](tests/Foundry.SmokeTests) suite. Adding a project to the solution does not authorize native cloud writes, deployments or resource provisioning. Add explicit smoke coverage and merge to the default branch before protected credentials can exercise a new demo. Native managed-memory, Deep Research, native reasoning tools and native cloud evaluation remain separate opt-ins.
+Select **Actions → Live Foundry smoke tests** and an optional deployment alias. The workflow runs deterministic checks before the narrower [Foundry.SmokeTests](tests/Foundry.SmokeTests) suite on .NET 11. Adding a project to the solution does not authorize native cloud writes, deployments or resource provisioning. Add explicit smoke coverage and merge to the default branch before protected credentials can exercise a new demo. Native managed-memory, Deep Research, native reasoning tools and native cloud evaluation remain separate opt-ins.

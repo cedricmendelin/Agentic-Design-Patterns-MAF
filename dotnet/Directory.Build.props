@@ -1,9 +1,20 @@
 <Project>
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <UserSecretsId>agentic-design-patterns-maf</UserSecretsId>
+  </PropertyGroup>
+
+  <!-- Keep Foundry code-deployment projects single-targeted so existing dotnet run
+       startup commands resolve to the declared dotnet_10 runtime. -->
+  <PropertyGroup Condition="$([System.String]::Copy('$(MSBuildProjectName)').EndsWith('.Hosted')) Or '$(MSBuildProjectName)' == 'MultiAgent.Distributed'">
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <!-- Local demos, reusable pattern projects, tests, and shared libraries support
+       both the .NET 10 hosting graph and the .NET 11 local-development target. -->
+  <PropertyGroup Condition="'$(TargetFramework)' == ''">
+    <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
   </PropertyGroup>
 </Project>

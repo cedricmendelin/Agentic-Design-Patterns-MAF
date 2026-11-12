@@ -49,10 +49,10 @@ The notebook is an OpenEvolve skeleton without concrete evaluator files; this po
 1. Configure shared user-secrets once — see [dotnet/README.md](../../README.md).
 2. Run:
    ```powershell
-   dotnet run --project dotnet/src/LearningAdaptation -- maf
-   dotnet run --project dotnet/src/LearningAdaptation -- maf --iterations 2
-   dotnet run --project dotnet/src/LearningAdaptation -- maf --deployment fast
-   dotnet run --project dotnet/src/LearningAdaptation -- foundry   # also: all
+   dotnet run --framework net11.0 --project dotnet/src/LearningAdaptation -- maf
+   dotnet run --framework net11.0 --project dotnet/src/LearningAdaptation -- maf --iterations 2
+   dotnet run --framework net11.0 --project dotnet/src/LearningAdaptation -- maf --deployment fast
+   dotnet run --framework net11.0 --project dotnet/src/LearningAdaptation -- foundry   # also: all
    ```
 3. The default runs one local MAF benchmark adaptation. `all` explicitly includes the Foundry cloud evaluation. `foundry` needs `az login` with **Foundry User** on the project; it creates a uniquely named evaluation definition per run that stays in the project for inspection, so remove only records you own. Polling has a five-minute deadline per run and fails explicitly if fewer or more results than benchmark cases are returned.
 

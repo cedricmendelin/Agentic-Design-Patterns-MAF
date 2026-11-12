@@ -19,13 +19,13 @@ No prior judgments, caller system instructions, notebook batches, or cloud evalu
 
 ## Local commands
 
-Use .NET 10 and a structured-output-capable deployment. Sign in with an Entra identity authorized for inference; the host **never uses the shared console API key**. Runtime variables take precedence over shared endpoint/model user-secrets.
+Use .NET 11 and a structured-output-capable deployment. Sign in with an Entra identity authorized for inference; the host **never uses the shared console API key**. Runtime variables take precedence over shared endpoint/model user-secrets.
 
 ```powershell
 $env:FOUNDRY_PROJECT_ENDPOINT = 'https://<account>.services.ai.azure.com/api/projects/<project>'
 $env:AZURE_AI_MODEL_DEPLOYMENT_NAME = '<model-deployment>'
 $env:AZURE_TENANT_ID = '<tenant-id>'
-dotnet run --project dotnet\src\Evaluation.Hosted
+dotnet run --framework net10.0 --project dotnet\src\Evaluation.Hosted
 ```
 
 In another terminal, from this project's directory:

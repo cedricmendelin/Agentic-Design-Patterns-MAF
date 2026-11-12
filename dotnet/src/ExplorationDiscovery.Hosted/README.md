@@ -23,7 +23,7 @@ No browsing, experiments, or code execution is claimed. Output is an unverified 
 Configure [shared model settings](../../README.md), then:
 
 ```powershell
-dotnet run --project dotnet\src\ExplorationDiscovery.Hosted
+dotnet run --framework net10.0 --project dotnet\src\ExplorationDiscovery.Hosted
 ```
 
 In another terminal, from this project's directory:

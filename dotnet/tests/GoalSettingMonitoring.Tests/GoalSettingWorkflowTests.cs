@@ -11,7 +11,7 @@ namespace AgenticDesignPatterns.GoalSettingMonitoring.Tests;
 public sealed class GoalSettingWorkflowTests
 {
     private const string ValidDotNetBrief =
-        """{"title":"Line counter","language":"C#","targetFramework":"net10.0","summary":"Read a text file and report its line count.","implementationSteps":["Open the input file safely.","Count lines, including an empty-file case.","Verify with empty and multi-line fixtures."]}""";
+        """{"title":"Line counter","language":"C#","targetFramework":"net11.0","summary":"Read a text file and report its line count.","implementationSteps":["Open the input file safely.","Count lines, including an empty-file case.","Verify with empty and multi-line fixtures."]}""";
 
     [Fact]
     public async Task DotNet_deliverable_accepts_a_first_pass_only_after_hard_criteria_and_judge_pass()
@@ -44,7 +44,7 @@ public sealed class GoalSettingWorkflowTests
         Assert.False(result.Iterations[0].HardCriteriaMet);
         Assert.True(result.Iterations[1].HardCriteriaMet);
         Assert.Contains("targetFramework", model.Requests[3].Input);
-        Assert.Contains("net10.0", model.Requests[3].Input);
+        Assert.Contains("net11.0", model.Requests[3].Input);
     }
 
     [Fact]
@@ -62,7 +62,7 @@ public sealed class GoalSettingWorkflowTests
         Assert.False(result.HardCriteriaMet);
         Assert.Single(result.Iterations);
         Assert.Contains("not met within 1 iterations", result.Format());
-        Assert.Contains("targetFramework must be exactly 'net10.0'", result.Iterations[0].HardCriteriaFeedback);
+        Assert.Contains("targetFramework must be exactly 'net11.0'", result.Iterations[0].HardCriteriaFeedback);
     }
 
     [Fact]
@@ -72,7 +72,7 @@ public sealed class GoalSettingWorkflowTests
         var mutableView = Assert.IsAssignableFrom<IList<string>>(descriptions);
 
         Assert.Throws<NotSupportedException>(() => mutableView[0] = "changed");
-        Assert.Equal("net10.0", GoalSettingHardCriteria.RequiredTargetFramework);
+        Assert.Equal("net11.0", GoalSettingHardCriteria.RequiredTargetFramework);
         Assert.Equal(GoalSettingScenario.DotNetDeliverable, new GoalSettingRequest("task", ["goal"]).Scenario);
     }
 

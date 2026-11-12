@@ -24,7 +24,7 @@ After all proposals, code orders P0 → P1 → P2 and preserves arrival order fo
 Configure [shared settings](../../README.md), then:
 
 ```powershell
-dotnet run --project dotnet\src\Prioritization.Hosted
+dotnet run --framework net10.0 --project dotnet\src\Prioritization.Hosted
 ```
 
 In another terminal, from this project's directory:

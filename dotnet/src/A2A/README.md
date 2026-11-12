@@ -31,21 +31,21 @@ Weather, rates, and calendar requests are **protocol examples**, not live integr
 
 ## Run
 
-Configure .NET 10 and the server's model credentials via the [shared setup](../../README.md). From the repository root, start the server:
+Configure .NET 11 and the server's model credentials via the [shared setup](../../README.md). From the repository root, start the server:
 
 ```powershell
 $env:PORT = '5090'
 $env:A2A_PUBLIC_URL = 'http://localhost:5090/'
-dotnet run --project dotnet\src\A2A.Hosted
+dotnet run --framework net10.0 --project dotnet\src\A2A.Hosted
 ```
 
 In another terminal:
 
 ```powershell
-dotnet run --project dotnet\src\A2A -- all http://localhost:5090/
-dotnet run --project dotnet\src\A2A -- sync http://localhost:5090/ "Explain why exchange rates need a current source."
-dotnet run --project dotnet\src\A2A -- stream http://localhost:5090/
-dotnet run --project dotnet\src\A2A -- card http://localhost:5090/
+dotnet run --framework net11.0 --project dotnet\src\A2A -- all http://localhost:5090/
+dotnet run --framework net11.0 --project dotnet\src\A2A -- sync http://localhost:5090/ "Explain why exchange rates need a current source."
+dotnet run --framework net11.0 --project dotnet\src\A2A -- stream http://localhost:5090/
+dotnet run --framework net11.0 --project dotnet\src\A2A -- card http://localhost:5090/
 dotnet test dotnet\tests\A2A.Tests
 ```
 

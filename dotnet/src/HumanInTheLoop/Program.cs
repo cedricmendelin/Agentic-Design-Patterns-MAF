@@ -24,7 +24,7 @@ for (var index = 0; index < args.Length; index++)
     else if (args[index].StartsWith("--", StringComparison.Ordinal))
     {
         Console.Error.WriteLine(
-            "Usage: dotnet run --project dotnet/src/HumanInTheLoop [<support request>] [--deployment <name>]");
+            "Usage: dotnet run --framework net11.0 --project dotnet/src/HumanInTheLoop [<support request>] [--deployment <name>]");
         return 1;
     }
     else

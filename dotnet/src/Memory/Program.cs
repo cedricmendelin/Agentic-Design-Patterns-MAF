@@ -13,7 +13,7 @@ if (selections.Length > 1 ||
     args.Count(arg => arg.Equals("--deployment", StringComparison.OrdinalIgnoreCase)) > 1)
 {
     Console.Error.WriteLine(
-        "Usage: dotnet run --project dotnet/src/Memory " +
+        "Usage: dotnet run --framework net11.0 --project dotnet/src/Memory " +
         "[session|foundry-memory|all] [--deployment <model-alias>]");
     return 1;
 }

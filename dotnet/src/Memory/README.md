@@ -69,9 +69,9 @@ flowchart LR
    By default a temporary scope is created and its memories deleted at the end. Set `Foundry:MemoryScope` to a stable opaque value only for a local single-user experiment.
 3. Run:
    ```powershell
-   dotnet run --project dotnet/src/Memory                    # session memory
-   dotnet run --project dotnet/src/Memory -- foundry-memory
-   dotnet run --project dotnet/src/Memory -- all --deployment fast
+   dotnet run --framework net11.0 --project dotnet/src/Memory                    # session memory
+   dotnet run --framework net11.0 --project dotnet/src/Memory -- foundry-memory
+   dotnet run --framework net11.0 --project dotnet/src/Memory -- all --deployment fast
    dotnet test dotnet/tests/Memory.Tests
    ```
 

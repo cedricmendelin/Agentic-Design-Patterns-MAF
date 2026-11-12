@@ -12,7 +12,7 @@ Exposes the [Chapter 09 prompt adaptation workflow](../LearningAdaptation/README
 ## Run and invoke
 
 ```powershell
-dotnet run --project .\dotnet\src\LearningAdaptation.Hosted
+dotnet run --framework net10.0 --project .\dotnet\src\LearningAdaptation.Hosted
 azd ai agent invoke chapter09-learning-adaptation --local --protocol responses 'You are a helpful support assistant. Answer customer questions briefly.'
 azd deploy chapter09-learning-adaptation --no-prompt
 azd ai agent invoke chapter09-learning-adaptation --protocol responses 'You are a helpful support assistant. Answer customer questions briefly.'

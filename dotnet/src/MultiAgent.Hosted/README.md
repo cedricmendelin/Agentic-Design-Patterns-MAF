@@ -21,7 +21,7 @@ Each request creates a fresh run and returns the selected scenario's actual fina
 See [common hosting guidance](../../HOSTING.md) for configuration, identity, inference RBAC, packaging, telemetry, and safe cleanup. From the repository root:
 
 ```powershell
-dotnet run --project .\dotnet\src\MultiAgent.Hosted
+dotnet run --framework net10.0 --project .\dotnet\src\MultiAgent.Hosted
 dotnet test .\dotnet\tests\MultiAgent.Tests
 ```
 

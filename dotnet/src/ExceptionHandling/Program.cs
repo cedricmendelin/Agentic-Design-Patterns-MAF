@@ -34,7 +34,7 @@ var selected = demos
 if (!valid || selected.Length == 0)
 {
     Console.Error.WriteLine(
-        "Usage: dotnet run --project dotnet/src/ExceptionHandling [all|primary|retry|fallback] [--deployment <name>]");
+        "Usage: dotnet run --framework net11.0 --project dotnet/src/ExceptionHandling [all|primary|retry|fallback] [--deployment <name>]");
     return 1;
 }
 

@@ -10,7 +10,7 @@ try
 catch (ArgumentException)
 {
     Console.Error.WriteLine(
-        "Usage: dotnet run --project dotnet/src/RAG " +
+        "Usage: dotnet run --framework net11.0 --project dotnet/src/RAG " +
         "[rag|foundry-files|foundry-web|all] [--deployment <name>] [question]");
     return 1;
 }

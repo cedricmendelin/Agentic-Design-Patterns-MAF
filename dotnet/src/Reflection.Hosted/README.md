@@ -28,7 +28,7 @@ Requests have fresh agents and no persisted conversation history. Streaming emit
 Follow [common hosting guidance](../../HOSTING.md) for configuration, identity, inference RBAC, packaging, telemetry, and safe cleanup. From the repository root:
 
 ```powershell
-dotnet run --project .\dotnet\src\Reflection.Hosted
+dotnet run --framework net10.0 --project .\dotnet\src\Reflection.Hosted
 dotnet test .\dotnet\tests\Reflection.Tests
 ```
 

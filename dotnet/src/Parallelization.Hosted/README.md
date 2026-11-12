@@ -26,7 +26,7 @@ Follow [common hosting guidance](../../HOSTING.md) for configuration, managed id
 From the repository root:
 
 ```powershell
-dotnet run --project .\dotnet\src\Parallelization.Hosted
+dotnet run --framework net10.0 --project .\dotnet\src\Parallelization.Hosted
 dotnet test .\dotnet\tests\Parallelization.Tests
 ```
 

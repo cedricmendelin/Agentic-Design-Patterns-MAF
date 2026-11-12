@@ -21,7 +21,7 @@ Follow [common hosting guidance](../../HOSTING.md) for settings, API-key versus 
 From the repository root:
 
 ```powershell
-dotnet run --project .\dotnet\src\Routing.Hosted -- --deployment reasoning
+dotnet run --framework net10.0 --project .\dotnet\src\Routing.Hosted -- --deployment reasoning
 dotnet test .\dotnet\tests\Routing.Tests
 ```
 

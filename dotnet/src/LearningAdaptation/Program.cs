@@ -34,7 +34,7 @@ for (var index = 0; index < args.Length && valid; index++)
 if (!valid)
 {
     Console.Error.WriteLine(
-        "Usage: dotnet run --project dotnet/src/LearningAdaptation " +
+        "Usage: dotnet run --framework net11.0 --project dotnet/src/LearningAdaptation " +
         "[maf|foundry|all] [--iterations 1-3] [--deployment <deployment-alias>]");
     return 1;
 }

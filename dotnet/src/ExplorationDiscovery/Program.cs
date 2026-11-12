@@ -37,7 +37,7 @@ for (var index = 0; index < args.Length; index++)
 if (invalidArguments)
 {
     Console.Error.WriteLine(
-        "Usage: dotnet run --project dotnet/src/ExplorationDiscovery " +
+        "Usage: dotnet run --framework net11.0 --project dotnet/src/ExplorationDiscovery " +
         "[explore|deep-research] [--topic <text>] [--deployment <chat-model-alias>] " +
         "[--research-deployment <deep-research-alias>] [--domain <host> ...]");
     return 1;

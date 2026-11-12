@@ -5,7 +5,7 @@ using Microsoft.Extensions.AI;
 
 const string Usage =
     """
-    Usage: dotnet run --project dotnet/src/GoalSettingMonitoring [options]
+    Usage: dotnet run --framework net11.0 --project dotnet/src/GoalSettingMonitoring [options]
       --scenario <dotnet|python>  Deliverable scenario (default: dotnet)
       --use-case <text>           Request description
       --goals <g1;g2;...>         Goals separated by semicolons
