@@ -1,0 +1,71 @@
+{
+  "schema": "squad-agent-provenance/v1",
+  "schema_version": 1,
+  "revision": 9,
+  "generated_at": "2026-11-12T20:25:49.166Z",
+  "agents": {
+    "architect": {
+      "display_name": "Architect",
+      "persistent_name": "Architect",
+      "role": "Lead / Architect",
+      "universe": "descriptive",
+      "status": "active",
+      "created_at": "2026-11-12T19:26:34.293Z",
+      "updated_at": "2026-11-12T20:25:49.166Z"
+    },
+    "coder": {
+      "display_name": "Coder",
+      "persistent_name": "Coder",
+      "role": "Backend Developer",
+      "universe": "descriptive",
+      "status": "active",
+      "created_at": "2026-11-12T19:26:37.696Z",
+      "updated_at": "2026-11-12T20:25:49.166Z"
+    },
+    "foundry": {
+      "display_name": "Foundry",
+      "persistent_name": "Foundry",
+      "role": "AI Engineer",
+      "universe": "descriptive",
+      "status": "active",
+      "created_at": "2026-11-12T19:26:41.116Z",
+      "updated_at": "2026-11-12T20:25:49.166Z"
+    },
+    "verifier": {
+      "display_name": "Verifier",
+      "persistent_name": "Verifier",
+      "role": "Test Engineer",
+      "universe": "descriptive",
+      "status": "active",
+      "created_at": "2026-11-12T19:26:43.961Z",
+      "updated_at": "2026-11-12T20:25:49.166Z"
+    },
+    "devrel": {
+      "display_name": "DevRel",
+      "persistent_name": "DevRel",
+      "role": "Technical Writer",
+      "universe": "descriptive",
+      "status": "active",
+      "created_at": "2026-11-12T19:26:46.704Z",
+      "updated_at": "2026-11-12T20:25:49.166Z"
+    },
+    "devops": {
+      "display_name": "DevOps",
+      "persistent_name": "DevOps",
+      "role": "Infrastructure Engineer",
+      "universe": "descriptive",
+      "status": "active",
+      "created_at": "2026-11-12T19:26:49.448Z",
+      "updated_at": "2026-11-12T20:25:49.166Z"
+    },
+    "researcher": {
+      "display_name": "Researcher",
+      "persistent_name": "Researcher",
+      "role": "AI Research Engineer",
+      "universe": "descriptive",
+      "status": "active",
+      "created_at": "2026-11-12T19:26:52.603Z",
+      "updated_at": "2026-11-12T20:25:49.166Z"
+    }
+  }
+}

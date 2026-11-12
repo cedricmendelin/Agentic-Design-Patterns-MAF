@@ -1,0 +1,314 @@
+{
+  "schema_version": 2,
+  "package": "github/squad/workflows",
+  "manifest": "workflows/aw.yml",
+  "minimum_gh_aw_version": "v0.91.5",
+  "revision_policy": {
+    "kind": "immutable-git-commit",
+    "pattern": "^[0-9a-f]{40}$",
+    "requirement": "Install and update the complete package from one resolved 40-character commit SHA."
+  },
+  "evidence_provider_schema": "squad-evidence-provider/v1",
+  "workflows": [
+    {
+      "name": "squad",
+      "source": "workflows/package/squad.md",
+      "destination": ".github/workflows/squad.md",
+      "lock": ".github/workflows/squad.lock.yml",
+      "source_sha256": "b3e9b33c8ddbf578e277d036c21ea5d1a5136cd234aa6b153627dc5f345bbf3d",
+      "lock_sha256": "36e56e20eedb07007d81a64ebcae38fffe7441c69ff0dbc792048ea9c5576e48",
+      "package_lock_sha256": "f744139e41ce8667555d8b6508b30391d4bf2a142bbefc85e418035c95c7dd97"
+    },
+    {
+      "name": "squad-implement-worker",
+      "source": "workflows/package/squad-implement-worker.md",
+      "destination": ".github/workflows/squad-implement-worker.md",
+      "lock": ".github/workflows/squad-implement-worker.lock.yml",
+      "source_sha256": "f95265bbca7cb7e5ffd2f0da8bf088186b268e9bf003877e5693566b42ebd0b8",
+      "lock_sha256": "a45525e04d183caee420286f45a192f86ec2d53e3cefd005669e9ab83fb09b18",
+      "package_lock_sha256": "4de77bd5b54f10ddc2ba5a90c96412feb042a99e3b20b52b5ab9fb9c046b5277"
+    },
+    {
+      "name": "squad-review",
+      "source": "workflows/package/squad-review.md",
+      "destination": ".github/workflows/squad-review.md",
+      "lock": ".github/workflows/squad-review.lock.yml",
+      "source_sha256": "f620707fd8d117d235c8c3ea1b90fdb198ebbb99a9fe87363b5229674abebc57",
+      "lock_sha256": "888a1235f3bd917b7a6ed18dbbf1cb0063a422ff7284982b3b77cc2ac07ad90e",
+      "package_lock_sha256": "f5fa30aec22fe08985c544c741078ea8168cc69ca581b9aaaf95b08a75361f48"
+    },
+    {
+      "name": "squad-deps-worker",
+      "source": "workflows/package/squad-deps-worker.md",
+      "destination": ".github/workflows/squad-deps-worker.md",
+      "lock": ".github/workflows/squad-deps-worker.lock.yml",
+      "source_sha256": "f4a49fd47b8b945cbe9739908cd7d140ec54623e5259bde02a3d0780e4b2b0da",
+      "lock_sha256": "8a439e8847ccdf79fa2245b5f0cb3b17996a6af5d3d7a12c7261e881f0635317",
+      "package_lock_sha256": "bc87ff18c6d8ecfe837c45d33a0e333249d3d722042a69258b8e5300df38b595"
+    },
+    {
+      "name": "squad-retro",
+      "source": "workflows/package/squad-retro.md",
+      "destination": ".github/workflows/squad-retro.md",
+      "lock": ".github/workflows/squad-retro.lock.yml",
+      "source_sha256": "129a2ed4859d7b145bc1438ad42060e2452b9b400e67b3c9a6f1b34f06e40690",
+      "lock_sha256": "0eeb649e01dc97ca37992f5a6d9733ddce6700b6d3cd3cd2eb37eaf2966503ae",
+      "package_lock_sha256": "4735dd7a1ebc531e777d978b0bd344037fc5f2cefe58bc572a7a52b28f12dff6"
+    },
+    {
+      "name": "squad-improvement-worker",
+      "source": "workflows/package/squad-improvement-worker.md",
+      "destination": ".github/workflows/squad-improvement-worker.md",
+      "lock": ".github/workflows/squad-improvement-worker.lock.yml",
+      "source_sha256": "1215304b71346cc13939a9b7f3e186bc20581d67ddba5ee47b21a9d4bdbc67c7",
+      "lock_sha256": "183010a926f4e01085723103bbaf77071f98f593ff28dd886ef3e5cb9a151283",
+      "package_lock_sha256": "2da0865155a544ce8b9d5ba3a7af8d3b26169dc5fbbe3927249b4e1978a17e3c"
+    },
+    {
+      "name": "squad-bootstrap",
+      "source": "workflows/package/squad-bootstrap.md",
+      "destination": ".github/workflows/squad-bootstrap.md",
+      "lock": ".github/workflows/squad-bootstrap.lock.yml",
+      "source_sha256": "523360c80dc2d5b8fc49c80872f6d9c026a9ddc150fb5093572277679d59e749",
+      "lock_sha256": "5874e5c1ec3860957e7e8f7609af04b4f98b8b6fd44ac821346d709973cf2f0b",
+      "package_lock_sha256": "b51f771b2f394af4749e5de50a508229b5844a19d0f988317a79a0cea2bba36e"
+    },
+    {
+      "name": "squad-command-router",
+      "source": "workflows/package/squad-command-router.md",
+      "destination": ".github/workflows/squad-command-router.md",
+      "lock": ".github/workflows/squad-command-router.lock.yml",
+      "source_sha256": "34d495b2e899dbbfb270135c3d6bc531c510eef91d705a91821e4a5b85f6b92c",
+      "lock_sha256": "8e1658e527380399105c6add9868b3696005ab9a2281708d7ce822fcaf964ee1",
+      "package_lock_sha256": "ae8f8a656e4e3451e37259c5ae847e05a23b45c3f23f5dc0f105e1127f6b465c"
+    }
+  ],
+  "lock_variants": [
+    {
+      "action_failure_issue_expires": 24,
+      "workflows": [
+        {
+          "name": "squad",
+          "lock_sha256": "36e56e20eedb07007d81a64ebcae38fffe7441c69ff0dbc792048ea9c5576e48",
+          "package_lock_sha256": "f744139e41ce8667555d8b6508b30391d4bf2a142bbefc85e418035c95c7dd97"
+        },
+        {
+          "name": "squad-implement-worker",
+          "lock_sha256": "83d3a3294e624f82c6581e32805a6e78cd9499c46ff9783e1b2935b625fcec92",
+          "package_lock_sha256": "469fa5f99f2de9321ec92f4dcf36968a80256ad97a65f6ed77affb9e47709471"
+        },
+        {
+          "name": "squad-review",
+          "lock_sha256": "e1ac795472ca5bd737e4728c2b54668c4570b6cc2a7de262d172f04d8edd7927",
+          "package_lock_sha256": "01092b66488b090eb236f3182adf945057aaa451ab14b88551452378c378d5e4"
+        },
+        {
+          "name": "squad-deps-worker",
+          "lock_sha256": "ff258df99cc1c92ab632c7a192a174f8125f294bd976c26b15ea91468e585f2d",
+          "package_lock_sha256": "9e6ee36411a4959fecf966dfae794fde2fbeea9fd7bbdb6a6c6173517db1f1f2"
+        },
+        {
+          "name": "squad-retro",
+          "lock_sha256": "f7f8297c4e7f832d3ebf316c3163422609eb567876a822e7799524bb18d7a864",
+          "package_lock_sha256": "b04edb7bb9b921e3309f949650c41160975e082c55ebfb04ed94bb611b7647ce"
+        },
+        {
+          "name": "squad-improvement-worker",
+          "lock_sha256": "67d6f8b5ba5794b0b7b8e1b29c3b558d9e322b7f08e5644c8d286fe50a30776b",
+          "package_lock_sha256": "0587de56ff07e1f79770716955db6fe2c3c20a3cf38bd79896008c8986ee5974"
+        },
+        {
+          "name": "squad-bootstrap",
+          "lock_sha256": "7bc5eceb66a2e1b8da43c2239476a6ca750de56ddeccbd689e94fc0a87da2b40",
+          "package_lock_sha256": "805a04d1e6e57ef814cbec83993d776c07f2f1bc6b39134daff7aac08087d500"
+        },
+        {
+          "name": "squad-command-router",
+          "lock_sha256": "8e1658e527380399105c6add9868b3696005ab9a2281708d7ce822fcaf964ee1",
+          "package_lock_sha256": "ae8f8a656e4e3451e37259c5ae847e05a23b45c3f23f5dc0f105e1127f6b465c"
+        }
+      ]
+    }
+  ],
+  "shared_runtime": [
+    {
+      "path": "shared/squad-agent-binding-check.yml",
+      "source": "workflows/shared/squad-agent-binding-check.yml",
+      "package_destination": ".github/aw/squad/runtime/shared/squad-agent-binding-check.yml",
+      "destination": ".github/workflows/squad-agent-binding-check.yml",
+      "ownership": "manifest",
+      "sha256": "e3098d9e9c4f5c711f37718083fb285b4778ecc987fee0c864429b8d868336b3"
+    },
+    {
+      "path": "shared/squad-activation.mjs",
+      "source": "workflows/shared/squad-activation.mjs",
+      "package_destination": ".github/workflows/shared/squad-activation.mjs",
+      "destination": ".github/workflows/shared/squad-activation.mjs",
+      "ownership": "manifest",
+      "sha256": "1d6cc4f5a924d471e83b4bd0cfb754fe8e5376efea339d2a303138350c3bc4f8"
+    },
+    {
+      "path": "shared/check-agent-binding.mjs",
+      "source": "workflows/shared/check-agent-binding.mjs",
+      "package_destination": ".github/workflows/shared/check-agent-binding.mjs",
+      "destination": ".github/workflows/shared/check-agent-binding.mjs",
+      "ownership": "manifest",
+      "sha256": "8ccf2d63049b38a52f78068f2b4dead16a9cda5d947618bf484832e339952892"
+    },
+    {
+      "path": "shared/squad-review-guard.mjs",
+      "source": "workflows/shared/squad-review-guard.mjs",
+      "package_destination": ".github/workflows/shared/squad-review-guard.mjs",
+      "destination": ".github/workflows/shared/squad-review-guard.mjs",
+      "ownership": "manifest",
+      "sha256": "9a6d867acf6906b6578826f83bbe165a1b4ffa975963ddbcbdceaaaf278b605d"
+    },
+    {
+      "path": "shared/squad-install-verifier.mjs",
+      "source": "workflows/shared/squad-install-verifier.mjs",
+      "package_destination": ".github/workflows/shared/squad-install-verifier.mjs",
+      "destination": ".github/workflows/shared/squad-install-verifier.mjs",
+      "ownership": "manifest",
+      "sha256": "b3d02414a2b4daa5f868f881954317feee5266988e2930006aab8ddc69f7c69d"
+    },
+    {
+      "path": "shared/squad-command-contract.mjs",
+      "source": "workflows/shared/squad-command-contract.mjs",
+      "package_destination": ".github/workflows/shared/squad-command-contract.mjs",
+      "destination": ".github/workflows/shared/squad-command-contract.mjs",
+      "ownership": "manifest",
+      "sha256": "9f044d9ab402d893f58eb0477e3d3620540f0b992056ed3a61d090daa50aea4a"
+    },
+    {
+      "path": "shared/squad-evidence-provider.mjs",
+      "source": "workflows/shared/squad-evidence-provider.mjs",
+      "package_destination": ".github/workflows/shared/squad-evidence-provider.mjs",
+      "destination": ".github/workflows/shared/squad-evidence-provider.mjs",
+      "ownership": "manifest",
+      "sha256": "a71e5cc6f0a95665feb25b82a02e8adbb22ae7b7da0fe8553f16bee1dc4a8e5f"
+    },
+    {
+      "path": "shared/squad-cast-validator.mjs",
+      "source": "workflows/shared/squad-cast-validator.mjs",
+      "package_destination": ".github/workflows/shared/squad-cast-validator.mjs",
+      "destination": ".github/workflows/shared/squad-cast-validator.mjs",
+      "ownership": "manifest",
+      "sha256": "15f0d47917d269b5b967dc2a782a0eb761c39af7a92ddb64fed687a427070760"
+    },
+    {
+      "path": "shared/squad-bootstrap-validator.mjs",
+      "source": "workflows/shared/squad-bootstrap-validator.mjs",
+      "package_destination": ".github/workflows/shared/squad-bootstrap-validator.mjs",
+      "destination": ".github/workflows/shared/squad-bootstrap-validator.mjs",
+      "ownership": "manifest",
+      "sha256": "d552d041f006249bfaa67b10a75877f813796b7698c718ac7eb7cf16f3a72e31"
+    },
+    {
+      "path": "shared/squad-improvement-gate.mjs",
+      "source": "workflows/shared/squad-improvement-gate.mjs",
+      "package_destination": ".github/workflows/shared/squad-improvement-gate.mjs",
+      "destination": ".github/workflows/shared/squad-improvement-gate.mjs",
+      "ownership": "manifest",
+      "sha256": "99b9f8e3a93d6f0bff57df927ace89f7be0ea6ba86bb99472103ff53b6f641e1"
+    },
+    {
+      "path": "shared/squad-retro-evidence.mjs",
+      "source": "workflows/shared/squad-retro-evidence.mjs",
+      "package_destination": ".github/workflows/shared/squad-retro-evidence.mjs",
+      "destination": ".github/workflows/shared/squad-retro-evidence.mjs",
+      "ownership": "manifest",
+      "sha256": "59506ca6f1a324d41facf83bbc399b3af253261f8dadae536288529832aaff42"
+    },
+    {
+      "path": "shared/squad-retro-provenance.mjs",
+      "source": "workflows/shared/squad-retro-provenance.mjs",
+      "package_destination": ".github/workflows/shared/squad-retro-provenance.mjs",
+      "destination": ".github/workflows/shared/squad-retro-provenance.mjs",
+      "ownership": "manifest",
+      "sha256": "522ff7a06b7b5cb3bffbf22984386f24986f03808bf434c465fc98057cca3600"
+    },
+    {
+      "path": "shared/squad-implementation-provenance.mjs",
+      "source": "workflows/shared/squad-implementation-provenance.mjs",
+      "package_destination": ".github/workflows/shared/squad-implementation-provenance.mjs",
+      "destination": ".github/workflows/shared/squad-implementation-provenance.mjs",
+      "ownership": "manifest",
+      "sha256": "1f3e35685ee7a21cc4b4512542d1d7a84725dfd599a57bf69708604b9f06b237"
+    },
+    {
+      "path": "shared/squad.md",
+      "source": "workflows/shared/squad.md",
+      "package_destination": ".github/aw/squad/runtime/shared/squad.md",
+      "destination": ".github/workflows/shared/squad.md",
+      "ownership": "manifest",
+      "sha256": "cc93d6596b0a88ad916397e1f1481afd16c625a85d38419d00ee44d6dbece031"
+    },
+    {
+      "path": "shared/squad-planning-ontology.md",
+      "source": "workflows/shared/squad-planning-ontology.md",
+      "package_destination": ".github/aw/squad/runtime/shared/squad-planning-ontology.md",
+      "destination": ".github/workflows/shared/squad-planning-ontology.md",
+      "ownership": "manifest",
+      "sha256": "c9993711eb6c3c1cd99b306483fda1c5b4152b1b57f13478409f3b84040700a7"
+    },
+    {
+      "path": "shared/squad-planning-policy.md",
+      "source": "workflows/shared/squad-planning-policy.md",
+      "package_destination": ".github/aw/squad/runtime/shared/squad-planning-policy.md",
+      "destination": ".github/workflows/shared/squad-planning-policy.md",
+      "ownership": "manifest",
+      "sha256": "e5941906125d7f41d7c59458acc26b3168498e72c8fac8deb7cdb6b6e913e82f"
+    },
+    {
+      "path": "shared/implementation-provenance-v1.schema.json",
+      "source": "workflows/shared/implementation-provenance-v1.schema.json",
+      "package_destination": ".github/aw/squad/runtime/shared/implementation-provenance-v1.schema.json",
+      "destination": ".github/workflows/shared/implementation-provenance-v1.schema.json",
+      "ownership": "manifest",
+      "sha256": "c4ebb0a2b8fc2d0ee5e6bb77c28bee814cb8cd90acd4bda69cf0d8f23a614e7f"
+    },
+    {
+      "path": "shared/builtins/scribe-charter.md",
+      "source": "workflows/shared/builtins/scribe-charter.md",
+      "package_destination": ".github/aw/squad/runtime/shared/builtins/scribe-charter.md",
+      "destination": ".github/workflows/shared/builtins/scribe-charter.md",
+      "ownership": "manifest",
+      "sha256": "01ab375efa4d03b48ddfc51b43374b24646b521c24ac1b881113789f89926044"
+    },
+    {
+      "path": "shared/builtins/ralph-charter.md",
+      "source": "workflows/shared/builtins/ralph-charter.md",
+      "package_destination": ".github/aw/squad/runtime/shared/builtins/ralph-charter.md",
+      "destination": ".github/workflows/shared/builtins/ralph-charter.md",
+      "ownership": "manifest",
+      "sha256": "1937fc197f6a261b75a256dca1da4eec7e4602f8de3cab7e3b06f1e782caa1f0"
+    },
+    {
+      "path": "shared/builtins/rai-charter.md",
+      "source": "workflows/shared/builtins/rai-charter.md",
+      "package_destination": ".github/aw/squad/runtime/shared/builtins/rai-charter.md",
+      "destination": ".github/workflows/shared/builtins/rai-charter.md",
+      "ownership": "manifest",
+      "sha256": "6d40c73cb6e797955358e29a804c18733991fa95fc0b8301cf0cdf80f3f19f58"
+    },
+    {
+      "path": "shared/builtins/fact-checker-charter.md",
+      "source": "workflows/shared/builtins/fact-checker-charter.md",
+      "package_destination": ".github/aw/squad/runtime/shared/builtins/fact-checker-charter.md",
+      "destination": ".github/workflows/shared/builtins/fact-checker-charter.md",
+      "ownership": "manifest",
+      "sha256": "66c38688ea60bb4808d4ae66eda3cbda5e54fb1e351d1be87985751e1fe849fa"
+    }
+  ],
+  "skills": [
+    {
+      "name": "gh-aw-enlistment",
+      "source": "workflows/skills/gh-aw-enlistment/SKILL.md",
+      "destination": ".github/skills/gh-aw-enlistment/SKILL.md",
+      "sha256": "6fa7ef173f9b121a854e7e923ee11044890658d924bb09c963d8dc78a72a5abf"
+    }
+  ],
+  "bootstrap": {
+    "trigger_probe": "shared/squad-bootstrap-trigger-probe.json"
+  }
+}
