@@ -91,7 +91,7 @@ Test one pattern first with `dotnet test .\dotnet\tests\<PatternName>.Tests`. De
 
 ## GitHub Actions live smoke tests
 
-Default CI builds/tests both solutions without secrets and checks diagram drift. Live model smoke tests remain **manual-only**, gated by the protected `foundry-integration` GitHub Environment and trusted default-branch checkout. Configure that Environment with:
+Default CI builds/tests both solutions without secrets and checks diagram drift. The existing **Live Foundry smoke tests** workflow is manual-only and checks out the trusted default branch. Configure its `foundry-integration` Environment with:
 
 | GitHub Environment secret | Runtime mapping |
 |---|---|
@@ -102,4 +102,25 @@ Default CI builds/tests both solutions without secrets and checks diagram drift.
 | `FOUNDRY_MODEL_DEPLOYMENT_REASONING` (optional) | `Foundry__ModelDeployments__reasoning` |
 | `FOUNDRY_MODEL_DEPLOYMENT_QUALITY` (optional) | `Foundry__ModelDeployments__quality` |
 
-Select **Actions → Live Foundry smoke tests** and an optional deployment alias. The workflow runs deterministic checks before the narrower [Foundry.SmokeTests](tests/Foundry.SmokeTests) suite on .NET 11. Adding a project to the solution does not authorize native cloud writes, deployments or resource provisioning. Add explicit smoke coverage and merge to the default branch before protected credentials can exercise a new demo. Native managed-memory, Deep Research, native reasoning tools and native cloud evaluation remain separate opt-ins.
+Select **Actions → Live Foundry smoke tests** and an optional deployment alias. The workflow runs deterministic checks before the narrower [Foundry.SmokeTests](tests/Foundry.SmokeTests) suite on .NET 11. Native managed-memory, Deep Research, native reasoning tools and native cloud evaluation remain separate opt-ins.
+
+### Test a branch before merging
+
+The separate **Live Foundry branch smoke tests** workflow must first be merged to the default branch. It resolves a same-repository branch name or full commit SHA once, runs deterministic tests without Foundry credentials, then requests approval to run live tests against that exact SHA. Workflow scripts come from the default-branch workflow commit, not the tested branch. Branch code is still arbitrary executable code and can read and exfiltrate credentials during the approved live job.
+
+Before using it, a repository administrator must create the `foundry-branch-integration` Environment in **Settings → Environments**:
+
+1. Require at least one human reviewer and restrict deployment branches to a single selected branch: the exact default branch (currently `main`), not a wildcard or tag. Disable administrator bypass where available. If the person triggering the workflow must also approve, do not enable prevention of self-review; otherwise use a separate reviewer and prevent self-review.
+2. Add **environment-only** secrets `BRANCH_FOUNDRY_PROJECT_ENDPOINT`, `BRANCH_FOUNDRY_API_KEY`, and `BRANCH_FOUNDRY_MODEL_DEPLOYMENT`. Do not add these names as repository or organization secrets. Use an isolated test resource and a dedicated, minimally scoped credential with appropriate quotas and spending limits; never reuse production credentials.
+3. Restrict the existing `foundry-integration` Environment to the default branch as well, and configure its own approval rules. An unprotected environment can otherwise expose its credentials to workflows modified on other branches.
+
+The branch workflow refuses to enter its live job unless its environment has a required reviewer and exactly one default-branch deployment policy. Review the displayed commit and its changes before approving; approval is not a sandbox and cannot make untrusted code safe. Environment rules are an external security boundary and must remain enabled.
+
+After setup, select **Actions → Live Foundry branch smoke tests**, choose the default branch as the workflow ref, and provide `test_ref`, `framework` and an optional additional smoke filter. For example:
+
+```bash
+gh workflow run live-foundry-branch-tests.yml --ref main \
+  -f test_ref=my-branch -f framework=net11.0
+```
+
+Inspect the run summary and approval request for the resolved commit SHA. Branches without a `net11.0` test target may need `framework=net10.0`. A passing smoke test is not a deployment or a guarantee of model quality.
