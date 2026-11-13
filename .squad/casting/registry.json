@@ -6,7 +6,7 @@
   "agents": {
     "architect": {
       "display_name": "Architect",
-      "persistent_name": "Architect",
+      "persistent_name": "architect",
       "role": "Lead / Architect",
       "universe": "descriptive",
       "status": "active",
@@ -15,7 +15,7 @@
     },
     "coder": {
       "display_name": "Coder",
-      "persistent_name": "Coder",
+      "persistent_name": "coder",
       "role": "Backend Developer",
       "universe": "descriptive",
       "status": "active",
@@ -24,7 +24,7 @@
     },
     "foundry": {
       "display_name": "Foundry",
-      "persistent_name": "Foundry",
+      "persistent_name": "foundry",
       "role": "AI Engineer",
       "universe": "descriptive",
       "status": "active",
@@ -33,7 +33,7 @@
     },
     "verifier": {
       "display_name": "Verifier",
-      "persistent_name": "Verifier",
+      "persistent_name": "verifier",
       "role": "Test Engineer",
       "universe": "descriptive",
       "status": "active",
@@ -42,7 +42,7 @@
     },
     "devrel": {
       "display_name": "DevRel",
-      "persistent_name": "DevRel",
+      "persistent_name": "devrel",
       "role": "Technical Writer",
       "universe": "descriptive",
       "status": "active",
@@ -51,7 +51,7 @@
     },
     "devops": {
       "display_name": "DevOps",
-      "persistent_name": "DevOps",
+      "persistent_name": "devops",
       "role": "Infrastructure Engineer",
       "universe": "descriptive",
       "status": "active",
@@ -60,7 +60,7 @@
     },
     "researcher": {
       "display_name": "Researcher",
-      "persistent_name": "Researcher",
+      "persistent_name": "researcher",
       "role": "AI Research Engineer",
       "universe": "descriptive",
       "status": "active",
