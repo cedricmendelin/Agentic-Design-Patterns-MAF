@@ -1104,10 +1104,11 @@ engine:
   id: copilot
   version: 1.0.78
   agent: squad
-  copilot-sdk: true
+  # gh-aw v0.91.5's SDK driver omits skillDirectories from session creation.
+  # The CLI discovers the restored inline skills without changing runtime pins.
+  copilot-sdk: false
 tools:
   bash: true
-  web-fetch: null
   github:
     mode: gh-proxy
     toolsets:
@@ -2291,7 +2292,10 @@ Each mode's playbook ships as a **skill**. Enter this section only after **Actor
 
 **Planning modes only** — before running the mode skill, also load `squad-planning-policy` (policy resolution) and `squad-planning-ontology` (artifact schemas and the lifecycle state machine). The non-planning modes (Cast, Connect, Adopt, Cast Member, Retire, Status, Review Relay, Approve Improvement, Revoke Improvement, Implement) must not load them.
 
-If the parsed mode's skill cannot be loaded, report the failure in plain language and stop. Never improvise a mode playbook from memory.
+If the parsed mode's skill or a required planning prerequisite cannot be loaded,
+call `report_incomplete` with the missing skill name and stop. Never use `noop`
+for this failure: it would leave an incomplete command green. Never improvise a
+mode playbook from memory.
 
 ---
 
@@ -3058,8 +3062,9 @@ load the provider runtime, descriptor or credentials yourself. A failed gate
 stops the run; do not fall back to the baseline or claim successful research.
 
 **Online documentation.** When the repository's gh-aw network policy permits
-outbound access, use the `web-fetch` tool to consult current, authoritative
-primary documentation for the technologies in scope. Prefer official vendor docs
+outbound access, use the `web-fetch` tool when available, or `curl --fail --location`
+through `bash` in CLI mode, to consult current, authoritative primary documentation
+for the technologies in scope. Prefer official vendor docs
 and specifications over blogs or aggregators, and prefer the current published
 version over recalled model knowledge. Honor any explicit source-of-truth
 instruction from the research focus when that source is reachable. GitHub/gh-aw
