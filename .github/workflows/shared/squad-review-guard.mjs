@@ -22,6 +22,8 @@ const ID = /^[a-z][a-z0-9-]*$/;
 const BOT = 'github-actions[bot]';
 const BOT_ID = 41898282;
 const BOOTSTRAP_BRANCH = 'squad/bootstrap-cast';
+const COPILOT_BOT = 'copilot-swe-agent[bot]';
+const EXTERNAL_REVIEWER = 'verifier';
 const BOOTSTRAP_AUTHOR = '@squad/base-controlled-bootstrap';
 const BOOTSTRAP_REVIEWER = '@squad/base-controlled-review';
 const BOOTSTRAP_PREFIX = '<' + '!-- squad:bootstrap-provenance ';
@@ -68,6 +70,21 @@ export function validateAttribution(value, registry, repository, issue) {
   }
   requireThat(value.author_agent !== value.reviewer_agent, 'author and reviewer must be distinct');
   return value;
+}
+
+function validateExternalAttribution(registry, pr) {
+  const isHuman = pr.user?.type === 'User';
+  const isCopilot = pr.user?.type === 'Bot' &&
+    (pr.user.login === COPILOT_BOT || pr.head.ref.startsWith('copilot/'));
+  requireThat(isHuman || isCopilot, 'unsupported author for unattributed pull request');
+  requireThat(registry?.schema === 'squad-agent-provenance/v1' &&
+    registry.schema_version === 1 && registry.agents &&
+    typeof registry.agents === 'object', 'invalid committed agent registry');
+  const reviewer = registry.agents[EXTERNAL_REVIEWER];
+  requireThat(reviewer?.status === 'active' &&
+    reviewer.persistent_name === EXTERNAL_REVIEWER,
+  'missing active verifier agent for external pull request');
+  return { author_agent: null, reviewer_agent: EXTERNAL_REVIEWER };
 }
 
 export function validateVerdict(value, expected, review, now = Date.now()) {
@@ -432,11 +449,23 @@ export async function reviewTarget(
   );
   let attribution;
   if (value === undefined) {
-    requireThat(relay === false && env.GITHUB_EVENT_NAME === 'pull_request_target',
-      'missing committed attribution outside base-controlled bootstrap activation');
-    attribution = pr.head.ref.startsWith(BOOTSTRAP_BRANCH) && pr.user?.type !== 'Bot'
-      ? await validateBootstrapPrFallbackAttribution(env, get, repository, pr, requireBootstrapRunSuccess)
-      : await validateBootstrapAttribution(get, repository, pr, requireBootstrapRunSuccess);
+    if (pr.head.ref.startsWith(BOOTSTRAP_BRANCH)) {
+      requireThat(relay === false && env.GITHUB_EVENT_NAME === 'pull_request_target',
+        'missing committed attribution outside base-controlled bootstrap activation');
+      attribution = pr.user?.type !== 'Bot'
+        ? await validateBootstrapPrFallbackAttribution(env, get, repository, pr, requireBootstrapRunSuccess)
+        : await validateBootstrapAttribution(get, repository, pr, requireBootstrapRunSuccess);
+    } else {
+      requireThat(!pr.head.ref.startsWith('squad/') && !body.includes('squad:implement'),
+        'missing committed attribution for Squad-authored pull request');
+      const registry = await committedJson(
+        get,
+        repository,
+        '.squad/casting/registry.json',
+        pr.base.sha,
+      );
+      attribution = validateExternalAttribution(registry, pr);
+    }
   } else {
     const registry = await committedJson(
       get,
