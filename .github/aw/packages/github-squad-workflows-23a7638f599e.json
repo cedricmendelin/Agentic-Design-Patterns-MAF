@@ -8,7 +8,7 @@
     {
       "source": "workflows/squad-workflows.manifest.json",
       "destination": ".github/aw/squad-workflows.manifest.json",
-      "sha256": "a7cd89c08e1137ca4543e25bbf07ec85b1957fddbec57a6dfae88418928d4647"
+      "sha256": "ffb30b16779086500a501a998b3e5c772b3bce3ef8aa1ec05ad63633f71fc467"
     },
     {
       "source": "workflows/shared/builtins/fact-checker-charter.md",
@@ -113,7 +113,7 @@
     {
       "source": "workflows/shared/squad-review-guard.mjs",
       "destination": ".github/workflows/shared/squad-review-guard.mjs",
-      "sha256": "9a6d867acf6906b6578826f83bbe165a1b4ffa975963ddbcbdceaaaf278b605d"
+      "sha256": "863438589d5b92a7fd7950eee99e3e9bf20294a5c8f57be3ac5385fa9047b18b"
     },
     {
       "source": "workflows/package/squad-bootstrap.md",
@@ -148,7 +148,7 @@
     {
       "source": "workflows/package/squad-review.md",
       "destination": ".github/workflows/squad-review.md",
-      "sha256": "c3a17f3c65cbb1f04be1418add2c0ee96200e7ffbd69101f53ccdf0e37cd4488"
+      "sha256": "ab97984212a095a0ef058fc4df9588db9ce90c4cb617ada42c61a0ccf4b0d722"
     },
     {
       "source": "workflows/package/squad.md",
