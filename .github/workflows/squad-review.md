@@ -164,13 +164,25 @@ aid that points to GitHub's **Re-run jobs** action for the existing automatic
 run. Never execute reviewer code, guards, manifests, or safe-output handlers
 from a manually selected ref.
 
-Read `.squad-review.json` at the exact PR head SHA and the committed
-`.squad/casting/registry.json` at the PR base SHA. The attribution schema is
-`squad-review-author/v1` with `repository`, positive integer `issue`,
-`author_agent`, and `reviewer_agent`. Both IDs must be active canonical
-`persistent_name` entries in that registry, and must differ. Act as that
-`reviewer_agent`, reading its base-commit charter. Missing or malformed
-attribution is a refusal, never a fallback to a display name or GitHub login.
+Read `.squad-review.json` at the exact PR head SHA. When it exists, validate
+the `squad-review-author/v1` attribution against the committed
+`.squad/casting/registry.json` at the PR base SHA: `repository`, positive
+integer `issue`, `author_agent`, and `reviewer_agent` are required; both IDs
+must be active canonical `persistent_name` entries and must differ. Act as the
+validated `reviewer_agent`, reading its base-commit charter.
+
+A 404 for `.squad-review.json` is allowed only for a non-Squad PR: a human
+GitHub `User`, or the `copilot-swe-agent[bot]` / `copilot/*` form, with no
+`squad/*` head branch and no `squad:implement` marker. For that path, read the
+base-committed agent registry and act as its active canonical `verifier` agent.
+Set `author_agent` to `null`; do not infer or fabricate a Squad author. This
+changes identity attribution only: perform the same complete review and submit
+exactly one fresh, current-head verdict. Squad branches and implementation
+markers still require valid committed attribution; bootstrap PRs retain their
+separate provenance checks. Malformed attribution, non-404 read errors,
+unsupported authors, or an invalid verifier identity are refusals, never
+fallbacks to a display name or GitHub login.
+
 The deterministic output guard and final job repeat these checks. GitHub
 publishes the native job result as the stable `Squad Review / review` required
 status context. The job uses `if: always()` and fails unless the agent, safe
@@ -198,7 +210,8 @@ current PR base. No reset record broadens legacy manual-dispatch authorization.
 It binds the reserved roles
 `@squad/base-controlled-bootstrap` and `@squad/base-controlled-review`; the
 clearing gate additionally requires that bootstrap run to finish successfully.
-All other missing, malformed, or non-404 attribution evidence is refused.
+Outside the explicit non-Squad human/Copilot path above, missing, malformed,
+or non-404 attribution evidence is refused.
 
 ## Provenance decision tree
 
@@ -211,7 +224,8 @@ priority evidence.
 | 1 | One validated durable worker marker | Squad-authored |
 | 2 | `squad/implement-*` head branch with no marker-like text | Squad-authored fallback |
 | 3 | Login `copilot-swe-agent[bot]` or `copilot/*` head branch with no marker-like text | Copilot-authored |
-| 4 | None of the above | Unattributed |
+| 4 | GitHub `User` with no marker and no `squad/*` head branch | External human |
+| 5 | None of the above | Unattributed |
 
 The durable marker schema from the implement worker is exactly one standalone
 body line. Build its exact regular expression by concatenating these three
@@ -226,10 +240,13 @@ marker line, and a head ref matching
 or branch-mismatched marker evidence is invalid provenance. Fail closed with
 `noop`; do not fall back to branch or Copilot attribution.
 
-This classification is descriptive only. Every same-repository PR (including
-human and Copilot PRs) needs the committed stable-agent attribution above to
-clear the check. `Unattributed` is not permission to skip the gate or fabricate
-an identity. Malformed marker text remains a refusal on both trigger paths.
+Squad-authored PRs need the committed stable-agent attribution above to clear
+the check. Non-Squad human and Copilot PRs use the base-committed `verifier`
+identity and carry no Squad author identity; they still require the same
+independent review, safe-output checks, exact-head verdict, and human approval.
+`Unattributed` bots and any Squad-namespace PR without attribution are refused.
+No classification permits skipping the gate or fabricating an identity.
+Malformed marker text remains a refusal on both trigger paths.
 
 ## Run-attempt evidence
 
@@ -284,8 +301,9 @@ Submit exactly one review:
 - Never use `APPROVE`. Human approval remains mandatory.
 
 Do not emit `Squad-Review-Verdict:` or `Squad-Review-Override:` yourself.
-The trusted safe-output guard adds the repository, PR, head SHA, stable
-author/reviewer IDs, result, timestamp and exact automatic workflow-run binding.
+The trusted safe-output guard adds the repository, PR, head SHA, validated
+Squad author ID (or `null` for a non-Squad PR), stable reviewer ID, result,
+timestamp and exact automatic workflow-run binding.
 Manual dispatch does not exist. A valid `REQUEST_CHANGES` keeps the check red
 unless an administrator posts the documented SHA- and review-scoped override
 and reruns the same PR workflow. Overrides cannot repair invalid identity or
