@@ -21,13 +21,13 @@ Configure [shared model settings](../../README.md), then from the repository roo
 ```powershell
 $env:PORT = '5090'
 $env:A2A_PUBLIC_URL = 'http://localhost:5090/'
-dotnet run --project dotnet\src\A2A.Hosted
+dotnet run --framework net10.0 --project dotnet\src\A2A.Hosted
 ```
 
 In another terminal:
 
 ```powershell
-dotnet run --project dotnet\src\A2A -- all http://localhost:5090/
+dotnet run --framework net11.0 --project dotnet\src\A2A -- all http://localhost:5090/
 ```
 
 `PORT` defaults to 8088; `A2A_PUBLIC_URL` must be an absolute HTTP(S) URL and defaults to localhost on that port. The local server binds to all interfaces and does not authenticate callers: use a trusted network/firewall, never expose it publicly as-is.

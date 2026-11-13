@@ -52,7 +52,7 @@ for (var index = 0; index < args.Length; index++)
 if (invalidArguments)
 {
     Console.Error.WriteLine(
-        "Usage: dotnet run --project dotnet/src/MultiAgent " +
+        "Usage: dotnet run --framework net11.0 --project dotnet/src/MultiAgent " +
         "[sequential|parallel|loop|coordinator|agenttool|crew|all] " +
         "[--task <text>] [--deployment <deployment-alias>]");
     return 1;

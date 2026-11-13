@@ -37,12 +37,12 @@ flowchart LR
 
 ## Run
 
-Configure .NET 10 and [shared model settings](../../README.md). From the repository root:
+Configure .NET 11 and [shared model settings](../../README.md). From the repository root:
 
 ```powershell
-dotnet run --project dotnet\src\ExplorationDiscovery
-dotnet run --project dotnet\src\ExplorationDiscovery -- explore --topic "Test adaptive batching against latency and cost." --deployment quality
-dotnet run --project dotnet\src\ExplorationDiscovery -- deep-research --topic "How does adaptive batching affect inference latency?" --research-deployment deep-research --domain arxiv.org --domain nature.com
+dotnet run --framework net11.0 --project dotnet\src\ExplorationDiscovery
+dotnet run --framework net11.0 --project dotnet\src\ExplorationDiscovery -- explore --topic "Test adaptive batching against latency and cost." --deployment quality
+dotnet run --framework net11.0 --project dotnet\src\ExplorationDiscovery -- deep-research --topic "How does adaptive batching affect inference latency?" --research-deployment deep-research --domain arxiv.org --domain nature.com
 dotnet test dotnet\tests\ExplorationDiscovery.Tests
 ```
 

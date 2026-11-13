@@ -49,13 +49,13 @@ The local agent fails explicitly if it skips retrieval, omits citations, or cite
 Configure shared user-secrets ([dotnet/README.md](../../README.md)), then:
 
 ```powershell
-dotnet run --project dotnet/src/RAG
-dotnet run --project dotnet/src/RAG -- rag "What did the address say about the economy?"
-dotnet run --project dotnet/src/RAG -- rag "Tell me about astrophysics"   # no relevant passage
+dotnet run --framework net11.0 --project dotnet/src/RAG
+dotnet run --framework net11.0 --project dotnet/src/RAG -- rag "What did the address say about the economy?"
+dotnet run --framework net11.0 --project dotnet/src/RAG -- rag "Tell me about astrophysics"   # no relevant passage
 dotnet user-secrets set "Foundry:FileSearchVectorStoreId" "<vector-store-id>" --project dotnet/src/Shared
-dotnet run --project dotnet/src/RAG -- foundry-files "Summarize the indexed documents."
-dotnet run --project dotnet/src/RAG -- foundry-web "What are the latest developments in AI?"
-dotnet run --project dotnet/src/RAG -- all "What did the president say about the economy?" --deployment fast
+dotnet run --framework net11.0 --project dotnet/src/RAG -- foundry-files "Summarize the indexed documents."
+dotnet run --framework net11.0 --project dotnet/src/RAG -- foundry-web "What are the latest developments in AI?"
+dotnet run --framework net11.0 --project dotnet/src/RAG -- all "What did the president say about the economy?" --deployment fast
 dotnet test dotnet/tests/RAG.Tests
 ```
 

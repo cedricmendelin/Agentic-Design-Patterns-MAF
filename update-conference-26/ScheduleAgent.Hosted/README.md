@@ -31,7 +31,7 @@ The host reads shared local user-secrets, then this project's user-secrets, then
 
 ## 1. Prepare tools and an existing Foundry project
 
-Install .NET 10, Azure CLI, Azure Developer CLI **>=1.35.1**, and its `azure.ai.agents` extension **>=1.0.0-beta.19**, as required by [azure.yaml](azure.yaml). Check your installed CLI's extension help if installation is needed:
+Install the .NET 11 SDK (11.0.100), the .NET 10 and ASP.NET Core 10 runtimes (or the .NET 10 SDK, which includes both), Azure CLI, Azure Developer CLI **>=1.35.1**, and its `azure.ai.agents` extension **>=1.0.0-beta.19**, as required by [azure.yaml](azure.yaml). Check your installed CLI's extension help if installation is needed:
 
 ```powershell
 dotnet --version
@@ -71,7 +71,7 @@ $env:Foundry__ProjectEndpoint = 'https://<account>.services.ai.azure.com/api/pro
 $env:Foundry__ModelDeployment = '<chat-deployment>'
 $env:AZURE_TENANT_ID = '<tenant-id>'
 dotnet build ScheduleAgent.Hosted.csproj
-dotnet run --project ScheduleAgent.Hosted.csproj
+dotnet run --framework net10.0 --project ScheduleAgent.Hosted.csproj
 ```
 
 Use the listening URL printed at startup (the pinned hosting stack normally uses port 8088). In another terminal:
@@ -90,7 +90,7 @@ Inspect the final output for real schedule titles/times and `#s...` references. 
 
 ```powershell
 dotnet test ../ConferenceDemos.Tests/ConferenceDemos.Tests.csproj
-dotnet publish ScheduleAgent.Hosted.csproj -c Release -o publish
+dotnet publish ScheduleAgent.Hosted.csproj -c Release -f net10.0 -o publish
 ```
 
 The tests cover the embedded canonical fixture and hosted request behavior. Check that `publish` contains `ScheduleAgent.Hosted.dll`, `ConferenceDemos.dll`, `AgenticDesignPatterns.Shared.dll`, `AgenticDesignPatterns.Shared.Hosting.dll`, the host `.deps.json`, and `.runtimeconfig.json`. Keep the repository checkout intact: source project references cross back into `dotnet/`. Do not upload just this source folder or point azd's `project` at `publish`.

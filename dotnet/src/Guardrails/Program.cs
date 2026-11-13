@@ -74,7 +74,7 @@ if (invalidArguments ||
     (selectedNative && !runAllDemos && deploymentSelection is not null))
 {
     Console.Error.WriteLine(
-        "Usage: dotnet run --project dotnet/src/Guardrails [all|policy|policy-legacy|tool-validation|content-safety] " +
+        "Usage: dotnet run --framework net11.0 --project dotnet/src/Guardrails [all|policy|policy-legacy|tool-validation|content-safety] " +
         "[--deployment <name>] [--text <text>]");
     return 1;
 }

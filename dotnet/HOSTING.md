@@ -6,7 +6,13 @@ use its hosted README for the exact input, output, state, and protocol contract.
 
 ## Local setup
 
-Use .NET 10, PowerShell 7, Azure CLI, and azd. Each hosted project has its own
+Use the .NET 11 SDK (11.0.100), the .NET 10 and ASP.NET Core 10 runtimes
+(or the .NET 10 SDK, which supplies both), PowerShell 7, Azure CLI, and azd. Foundry host
+projects are single-target `net10.0` so their unchanged `azure.yaml` startup commands
+and deployment runtime stay aligned. Local console demos use `net11.0`; reusable
+libraries multi-target so the hosts can reference their compatible `net10.0` builds.
+Publish the deployable host and its project references with `--framework net10.0`.
+Each hosted project has its own
 `azure.yaml`, which declares the required azd and `azure.ai.agents` extension versions.
 Use an existing project with hosted-agent support and a compatible deployed model.
 Sign in to your intended tenant yourself; Azure CLI and azd authentication are separate.
@@ -28,7 +34,7 @@ identity, not committed keys. The local developer identity also needs inference 
 ```powershell
 $env:Foundry__ProjectEndpoint = 'https://<account>.services.ai.azure.com/api/projects/<project>'
 $env:Foundry__ModelDeployment = '<chat-deployment>'
-dotnet run --project .\dotnet\src\Reflection.Hosted
+dotnet run --framework net10.0 --project .\dotnet\src\Reflection.Hosted
 ```
 
 Invoke the protocol endpoint documented by the selected companion from another
@@ -91,8 +97,11 @@ session state, and buffers a completed workflow result for streaming delivery. I
 not suitable for durable approvals or conversational memory without a separate state
 contract. Specialized hosts retain their identity, isolation and protocol controls.
 
-The manifest uses .NET 10 code deployment with `dependencyResolution: bundled`.
-azd publishes each host and its project references locally before upload. Preserve
+The manifest declares `runtime: dotnet_10` and uses
+`dependencyResolution: bundled`. azd publishes each host and its project references
+for .NET 10 locally before upload. For a direct compatibility check, publish with
+`dotnet publish <host.csproj> -c Release -f net10.0 -o <temporary-directory>`.
+Preserve
 source project paths, runtime, entry point and protocol settings. Include referenced
 demo, Shared and Shared.Hosting assemblies plus central package/build configuration.
 Exclude `.azure`, `.env*`, `secrets.json`, credentials and unnecessary intermediates.

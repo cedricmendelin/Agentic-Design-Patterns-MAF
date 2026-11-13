@@ -20,7 +20,7 @@ for (var index = 0; index < args.Length; index++)
     else
     {
         Console.Error.WriteLine(
-            "Usage: dotnet run --project dotnet/src/MCP [all|greet|files|foundry-native] [--deployment <name>]");
+            "Usage: dotnet run --framework net11.0 --project dotnet/src/MCP [all|greet|files|foundry-native] [--deployment <name>]");
         return 1;
     }
 }

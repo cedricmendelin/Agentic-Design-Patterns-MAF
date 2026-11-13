@@ -48,7 +48,7 @@ In the first terminal, from the repository root:
 ```powershell
 $env:Distributed__Role = 'researcher'
 $env:PORT = '8091'
-dotnet run --no-build --project .\dotnet\src\MultiAgent.Distributed
+dotnet run --framework net10.0 --no-build --project .\dotnet\src\MultiAgent.Distributed
 ```
 
 In a second terminal:
@@ -56,7 +56,7 @@ In a second terminal:
 ```powershell
 $env:Distributed__Role = 'writer'
 $env:PORT = '8092'
-dotnet run --no-build --project .\dotnet\src\MultiAgent.Distributed
+dotnet run --framework net10.0 --no-build --project .\dotnet\src\MultiAgent.Distributed
 ```
 
 In a third terminal:
@@ -66,7 +66,7 @@ $env:Distributed__Role = 'orchestrator'
 $env:Distributed__ResearcherEndpoint = 'http://127.0.0.1:8091/responses'
 $env:Distributed__WriterEndpoint = 'http://127.0.0.1:8092/responses'
 $env:PORT = '8093'
-dotnet run --no-build --project .\dotnet\src\MultiAgent.Distributed
+dotnet run --framework net10.0 --no-build --project .\dotnet\src\MultiAgent.Distributed
 ```
 
 From a fourth terminal, invoke the actual orchestration endpoint:

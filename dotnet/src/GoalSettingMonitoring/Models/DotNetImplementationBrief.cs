@@ -14,7 +14,7 @@ public sealed record GoalSettingHardCriteriaResult(
 public static class GoalSettingHardCriteria
 {
     public const string RequiredLanguage = "C#";
-    public const string RequiredTargetFramework = "net10.0";
+    public const string RequiredTargetFramework = "net11.0";
     public const int MinimumImplementationSteps = 3;
 
     private static readonly IReadOnlyList<string> Criteria = Array.AsReadOnly(

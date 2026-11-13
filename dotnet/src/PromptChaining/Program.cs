@@ -51,7 +51,7 @@ var selectedDemos = runAllDemos
 if (invalidArguments || selectedDemos is null)
 {
     Console.Error.WriteLine(
-        "Usage: dotnet run --project dotnet/src/PromptChaining [specs|trends|all] [--deployment <name>]");
+        "Usage: dotnet run --framework net11.0 --project dotnet/src/PromptChaining [specs|trends|all] [--deployment <name>]");
     return 1;
 }
 

@@ -5,6 +5,8 @@ on:
     paths:
       - ".github/workflows/dotnet-ci.yml"
       - ".github/workflows/live-foundry-tests.yml"
+      - ".github/workflows/live-foundry-branch-tests.yml"
+      - ".github/scripts/foundry-branch-checks*"
       - "dotnet/**"
       - "update-conference-26/**"
       - "docs/**"
@@ -18,6 +20,8 @@ on:
     paths:
       - ".github/workflows/dotnet-ci.yml"
       - ".github/workflows/live-foundry-tests.yml"
+      - ".github/workflows/live-foundry-branch-tests.yml"
+      - ".github/scripts/foundry-branch-checks*"
       - "dotnet/**"
       - "update-conference-26/**"
       - "docs/**"
@@ -38,10 +42,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Test branch-test safeguards
+        run: node --test .github/scripts/foundry-branch-checks.test.mjs
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "10.0.x"
+          dotnet-version: |
+            10.0.x
+            11.0.x
 
       - name: Restore
         run: dotnet restore dotnet/AgenticDesignPatterns.slnx

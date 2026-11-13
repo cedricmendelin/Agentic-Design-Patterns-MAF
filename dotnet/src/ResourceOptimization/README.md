@@ -36,13 +36,13 @@ Missing route aliases fall back to the configured default, case-insensitively. A
 
 ## Run
 
-Configure .NET 10 and [shared Foundry settings](../../README.md). Optional aliases use `Foundry:ModelDeployments:fast`, `reasoning`, and `quality`. From the repository root:
+Configure .NET 11 and [shared Foundry settings](../../README.md). Optional aliases use `Foundry:ModelDeployments:fast`, `reasoning`, and `quality`. From the repository root:
 
 ```powershell
-dotnet run --project dotnet\src\ResourceOptimization
-dotnet run --project dotnet\src\ResourceOptimization -- complexity
-dotnet run --project dotnet\src\ResourceOptimization -- all
-dotnet run --project dotnet\src\ResourceOptimization -- research --deployment quality
+dotnet run --framework net11.0 --project dotnet\src\ResourceOptimization
+dotnet run --framework net11.0 --project dotnet\src\ResourceOptimization -- complexity
+dotnet run --framework net11.0 --project dotnet\src\ResourceOptimization -- all
+dotnet run --framework net11.0 --project dotnet\src\ResourceOptimization -- research --deployment quality
 dotnet test dotnet\tests\ResourceOptimization.Tests
 ```
 

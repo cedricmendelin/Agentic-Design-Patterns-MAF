@@ -23,7 +23,7 @@ outcomes describe required action; they are not completed approvals.
 
 ## Configuration and local run
 
-Use .NET 10 and the [model deployment aliases](../DecisionModels/README.md#setup-and-run).
+Use .NET 11 and the [model deployment aliases](../DecisionModels/README.md#setup-and-run).
 The host always uses Entra ID (`DefaultAzureCredential` locally, managed identity in
 Azure), ignoring shared API keys. Your identity needs inference access. Endpoint/model
 configuration uses shared user-secrets, `Foundry__*` overrides and runtime fallbacks
@@ -34,7 +34,7 @@ $env:Foundry__ProjectEndpoint = 'https://<account>.services.ai.azure.com/api/pro
 $env:Foundry__ModelDeployment = '<generative-chat-deployment>'
 $env:Foundry__ModelDeployments__decision = '<microsoft-decision-deployment>'
 $env:Decisions__Provider = 'microsoft'
-dotnet run --project dotnet\src\DecisionModels.Hosted -- --urls http://localhost:8088
+dotnet run --framework net10.0 --project dotnet\src\DecisionModels.Hosted -- --urls http://localhost:8088
 ```
 
 For `Decisions__Provider = 'openai'`, configure `Foundry__ModelDeployments__openaiDecision`

@@ -22,7 +22,7 @@ Only the latest user message is used. Recognized prefixes require nonempty conte
 Configure [shared settings](../../README.md). A local Development environment can use the configured API key; otherwise the host uses Entra credentials. Do not provide API keys to the Azure runtime.
 
 ```powershell
-dotnet run --project dotnet\src\Reasoning.Hosted
+dotnet run --framework net10.0 --project dotnet\src\Reasoning.Hosted
 ```
 
 In another terminal, from this project's directory:

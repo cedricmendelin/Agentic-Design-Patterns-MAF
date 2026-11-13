@@ -5,6 +5,38 @@ using Microsoft.Extensions.AI;
 
 namespace AgenticDesignPatterns.Foundry.SmokeTests;
 
+public sealed class DotnetDemoRunnerTests
+{
+    [Fact]
+    public async Task Runs_multi_target_demo_for_the_test_framework()
+    {
+        var project = Path.Combine(
+            DotnetDemoRunner.RepositoryRoot,
+            "dotnet", "src", "HumanInTheLoop", "HumanInTheLoop.csproj");
+
+        var startInfo = DotnetDemoRunner.CreateStartInfo(project, ["--help"]);
+#if NET10_0
+        const string expectedFramework = "net10.0";
+#else
+        const string expectedFramework = "net11.0";
+#endif
+#if DEBUG
+        const string expectedConfiguration = "Debug";
+#else
+        const string expectedConfiguration = "Release";
+#endif
+        Assert.Equal(
+            ["run", "--project", project, "--framework", expectedFramework,
+             "--configuration", expectedConfiguration, "--no-build", "--", "--help"],
+            startInfo.ArgumentList.Take(10));
+
+        var result = await DotnetDemoRunner.RunAsync(project, ["--help"]);
+
+        Assert.True(result.ExitCode == 1, result.CombinedOutput);
+        Assert.Contains("Usage:", result.StandardError);
+    }
+}
+
 [Trait("Category", "LiveFoundry")]
 public sealed class FoundrySmokeTests
 {

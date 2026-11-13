@@ -26,7 +26,7 @@ Each family has its own illustrated guide, with pattern-to-pattern navigation an
 
 Start locally with one Foundry chat deployment. Hosting, managed tools and additional Azure services are optional.
 
-You need Git, the **.NET 10 SDK**, NuGet access, and an accessible **Microsoft Foundry resource/project with one deployed chat model**. The deployment must support structured JSON output for the first example; tool-using patterns also need tool calling. You need that model-hosting resource's API key. No hosted agent, container registry, embedding model, Azure AI Search, Content Safety, Node or Python is needed for this first run.
+You need Git, the **.NET 11 SDK (11.0.100)**, NuGet access, and an accessible **Microsoft Foundry resource/project with one deployed chat model**. The deployment must support structured JSON output for the first example; tool-using patterns also need tool calling. You need that model-hosting resource's API key. No hosted agent, container registry, embedding model, Azure AI Search, Content Safety, Node or Python is needed for this first run.
 
 Run these PowerShell commands:
 
@@ -38,7 +38,7 @@ dotnet user-secrets set "Foundry:ProjectEndpoint" "https://<resource>.services.a
 dotnet user-secrets set "Foundry:ApiKey" "<resource-api-key>" --project .\dotnet\src\Shared
 dotnet user-secrets set "Foundry:ModelDeployment" "<deployment-name>" --project .\dotnet\src\Shared
 
-dotnet run --project .\dotnet\src\PromptChaining -- specs
+dotnet run --framework net11.0 --project .\dotnet\src\PromptChaining -- specs
 ```
 
 Use the **deployment name**, not simply a model name. `ProjectEndpoint` is the standard Foundry project endpoint, not a chat completions URL. The current shared client derives `https://<resource>.openai.azure.com/openai/v1/` from it; the API key must authorize inference on that resource. See the [C# setup guide](dotnet/README.md) for environment overrides, model aliases and optional-service requirements.
@@ -57,7 +57,7 @@ Build the collection or run the first pattern's deterministic tests without clou
 
 ```powershell
 dotnet build .\dotnet\AgenticDesignPatterns.slnx
-dotnet test .\dotnet\tests\PromptChaining.Tests
+dotnet test .\dotnet\tests\PromptChaining.Tests --framework net11.0
 ```
 
 ## Choose a pattern

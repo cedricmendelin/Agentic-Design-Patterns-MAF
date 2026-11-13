@@ -29,7 +29,7 @@ Unset aliases fall back to the default model. If all aliases are unset, every ro
 From the repository root:
 
 ```powershell
-dotnet run --project dotnet\src\ResourceOptimization.Hosted
+dotnet run --framework net10.0 --project dotnet\src\ResourceOptimization.Hosted
 ```
 
 In another terminal, from this project's directory:

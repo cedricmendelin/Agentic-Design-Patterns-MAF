@@ -36,13 +36,13 @@ The default `crew` scenario hands a research task to a writing task; each select
 
 ## Run
 
-Use .NET 10 and [shared Foundry configuration](../../README.md). From the repository root:
+Use .NET 11 and [shared Foundry configuration](../../README.md). From the repository root:
 
 ```powershell
-dotnet run --project .\dotnet\src\MultiAgent
-dotnet run --project .\dotnet\src\MultiAgent -- parallel --task "Analyze an extreme heat event."
-dotnet run --project .\dotnet\src\MultiAgent -- agent-tool --task "A futuristic city"
-dotnet run --project .\dotnet\src\MultiAgent -- all --deployment fast
+dotnet run --framework net11.0 --project .\dotnet\src\MultiAgent
+dotnet run --framework net11.0 --project .\dotnet\src\MultiAgent -- parallel --task "Analyze an extreme heat event."
+dotnet run --framework net11.0 --project .\dotnet\src\MultiAgent -- agent-tool --task "A futuristic city"
+dotnet run --framework net11.0 --project .\dotnet\src\MultiAgent -- all --deployment fast
 dotnet test .\dotnet\tests\MultiAgent.Tests
 ```
 

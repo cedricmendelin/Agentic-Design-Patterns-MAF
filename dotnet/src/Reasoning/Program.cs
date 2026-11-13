@@ -65,7 +65,7 @@ if (invalidArguments ||
      selectedDemoName.ToLowerInvariant() is not ("foundry-web-search" or "foundry-code-interpreter")))
 {
     Console.Error.WriteLine(
-        "Usage: dotnet run --project dotnet/src/Reasoning " +
+        "Usage: dotnet run --framework net11.0 --project dotnet/src/Reasoning " +
         "[react|cot|self-correction|deep-search|all|foundry-web-search|foundry-code-interpreter] [--deployment <name>]");
     return 1;
 }

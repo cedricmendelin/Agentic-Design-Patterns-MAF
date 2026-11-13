@@ -49,19 +49,19 @@ flowchart LR
 
 ## Setup and Run
 
-1. .NET 10 SDK; Node.js/`npx` for the filesystem example. Configure shared user-secrets — see [dotnet/README.md](../../README.md).
+1. .NET 11 SDK; Node.js/`npx` for the filesystem example. Configure shared user-secrets — see [dotnet/README.md](../../README.md).
 2. Start the HTTP MCP server in one terminal, then run the default greeting client in another:
    ```powershell
-   dotnet run --project .\dotnet\src\MCP.Server -- --urls http://localhost:8000
-   dotnet run --project .\dotnet\src\MCP
-   dotnet run --project .\dotnet\src\MCP -- all --deployment fast
+   dotnet run --framework net11.0 --project .\dotnet\src\MCP.Server -- --urls http://localhost:8000
+   dotnet run --framework net11.0 --project .\dotnet\src\MCP
+   dotnet run --framework net11.0 --project .\dotnet\src\MCP -- all --deployment fast
    dotnet test .\dotnet\tests\MCP.Tests
    ```
    `CHAPTER10_MCP_SERVER_URL` overrides `http://localhost:8000/mcp`.
    The filesystem example remains available with `files` and requires Node.js/`npx`; `all` runs both console examples.
 3. Foundry-native: `az login`, set `Foundry:McpServerUrl` (or `CHAPTER10_MCP_SERVER_URL`) to an endpoint **reachable by Foundry**, then:
    ```powershell
-   dotnet run --project .\dotnet\src\MCP -- foundry-native [--deployment <name>]
+   dotnet run --framework net11.0 --project .\dotnet\src\MCP -- foundry-native [--deployment <name>]
    ```
 
 ## When to Use

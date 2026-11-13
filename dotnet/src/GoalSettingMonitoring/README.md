@@ -2,7 +2,7 @@
 
 > Book: *Agentic Design Patterns* (Antonio Gulli), Chapter 11. Implemented with Microsoft Agent Framework (C#) and Microsoft Foundry.
 
-This pattern makes completion criteria visible, reviews each draft, and bounds revision. The primary demo creates a structured .NET implementation brief. Application code—not the model—enforces immutable hard requirements for C#, .NET 10, and a minimum complete brief. A model review and exact `True` judge decision are still required; neither can override a failed hard check. Generated artifacts are proposals and are never executed.
+This pattern makes completion criteria visible, reviews each draft, and bounds revision. The primary demo creates a structured .NET implementation brief. Application code—not the model—enforces immutable hard requirements for C#, .NET 11, and a minimum complete brief. A model review and exact `True` judge decision are still required; neither can override a failed hard check. Generated artifacts are proposals and are never executed.
 
 ```mermaid
 flowchart LR
@@ -34,7 +34,7 @@ flowchart LR
 | Foundry-native | Not applicable: Foundry has no separate goal-loop primitive | Application code owns validation and stopping |
 | Hosted companion | Same workflows over Responses; request-scoped isolation | [Hosted guide](../GoalSettingMonitoring.Hosted/README.md) |
 
-The .NET brief schema has `title`, `language`, `targetFramework`, `summary`, and `implementationSteps`. Fixed checks require exact `C#` and `net10.0`, at least three non-empty steps, and non-empty title/summary. These rules are not request fields and cannot be changed by generated content or reviewer feedback. Invalid structure is reported as failed hard criteria and can be revised within the configured 1–5 round budget.
+The .NET brief schema has `title`, `language`, `targetFramework`, `summary`, and `implementationSteps`. Fixed checks require exact `C#` and `net11.0`, at least three non-empty steps, and non-empty title/summary. These rules are not request fields and cannot be changed by generated content or reviewer feedback. Invalid structure is reported as failed hard criteria and can be revised within the configured 1–5 round budget.
 
 The Python scenario remains available with its original unique `.py` filename and safe caller-comment header. Its generated code is also never run.
 
@@ -53,9 +53,9 @@ The Python scenario remains available with its original unique `.py` filename an
 Configure shared Foundry user-secrets as described in [dotnet/README.md](../../README.md). From the repository root:
 
 ```powershell
-dotnet run --project dotnet/src/GoalSettingMonitoring
-dotnet run --project dotnet/src/GoalSettingMonitoring -- --scenario python
-dotnet run --project dotnet/src/GoalSettingMonitoring -- --scenario dotnet --use-case "Plan a small file utility" --goals "Use .NET 10;Include verification" --iterations 3 --output-dir .\out --deployment <alias>
+dotnet run --framework net11.0 --project dotnet/src/GoalSettingMonitoring
+dotnet run --framework net11.0 --project dotnet/src/GoalSettingMonitoring -- --scenario python
+dotnet run --framework net11.0 --project dotnet/src/GoalSettingMonitoring -- --scenario dotnet --use-case "Plan a small file utility" --goals "Use .NET 11;Include verification" --iterations 3 --output-dir .\out --deployment <alias>
 dotnet test dotnet/tests/GoalSettingMonitoring.Tests
 ```
 

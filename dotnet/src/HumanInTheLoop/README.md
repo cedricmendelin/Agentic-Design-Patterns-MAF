@@ -51,9 +51,9 @@ flowchart LR
 Configure shared user-secrets ([dotnet/README.md](../../README.md)), then:
 
 ```powershell
-dotnet run --project dotnet/src/HumanInTheLoop
-dotnet run --project dotnet/src/HumanInTheLoop -- "My device still fails after troubleshooting."
-dotnet run --project dotnet/src/HumanInTheLoop -- "Please escalate this issue." --deployment fast
+dotnet run --framework net11.0 --project dotnet/src/HumanInTheLoop
+dotnet run --framework net11.0 --project dotnet/src/HumanInTheLoop -- "My device still fails after troubleshooting."
+dotnet run --framework net11.0 --project dotnet/src/HumanInTheLoop -- "Please escalate this issue." --deployment fast
 dotnet test dotnet/tests/HumanInTheLoop.Tests
 ```
 

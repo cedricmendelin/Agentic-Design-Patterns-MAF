@@ -34,15 +34,15 @@ The one-pass notebook examples are intentionally adapted to the same bounded fee
 
 ## Run
 
-Use .NET 10 and [shared Foundry configuration](../../README.md). From the repository root:
+Use .NET 11 and [shared Foundry configuration](../../README.md). From the repository root:
 
 ```powershell
-dotnet run --project .\dotnet\src\Reflection
-dotnet run --project .\dotnet\src\Reflection -- csharp-review
-dotnet run --project .\dotnet\src\Reflection -- fact-check
-dotnet run --project .\dotnet\src\Reflection -- product --deployment fast
-dotnet run --project .\dotnet\src\Reflection -- code-review
-dotnet run --project .\dotnet\src\Reflection -- all
+dotnet run --framework net11.0 --project .\dotnet\src\Reflection
+dotnet run --framework net11.0 --project .\dotnet\src\Reflection -- csharp-review
+dotnet run --framework net11.0 --project .\dotnet\src\Reflection -- fact-check
+dotnet run --framework net11.0 --project .\dotnet\src\Reflection -- product --deployment fast
+dotnet run --framework net11.0 --project .\dotnet\src\Reflection -- code-review
+dotnet run --framework net11.0 --project .\dotnet\src\Reflection -- all
 dotnet test .\dotnet\tests\Reflection.Tests
 ```
 

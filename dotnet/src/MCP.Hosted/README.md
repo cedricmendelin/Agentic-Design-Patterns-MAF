@@ -21,7 +21,7 @@ The server must be reachable from the deployed host — Foundry cannot reach a d
 ## Run and invoke
 
 ```powershell
-dotnet run --project .\dotnet\src\MCP.Hosted
+dotnet run --framework net10.0 --project .\dotnet\src\MCP.Hosted
 azd ai agent invoke chapter10-mcp --local "Use the greet tool to greet Ada."
 azd deploy chapter10-mcp --no-prompt
 azd ai agent invoke chapter10-mcp --protocol responses "Use the greet tool to greet Ada."

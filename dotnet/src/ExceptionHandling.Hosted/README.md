@@ -12,7 +12,7 @@ Exposes the [Chapter 12 recovery workflow](../ExceptionHandling/README.md) throu
 ## Run and invoke
 
 ```powershell
-dotnet run --project .\dotnet\src\ExceptionHandling.Hosted
+dotnet run --framework net10.0 --project .\dotnet\src\ExceptionHandling.Hosted
 azd ai agent invoke chapter12-exception-handling --local --protocol responses 'primary-unavailable: 1 Market Street, San Francisco, CA'
 azd deploy chapter12-exception-handling --no-prompt
 azd ai agent invoke chapter12-exception-handling --protocol responses 'transient: 1600 Amphitheatre Parkway, Mountain View, CA'

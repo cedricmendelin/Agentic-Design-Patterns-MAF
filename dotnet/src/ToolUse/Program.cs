@@ -72,7 +72,7 @@ if (invalidArguments ||
      demoSelection?.ToLowerInvariant() is not ("foundry-web" or "foundry-code" or "foundry-files")))
 {
     Console.Error.WriteLine(
-        "Usage: dotnet run --project dotnet/src/ToolUse " +
+        "Usage: dotnet run --framework net11.0 --project dotnet/src/ToolUse " +
         "[calculator|all|search|stocks|foundry-web|foundry-code|foundry-files] [--deployment <name>]");
     return 1;
 }

@@ -41,7 +41,9 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "10.0.x"
+          dotnet-version: |
+            10.0.x
+            11.0.x
 
       - name: Validate Foundry secrets
         shell: bash
@@ -78,4 +80,4 @@ jobs:
           if [ -n "$SMOKE_FILTER" ]; then
             filter="${filter}&${SMOKE_FILTER}"
           fi
-          dotnet test dotnet/tests/Foundry.SmokeTests/Foundry.SmokeTests.csproj --configuration Release --no-build --filter "${filter}"
+          dotnet test dotnet/tests/Foundry.SmokeTests/Foundry.SmokeTests.csproj --framework net11.0 --configuration Release --no-build --filter "${filter}"

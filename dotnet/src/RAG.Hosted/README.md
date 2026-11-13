@@ -14,7 +14,7 @@ Send a plain-text question, e.g. `What did the president say about Justice Breye
 ## Run locally and deploy
 
 ```powershell
-dotnet run --project dotnet/src/RAG.Hosted
+dotnet run --framework net10.0 --project dotnet/src/RAG.Hosted
 azd ai agent invoke chapter14-rag --local --protocol responses "What did the address say about the economy?"
 azd deploy chapter14-rag --no-prompt
 azd ai agent invoke chapter14-rag --protocol responses "What did the president say about Justice Breyer?"

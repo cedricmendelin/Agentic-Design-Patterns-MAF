@@ -35,17 +35,17 @@ Calculator requests remain natural language or arithmetic text. The model transl
 
 ## Run
 
-Use .NET 10 and [shared Foundry configuration](../../README.md). From the repository root:
+Use .NET 11 and [shared Foundry configuration](../../README.md). From the repository root:
 
 ```powershell
-dotnet run --project .\dotnet\src\ToolUse
-dotnet run --project .\dotnet\src\ToolUse -- calculator --deployment fast
-dotnet run --project .\dotnet\src\ToolUse -- all
-dotnet run --project .\dotnet\src\ToolUse -- search
-dotnet run --project .\dotnet\src\ToolUse -- stocks
-dotnet run --project .\dotnet\src\ToolUse -- foundry-web
-dotnet run --project .\dotnet\src\ToolUse -- foundry-code
-dotnet run --project .\dotnet\src\ToolUse -- foundry-files
+dotnet run --framework net11.0 --project .\dotnet\src\ToolUse
+dotnet run --framework net11.0 --project .\dotnet\src\ToolUse -- calculator --deployment fast
+dotnet run --framework net11.0 --project .\dotnet\src\ToolUse -- all
+dotnet run --framework net11.0 --project .\dotnet\src\ToolUse -- search
+dotnet run --framework net11.0 --project .\dotnet\src\ToolUse -- stocks
+dotnet run --framework net11.0 --project .\dotnet\src\ToolUse -- foundry-web
+dotnet run --framework net11.0 --project .\dotnet\src\ToolUse -- foundry-code
+dotnet run --framework net11.0 --project .\dotnet\src\ToolUse -- foundry-files
 dotnet test .\dotnet\tests\ToolUse.Tests
 ```
 

@@ -33,11 +33,11 @@ The console prints the decision, rationale, specialist output, and final answer.
 
 ## Run
 
-Configure .NET 10 and [shared Foundry settings](../../README.md). From the repository root:
+Configure .NET 11 and [shared Foundry settings](../../README.md). From the repository root:
 
 ```powershell
-dotnet run --project .\dotnet\src\Routing
-dotnet run --project .\dotnet\src\Routing -- travel --deployment fast
+dotnet run --framework net11.0 --project .\dotnet\src\Routing
+dotnet run --framework net11.0 --project .\dotnet\src\Routing -- travel --deployment fast
 dotnet test .\dotnet\tests\Routing.Tests
 ```
 

@@ -30,13 +30,13 @@ Both completed assistant responses are printed, followed by final JSON. The form
 
 ## Run
 
-Use .NET 10 and the [shared Foundry configuration](../../README.md). From the repository root:
+Use .NET 11 and the [shared Foundry configuration](../../README.md). From the repository root:
 
 ```powershell
-dotnet run --project .\dotnet\src\PromptChaining
-dotnet run --project .\dotnet\src\PromptChaining -- specs
-dotnet run --project .\dotnet\src\PromptChaining -- trends --deployment fast
-dotnet run --project .\dotnet\src\PromptChaining -- all
+dotnet run --framework net11.0 --project .\dotnet\src\PromptChaining
+dotnet run --framework net11.0 --project .\dotnet\src\PromptChaining -- specs
+dotnet run --framework net11.0 --project .\dotnet\src\PromptChaining -- trends --deployment fast
+dotnet run --framework net11.0 --project .\dotnet\src\PromptChaining -- all
 dotnet test .\dotnet\tests\PromptChaining.Tests
 ```
 

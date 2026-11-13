@@ -4,7 +4,7 @@ namespace AgenticDesignPatterns.Foundry.SmokeTests;
 
 internal static class DotnetDemoRunner
 {
-    private static readonly string RepositoryRoot = ResolveRepositoryRoot();
+    internal static readonly string RepositoryRoot = ResolveRepositoryRoot();
 
     public static Task<DemoRunResult> RunChapter01SpecsAsync() =>
         RunAsync(
@@ -106,36 +106,9 @@ internal static class DotnetDemoRunner
             Path.Combine(RepositoryRoot, "dotnet", "src", "Guardrails", "Guardrails.csproj"),
             ["policy", "--text", "Explain the benefits of unit testing."]);
 
-    private static async Task<DemoRunResult> RunAsync(string projectPath, string[] demoArguments)
+    internal static async Task<DemoRunResult> RunAsync(string projectPath, string[] demoArguments)
     {
-        var startInfo = new ProcessStartInfo("dotnet")
-        {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            WorkingDirectory = RepositoryRoot
-        };
-
-        startInfo.ArgumentList.Add("run");
-        startInfo.ArgumentList.Add("--project");
-        startInfo.ArgumentList.Add(projectPath);
-        startInfo.ArgumentList.Add("--configuration");
-        startInfo.ArgumentList.Add("Release");
-        startInfo.ArgumentList.Add("--no-build");
-        startInfo.ArgumentList.Add("--");
-
-        foreach (var argument in demoArguments)
-        {
-            startInfo.ArgumentList.Add(argument);
-        }
-
-        var deploymentAlias = Environment.GetEnvironmentVariable("FOUNDRY_TEST_DEPLOYMENT_ALIAS");
-        if (!string.IsNullOrWhiteSpace(deploymentAlias))
-        {
-            startInfo.ArgumentList.Add("--deployment");
-            startInfo.ArgumentList.Add(deploymentAlias);
-        }
-
+        var startInfo = CreateStartInfo(projectPath, demoArguments);
         using var process = Process.Start(startInfo)
             ?? throw new InvalidOperationException("Failed to start dotnet process for Foundry smoke test.");
 
@@ -164,6 +137,49 @@ internal static class DotnetDemoRunner
             process.ExitCode,
             await standardOutputTask,
             await standardErrorTask);
+    }
+
+    internal static ProcessStartInfo CreateStartInfo(string projectPath, string[] demoArguments)
+    {
+        var startInfo = new ProcessStartInfo("dotnet")
+        {
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            WorkingDirectory = RepositoryRoot
+        };
+
+        startInfo.ArgumentList.Add("run");
+        startInfo.ArgumentList.Add("--project");
+        startInfo.ArgumentList.Add(projectPath);
+        startInfo.ArgumentList.Add("--framework");
+#if NET10_0
+        startInfo.ArgumentList.Add("net10.0");
+#else
+        startInfo.ArgumentList.Add("net11.0");
+#endif
+        startInfo.ArgumentList.Add("--configuration");
+#if DEBUG
+        startInfo.ArgumentList.Add("Debug");
+#else
+        startInfo.ArgumentList.Add("Release");
+#endif
+        startInfo.ArgumentList.Add("--no-build");
+        startInfo.ArgumentList.Add("--");
+
+        foreach (var argument in demoArguments)
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
+
+        var deploymentAlias = Environment.GetEnvironmentVariable("FOUNDRY_TEST_DEPLOYMENT_ALIAS");
+        if (!string.IsNullOrWhiteSpace(deploymentAlias))
+        {
+            startInfo.ArgumentList.Add("--deployment");
+            startInfo.ArgumentList.Add(deploymentAlias);
+        }
+
+        return startInfo;
     }
 
     private static string ResolveRepositoryRoot()
