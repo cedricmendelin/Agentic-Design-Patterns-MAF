@@ -13,7 +13,7 @@ try
 catch (ArgumentException)
 {
     Console.Error.WriteLine(
-        "Usage: dotnet run --project dotnet/src/ResourceOptimization " +
+        "Usage: dotnet run --framework net11.0 --project dotnet/src/ResourceOptimization " +
         "[all|complexity|research] [--deployment <name>]");
     return 1;
 }

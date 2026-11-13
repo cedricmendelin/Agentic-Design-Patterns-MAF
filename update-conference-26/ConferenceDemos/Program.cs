@@ -15,14 +15,14 @@ public static class Program
             Console.WriteLine("""
                 Conference demos (run from update-conference-26):
                   Presentation order:
-                  1. Prague weather: dotnet run --project ConferenceDemos -- agent
-                  2. Simple MAF workflow: dotnet run --project ConferenceDemos -- workflow [attendee name]
-                  3. Schedule RAG: dotnet run --project ConferenceDemos -- rag [question]
-                  4. Planning and goal monitoring: dotnet run --project ConferenceDemos -- plan [--rounds 1-5] [--verbose]
-                  5.1 Decision Model - Microsoft live: dotnet run --project ConferenceDemos -- decisions
-                  5.2 Decision Model - live comparison: dotnet run --project ConferenceDemos -- decisions --compare-openai
-                  6. Harness: dotnet run --project ConferenceDemos -- speaker-page [--open]
-                  6.1 Harness + web search: dotnet run --project ConferenceDemos -- speaker-page --web [--open]
+                  1. Prague weather: dotnet run --framework net11.0 --project ConferenceDemos -- agent
+                  2. Simple MAF workflow: dotnet run --framework net11.0 --project ConferenceDemos -- workflow [attendee name]
+                  3. Schedule RAG: dotnet run --framework net11.0 --project ConferenceDemos -- rag [question]
+                  4. Planning and goal monitoring: dotnet run --framework net11.0 --project ConferenceDemos -- plan [--rounds 1-5] [--verbose]
+                  5.1 Decision Model - Microsoft live: dotnet run --framework net11.0 --project ConferenceDemos -- decisions
+                  5.2 Decision Model - live comparison: dotnet run --framework net11.0 --project ConferenceDemos -- decisions --compare-openai
+                  6. Harness: dotnet run --framework net11.0 --project ConferenceDemos -- speaker-page [--open]
+                  6.1 Harness + web search: dotnet run --framework net11.0 --project ConferenceDemos -- speaker-page --web [--open]
                 See demo-flows.md for diagrams for demos 2, 4, 6, and 6.1.
                 See README.md for credentials and project-local hosted deployment.
                 """);

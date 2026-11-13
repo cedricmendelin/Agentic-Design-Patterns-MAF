@@ -24,7 +24,7 @@ Tool identity validation is intentionally independent: the policy model cannot o
 Configure [shared model settings](../../README.md). Start the host:
 
 ```powershell
-dotnet run --project dotnet\src\Guardrails.Hosted
+dotnet run --framework net10.0 --project dotnet\src\Guardrails.Hosted
 ```
 
 Invoke it from a second terminal:

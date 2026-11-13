@@ -54,10 +54,10 @@ The address index and area records are deterministic sample data, not a live geo
 Configure shared user-secrets ([dotnet/README.md](../../README.md#configure-foundry-user-secrets)), then:
 
 ```powershell
-dotnet run --project dotnet/src/ExceptionHandling                 # primary success only
-dotnet run --project dotnet/src/ExceptionHandling -- all          # all scenarios
-dotnet run --project dotnet/src/ExceptionHandling -- fallback     # primary | retry | fallback
-dotnet run --project dotnet/src/ExceptionHandling -- retry --deployment fast
+dotnet run --framework net11.0 --project dotnet/src/ExceptionHandling                 # primary success only
+dotnet run --framework net11.0 --project dotnet/src/ExceptionHandling -- all          # all scenarios
+dotnet run --framework net11.0 --project dotnet/src/ExceptionHandling -- fallback     # primary | retry | fallback
+dotnet run --framework net11.0 --project dotnet/src/ExceptionHandling -- retry --deployment fast
 dotnet test dotnet/tests/ExceptionHandling.Tests
 ```
 

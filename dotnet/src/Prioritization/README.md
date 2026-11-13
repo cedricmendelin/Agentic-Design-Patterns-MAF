@@ -34,12 +34,12 @@ Foundry has no separate native deterministic task scheduler used here; hosting w
 
 ## Run
 
-Configure .NET 10 and [shared model settings](../../README.md). From the repository root:
+Configure .NET 11 and [shared model settings](../../README.md). From the repository root:
 
 ```powershell
-dotnet run --project dotnet\src\Prioritization
-dotnet run --project dotnet\src\Prioritization -- --task "Urgent: restore sign-in" --task "Review release notes"
-dotnet run --project dotnet\src\Prioritization -- --deployment quality
+dotnet run --framework net11.0 --project dotnet\src\Prioritization
+dotnet run --framework net11.0 --project dotnet\src\Prioritization -- --task "Urgent: restore sign-in" --task "Review release notes"
+dotnet run --framework net11.0 --project dotnet\src\Prioritization -- --deployment quality
 dotnet test dotnet\tests\Prioritization.Tests
 ```
 

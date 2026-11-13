@@ -45,7 +45,7 @@ The file store and in-process lock are a single-instance sample design. For mult
 ```powershell
 $env:Foundry__ProjectEndpoint = "https://<account>.services.ai.azure.com/api/projects/<project>"
 $env:AZURE_AI_MODEL_DEPLOYMENT_NAME = "<model-deployment>"
-dotnet run --project .\dotnet\src\HumanInTheLoop.Hosted
+dotnet run --framework net10.0 --project .\dotnet\src\HumanInTheLoop.Hosted
 ```
 
 ```powershell

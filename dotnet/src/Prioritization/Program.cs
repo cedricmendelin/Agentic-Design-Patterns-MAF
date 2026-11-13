@@ -3,7 +3,7 @@ using Prioritization;
 using Microsoft.Extensions.AI;
 
 const string usage =
-    "Usage: dotnet run --project dotnet/src/Prioritization " +
+    "Usage: dotnet run --framework net11.0 --project dotnet/src/Prioritization " +
     "[--task <description> ...] [--deployment <name>]";
 
 var tasks = new List<string>();

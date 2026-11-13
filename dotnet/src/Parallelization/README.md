@@ -34,12 +34,12 @@ Each successful request makes three worker calls and one synthesis call. Synthes
 
 ## Run
 
-Use .NET 10 and [shared Foundry configuration](../../README.md). From the repository root:
+Use .NET 11 and [shared Foundry configuration](../../README.md). From the repository root:
 
 ```powershell
-dotnet run --project .\dotnet\src\Parallelization
-dotnet run --project .\dotnet\src\Parallelization -- research
-dotnet run --project .\dotnet\src\Parallelization -- topic --deployment fast
+dotnet run --framework net11.0 --project .\dotnet\src\Parallelization
+dotnet run --framework net11.0 --project .\dotnet\src\Parallelization -- research
+dotnet run --framework net11.0 --project .\dotnet\src\Parallelization -- topic --deployment fast
 dotnet test .\dotnet\tests\Parallelization.Tests
 ```
 

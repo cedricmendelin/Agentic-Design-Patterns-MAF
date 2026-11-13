@@ -35,15 +35,15 @@ flowchart LR
 
 ## Run
 
-Configure .NET 10 and [shared model settings](../../README.md). From the repository root:
+Configure .NET 11 and [shared model settings](../../README.md). From the repository root:
 
 ```powershell
-dotnet run --project dotnet\src\Evaluation -- basic
-dotnet run --project dotnet\src\Evaluation
-dotnet run --project dotnet\src\Evaluation -- all
-dotnet run --project dotnet\src\Evaluation -- judge --deployment fast
-dotnet run --project dotnet\src\Evaluation -- meai
-dotnet run --project dotnet\src\Evaluation -- foundry
+dotnet run --framework net11.0 --project dotnet\src\Evaluation -- basic
+dotnet run --framework net11.0 --project dotnet\src\Evaluation
+dotnet run --framework net11.0 --project dotnet\src\Evaluation -- all
+dotnet run --framework net11.0 --project dotnet\src\Evaluation -- judge --deployment fast
+dotnet run --framework net11.0 --project dotnet\src\Evaluation -- meai
+dotnet run --framework net11.0 --project dotnet\src\Evaluation -- foundry
 dotnet test dotnet\tests\Evaluation.Tests
 ```
 

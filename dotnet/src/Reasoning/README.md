@@ -37,17 +37,17 @@ For **Code-Then-Execute**, use [Chapter 05's canonical explanation](../ToolUse/R
 
 ## Run
 
-Use .NET 10 and [shared Foundry settings](../../README.md). From the repository root:
+Use .NET 11 and [shared Foundry settings](../../README.md). From the repository root:
 
 ```powershell
-dotnet run --project dotnet\src\Reasoning
-dotnet run --project dotnet\src\Reasoning -- all
-dotnet run --project dotnet\src\Reasoning -- cot --deployment quality
-dotnet run --project dotnet\src\Reasoning -- self-correction
-dotnet run --project dotnet\src\Reasoning -- react
-dotnet run --project dotnet\src\Reasoning -- deep-search
-dotnet run --project dotnet\src\Reasoning -- foundry-web-search
-dotnet run --project dotnet\src\Reasoning -- foundry-code-interpreter
+dotnet run --framework net11.0 --project dotnet\src\Reasoning
+dotnet run --framework net11.0 --project dotnet\src\Reasoning -- all
+dotnet run --framework net11.0 --project dotnet\src\Reasoning -- cot --deployment quality
+dotnet run --framework net11.0 --project dotnet\src\Reasoning -- self-correction
+dotnet run --framework net11.0 --project dotnet\src\Reasoning -- react
+dotnet run --framework net11.0 --project dotnet\src\Reasoning -- deep-search
+dotnet run --framework net11.0 --project dotnet\src\Reasoning -- foundry-web-search
+dotnet run --framework net11.0 --project dotnet\src\Reasoning -- foundry-code-interpreter
 dotnet test dotnet\tests\Reasoning.Tests
 ```
 

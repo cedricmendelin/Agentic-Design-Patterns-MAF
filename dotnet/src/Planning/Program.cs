@@ -63,7 +63,7 @@ for (var index = 0; index < args.Length; index++)
 if (invalidArguments)
 {
     Console.Error.WriteLine(
-        "Usage: dotnet run --project dotnet/src/Planning " +
+        "Usage: dotnet run --framework net11.0 --project dotnet/src/Planning " +
         "[plan-write|deep-research|all] [--task <text>] " +
         "[--deployment <chat-model-alias>] [--research-deployment <deep-research-alias>]");
     return 1;

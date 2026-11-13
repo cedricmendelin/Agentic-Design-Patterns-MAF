@@ -40,17 +40,17 @@ becomes a severity proposal. Original chapter scenarios remain in their own demo
 
 ## Setup and run
 
-Configure [.NET 10 and shared user-secrets](../../README.md). Keep the generative
+Configure [.NET 11 and shared user-secrets](../../README.md). Keep the generative
 default separate from the decision deployments; missing aliases fail explicitly.
 
 ```powershell
 dotnet user-secrets set "Foundry:ModelDeployments:decision" "<microsoft-decision-deployment>" --project dotnet\src\Shared
 dotnet user-secrets set "Foundry:ModelDeployments:openaiDecision" "<gpt-6-luna-deployment>" --project dotnet\src\Shared
-dotnet run --project dotnet\src\DecisionModels
-dotnet run --project dotnet\src\DecisionModels -- microsoft
-dotnet run --project dotnet\src\DecisionModels -- openai
-dotnet run --project dotnet\src\DecisionModels -- maf --provider openai --input "My account is locked."
-dotnet run --project dotnet\src\DecisionModels -- all
+dotnet run --framework net11.0 --project dotnet\src\DecisionModels
+dotnet run --framework net11.0 --project dotnet\src\DecisionModels -- microsoft
+dotnet run --framework net11.0 --project dotnet\src\DecisionModels -- openai
+dotnet run --framework net11.0 --project dotnet\src\DecisionModels -- maf --provider openai --input "My account is locked."
+dotnet run --framework net11.0 --project dotnet\src\DecisionModels -- all
 ```
 
 Omitting the variant runs one Microsoft decision-model example; `--input` replaces it.

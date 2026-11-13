@@ -7,10 +7,10 @@ See the [demo guide](README.md#demos-in-presentation-order) for configuration.
 
 | Demo | Launch profile | Command | Flow |
 |---|---|---|---|
-| 2 | `2. Simple MAF workflow` | `dotnet run --project ConferenceDemos -- workflow Alex` | [Simple MAF workflow](#demo-2-simple-maf-workflow) |
-| 4 | `4. Planning and goal monitoring` | `dotnet run --project ConferenceDemos -- plan` | [Planning and goal monitoring](#demo-4-planning-and-goal-monitoring) |
-| 6 | `6. Harness` | `dotnet run --project ConferenceDemos -- speaker-page --open` | [Harness agent](#demos-6-and-61-harness-agent) |
-| 6.1 | `6.1 Harness + web search` | `dotnet run --project ConferenceDemos -- speaker-page --web --open` | [Harness agent with optional web search](#demos-6-and-61-harness-agent) |
+| 2 | `2. Simple MAF workflow` | `dotnet run --framework net11.0 --project ConferenceDemos -- workflow Alex` | [Simple MAF workflow](#demo-2-simple-maf-workflow) |
+| 4 | `4. Planning and goal monitoring` | `dotnet run --framework net11.0 --project ConferenceDemos -- plan` | [Planning and goal monitoring](#demo-4-planning-and-goal-monitoring) |
+| 6 | `6. Harness` | `dotnet run --framework net11.0 --project ConferenceDemos -- speaker-page --open` | [Harness agent](#demos-6-and-61-harness-agent) |
+| 6.1 | `6.1 Harness + web search` | `dotnet run --framework net11.0 --project ConferenceDemos -- speaker-page --web --open` | [Harness agent with optional web search](#demos-6-and-61-harness-agent) |
 
 ## Demo 2: Simple MAF workflow
 

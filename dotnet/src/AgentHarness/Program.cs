@@ -2,7 +2,7 @@ using System.Text.Json;
 using AgenticDesignPatterns.Shared;
 using AgentHarness;
 
-const string usage = "Usage: dotnet run --project dotnet\\src\\AgentHarness " +
+const string usage = "Usage: dotnet run --framework net11.0 --project dotnet\\src\\AgentHarness " +
     "[--request <question>] [--deployment <alias>]";
 string? request = null;
 string? deployment = null;

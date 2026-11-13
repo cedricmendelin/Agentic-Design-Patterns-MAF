@@ -43,11 +43,11 @@ flowchart LR
 
 ## Setup and run
 
-Use .NET 10, a tool-capable Foundry chat deployment and [shared credentials](../../README.md).
+Use .NET 11, a tool-capable Foundry chat deployment and [shared credentials](../../README.md).
 
 ```powershell
-dotnet run --project dotnet\src\AgentHarness
-dotnet run --project dotnet\src\AgentHarness -- --request "Investigate identity latency." --deployment quality
+dotnet run --framework net11.0 --project dotnet\src\AgentHarness
+dotnet run --framework net11.0 --project dotnet\src\AgentHarness -- --request "Investigate identity latency." --deployment quality
 dotnet test dotnet\tests\AgentHarness.Tests
 ```
 

@@ -32,14 +32,14 @@ The console prints the plan before execution and the resulting summary. Plan-sha
 
 ## Run
 
-Use .NET 10 and [shared Foundry configuration](../../README.md). From the repository root:
+Use .NET 11 and [shared Foundry configuration](../../README.md). From the repository root:
 
 ```powershell
-dotnet run --project .\dotnet\src\Planning
-dotnet run --project .\dotnet\src\Planning -- plan-write --task "Reinforcement learning in robotics" --deployment fast
-dotnet run --project .\dotnet\src\Planning -- plan-write --task "Reinforcement learning in AI"
-dotnet run --project .\dotnet\src\Planning -- deep-research
-dotnet run --project .\dotnet\src\Planning -- all --task "The economic impact of semaglutide on healthcare"
+dotnet run --framework net11.0 --project .\dotnet\src\Planning
+dotnet run --framework net11.0 --project .\dotnet\src\Planning -- plan-write --task "Reinforcement learning in robotics" --deployment fast
+dotnet run --framework net11.0 --project .\dotnet\src\Planning -- plan-write --task "Reinforcement learning in AI"
+dotnet run --framework net11.0 --project .\dotnet\src\Planning -- deep-research
+dotnet run --framework net11.0 --project .\dotnet\src\Planning -- all --task "The economic impact of semaglutide on healthcare"
 dotnet test .\dotnet\tests\Planning.Tests
 ```
 

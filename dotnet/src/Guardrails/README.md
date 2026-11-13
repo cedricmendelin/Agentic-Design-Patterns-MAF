@@ -38,13 +38,13 @@ The notebook maps its policy evaluator to `policy`, practical structured validat
 
 ## Run
 
-Configure .NET 10 and shared model settings in [dotnet/README.md](../../README.md). From the repository root:
+Configure .NET 11 and shared model settings in [dotnet/README.md](../../README.md). From the repository root:
 
 ```powershell
-dotnet run --project dotnet/src/Guardrails
-dotnet run --project dotnet/src/Guardrails -- policy-legacy
-dotnet run --project dotnet/src/Guardrails -- tool-validation
-dotnet run --project dotnet/src/Guardrails -- content-safety --text "Text to analyze"
+dotnet run --framework net11.0 --project dotnet/src/Guardrails
+dotnet run --framework net11.0 --project dotnet/src/Guardrails -- policy-legacy
+dotnet run --framework net11.0 --project dotnet/src/Guardrails -- tool-validation
+dotnet run --framework net11.0 --project dotnet/src/Guardrails -- content-safety --text "Text to analyze"
 dotnet test dotnet/tests/Guardrails.Tests
 ```
 

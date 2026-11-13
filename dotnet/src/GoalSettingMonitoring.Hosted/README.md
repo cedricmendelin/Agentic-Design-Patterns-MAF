@@ -15,7 +15,7 @@ Send plain text to create a .NET implementation brief using sample goals, or pro
 }
 ```
 
-The `scenario` is optional and accepts `DotNetDeliverable` (default) or `PythonCode`. `useCase` is limited to 2,000 characters, there must be 1–10 goals of at most 300 characters, and `maxIterations` is 1–5. Invalid input fails before a model call. The .NET output is accepted only when the exact model judge says `True` and deterministic code checks C#, .NET 10, non-empty title/summary, and at least three non-empty steps. Exhaustion returns an incomplete result with criteria feedback. The Python scenario remains available as an explicit compatibility option.
+The `scenario` is optional and accepts `DotNetDeliverable` (default) or `PythonCode`. `useCase` is limited to 2,000 characters, there must be 1–10 goals of at most 300 characters, and `maxIterations` is 1–5. Invalid input fails before a model call. The .NET output is accepted only when the exact model judge says `True` and deterministic code checks C#, .NET 11, non-empty title/summary, and at least three non-empty steps. Exhaustion returns an incomplete result with criteria feedback. The Python scenario remains available as an explicit compatibility option.
 
 The response contains status, iterations, and the final artifact. Neither scenario saves nor executes generated code in the host. `RequestIsolationKeyProvider` assigns a fresh response-scoped partition even if the caller omits a platform user header. Streaming buffers one completed workflow result; cancellation and errors propagate.
 
@@ -24,7 +24,7 @@ The response contains status, iterations, and the final artifact. Neither scenar
 Configure shared settings as described in [dotnet/README.md](../../README.md). In one terminal:
 
 ```powershell
-dotnet run --project .\dotnet\src\GoalSettingMonitoring.Hosted
+dotnet run --framework net10.0 --project .\dotnet\src\GoalSettingMonitoring.Hosted
 ```
 
 In another terminal:

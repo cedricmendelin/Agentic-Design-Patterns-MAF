@@ -26,7 +26,7 @@ Search and prices are static samples, never live information. Each request creat
 See [common hosting guidance](../../HOSTING.md) for settings, managed identity, inference RBAC, packaging, tracing, and agent-scoped cleanup. From the repository root:
 
 ```powershell
-dotnet run --project .\dotnet\src\ToolUse.Hosted
+dotnet run --framework net10.0 --project .\dotnet\src\ToolUse.Hosted
 dotnet test .\dotnet\tests\ToolUse.Tests
 ```
 
