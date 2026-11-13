@@ -108,6 +108,39 @@ internal static class DotnetDemoRunner
 
     internal static async Task<DemoRunResult> RunAsync(string projectPath, string[] demoArguments)
     {
+        var startInfo = CreateStartInfo(projectPath, demoArguments);
+        using var process = Process.Start(startInfo)
+            ?? throw new InvalidOperationException("Failed to start dotnet process for Foundry smoke test.");
+
+        var standardOutputTask = process.StandardOutput.ReadToEndAsync();
+        var standardErrorTask = process.StandardError.ReadToEndAsync();
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+        try
+        {
+            await process.WaitForExitAsync(timeout.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            try
+            {
+                process.Kill(entireProcessTree: true);
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
+            throw new TimeoutException($"Timed out while running demo project '{projectPath}'.");
+        }
+
+        return new DemoRunResult(
+            process.ExitCode,
+            await standardOutputTask,
+            await standardErrorTask);
+    }
+
+    internal static ProcessStartInfo CreateStartInfo(string projectPath, string[] demoArguments)
+    {
         var startInfo = new ProcessStartInfo("dotnet")
         {
             RedirectStandardOutput = true,
@@ -146,34 +179,7 @@ internal static class DotnetDemoRunner
             startInfo.ArgumentList.Add(deploymentAlias);
         }
 
-        using var process = Process.Start(startInfo)
-            ?? throw new InvalidOperationException("Failed to start dotnet process for Foundry smoke test.");
-
-        var standardOutputTask = process.StandardOutput.ReadToEndAsync();
-        var standardErrorTask = process.StandardError.ReadToEndAsync();
-
-        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
-        try
-        {
-            await process.WaitForExitAsync(timeout.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            try
-            {
-                process.Kill(entireProcessTree: true);
-            }
-            catch (InvalidOperationException)
-            {
-            }
-
-            throw new TimeoutException($"Timed out while running demo project '{projectPath}'.");
-        }
-
-        return new DemoRunResult(
-            process.ExitCode,
-            await standardOutputTask,
-            await standardErrorTask);
+        return startInfo;
     }
 
     private static string ResolveRepositoryRoot()

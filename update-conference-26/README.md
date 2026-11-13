@@ -4,7 +4,7 @@ The six demos are presented in this order: **1. Prague weather**, **2. Simple MA
 
 ## Setup
 
-Use the .NET 11 SDK (11.0.100) policy in the repository's [global.json](../global.json), and keep the .NET 10 runtime installed for both-target test execution and the hosted companion. Conference console projects target both `net10.0` and `net11.0`; select `--framework net11.0` for local demos. The Foundry hosted companion is single-target `net10.0` and must be published with that framework to match its unchanged `runtime: dotnet_10` declaration. Package versions come from [the central .NET manifest](../dotnet/Directory.Packages.props), imported rather than copied: MAF/Workflows/Harness 1.22.0 and Decisions.Foundry 0.7.0. The host also uses the repository's pinned preview Foundry hosting package.
+Use the .NET 11 SDK (11.0.100) policy in the repository's [global.json](../global.json), and keep the .NET 10 and ASP.NET Core 10 runtimes installed (or install the .NET 10 SDK, which includes both) for both-target test execution and the hosted companion. Conference console projects target both `net10.0` and `net11.0`; select `--framework net11.0` for local demos. The Foundry hosted companion is single-target `net10.0` and must be published with that framework to match its unchanged `runtime: dotnet_10` declaration. Package versions come from [the central .NET manifest](../dotnet/Directory.Packages.props), imported rather than copied: MAF/Workflows/Harness 1.22.0 and Decisions.Foundry 0.7.0. The host also uses the repository's pinned preview Foundry hosting package.
 
 From the repository root, configure the [shared local credentials](../dotnet/README.md) once:
 

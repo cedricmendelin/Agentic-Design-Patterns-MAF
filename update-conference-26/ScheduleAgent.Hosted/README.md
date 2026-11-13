@@ -31,7 +31,7 @@ The host reads shared local user-secrets, then this project's user-secrets, then
 
 ## 1. Prepare tools and an existing Foundry project
 
-Install the .NET 11 SDK (11.0.100), .NET 10 runtime, Azure CLI, Azure Developer CLI **>=1.35.1**, and its `azure.ai.agents` extension **>=1.0.0-beta.19**, as required by [azure.yaml](azure.yaml). Check your installed CLI's extension help if installation is needed:
+Install the .NET 11 SDK (11.0.100), the .NET 10 and ASP.NET Core 10 runtimes (or the .NET 10 SDK, which includes both), Azure CLI, Azure Developer CLI **>=1.35.1**, and its `azure.ai.agents` extension **>=1.0.0-beta.19**, as required by [azure.yaml](azure.yaml). Check your installed CLI's extension help if installation is needed:
 
 ```powershell
 dotnet --version

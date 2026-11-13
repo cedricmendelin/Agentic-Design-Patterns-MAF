@@ -14,6 +14,22 @@ public sealed class DotnetDemoRunnerTests
             DotnetDemoRunner.RepositoryRoot,
             "dotnet", "src", "HumanInTheLoop", "HumanInTheLoop.csproj");
 
+        var startInfo = DotnetDemoRunner.CreateStartInfo(project, ["--help"]);
+#if NET10_0
+        const string expectedFramework = "net10.0";
+#else
+        const string expectedFramework = "net11.0";
+#endif
+#if DEBUG
+        const string expectedConfiguration = "Debug";
+#else
+        const string expectedConfiguration = "Release";
+#endif
+        Assert.Equal(
+            ["run", "--project", project, "--framework", expectedFramework,
+             "--configuration", expectedConfiguration, "--no-build", "--", "--help"],
+            startInfo.ArgumentList.Take(10));
+
         var result = await DotnetDemoRunner.RunAsync(project, ["--help"]);
 
         Assert.True(result.ExitCode == 1, result.CombinedOutput);
